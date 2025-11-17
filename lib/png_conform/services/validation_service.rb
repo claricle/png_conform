@@ -414,7 +414,9 @@ module PngConform
 
         Models::CompressionInfo.new.tap do |info|
           info.compression_ratio = result.compression_ratio
-          info.compressed_size = result.chunks.select { |c| c.type == "IDAT" }.sum(&:length)
+          info.compressed_size = result.chunks.select do |c|
+            c.type == "IDAT"
+          end.sum(&:length)
         end
       end
 

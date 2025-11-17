@@ -101,7 +101,7 @@ def profile_comparison(file_path)
   chunk_types = result.chunks.map(&:type)
 
   results = profiles.map do |profile_name|
-    profile = PngConform::Services::ProfileManager.get_profile(profile_name)
+    PngConform::Services::ProfileManager.get_profile(profile_name)
     profile_result = PngConform::Services::ProfileManager.validate_file_against_profile(
       chunk_types, profile_name
     )
@@ -189,7 +189,7 @@ def chunk_data_extraction(file_path)
         null_pos = text.index("\x00")
         if null_pos
           keyword = text[0...null_pos]
-          content = text[(null_pos + 1)..-1]
+          content = text[(null_pos + 1)..]
           puts "  #{keyword}: #{content}"
         end
       end

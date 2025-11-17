@@ -142,7 +142,10 @@ module PngConform
         end
 
         # Add resolution analysis if available
-        hash["resolution"] = resolution_analysis if resolution_analysis && !resolution_analysis.empty?
+        if resolution_analysis && !resolution_analysis.empty?
+          hash["resolution"] =
+            resolution_analysis
+        end
 
         # Add optimization if available
         if optimization_analysis && optimization_analysis[:suggestions]&.any?
@@ -166,7 +169,9 @@ module PngConform
 
         # From resolution analysis
         if resolution_analysis && resolution_analysis[:recommendations]
-          recs.concat(resolution_analysis[:recommendations].map { |r| r[:message] })
+          recs.concat(resolution_analysis[:recommendations].map do |r|
+            r[:message]
+          end)
         end
 
         recs.empty? ? nil : recs

@@ -108,7 +108,7 @@ def inspect_chunks(file_path)
         null_pos = text.index("\x00")
         if null_pos
           keyword = text[0...null_pos]
-          content = text[(null_pos + 1)..-1]
+          content = text[(null_pos + 1)..]
           puts "  Keyword: #{keyword}"
           puts "  Text: #{content[0..50]}..."
         end
