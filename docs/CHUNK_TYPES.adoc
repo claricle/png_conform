@@ -1,0 +1,450 @@
+= PNG Chunk Types Reference
+
+== Purpose
+
+Complete reference of all PNG, MNG, JNG, and APNG chunk types validated by PngConform.
+
+== PNG Critical Chunks
+
+=== IHDR (Image Header)
+
+**Purpose**: Defines fundamental image properties
+**Required**: Yes (must be first chunk)
+**Size**: 13 bytes
+
+**Contents**:
+
+* Width (4 bytes)
+* Height (4 bytes)
+* Bit depth (1 byte)
+* Color type (1 byte)
+* Compression method (1 byte)
+* Filter method (1 byte)
+* Interlace method (1 byte)
+
+**Validation**:
+
+* Width and height must be non-zero
+* Bit depth must be valid for color type
+* Color type must be 0, 2, 3, 4, or 6
+* Compression method must be 0 (deflate)
+* Filter method must be 0 (adaptive)
+* Interlace method must be 0 (none) or 1 (Adam7)
+
+=== PLTE (Palette)
+
+**Purpose**: Defines color palette for indexed-color images
+**Required**: Yes for color type 3, optional for types 2 and 6
+**Size**: Variable (multiple of 3)
+
+**Contents**:
+
+* RGB triplets (3 bytes each)
+
+**Validation**:
+
+* Length must be divisible by 3
+* Maximum 256 entries (2^8)
+* Must appear before IDAT
+* Required for indexed-color images
+* Must not appear for grayscale
+
+=== IDAT (Image Data)
+
+**Purpose**: Contains compressed image pixel data
+**Required**: Yes (at least one)
+**Size**: Variable
+
+**Contents**:
+
+* zlib-compressed image data
+
+**Validation**:
+
+* Must be consecutive (no other chunks between)
+* zlib data must be valid
+* Decompressed size must match expected
+* Filter bytes must be 0-4
+
+=== IEND (Image End)
+
+**Purpose**: Marks end of PNG datastream
+**Required**: Yes (must be last chunk)
+**Size**: 0 bytes
+
+**Validation**:
+
+* Must be last chunk in file
+* Data length must be exactly 0
+* Must appear exactly once
+
+== PNG Ancillary Chunks
+
+=== Color Space Chunks
+
+==== gAMA (Gamma)
+
+**Purpose**: Specifies gamma correction value
+**Size**: 4 bytes
+**Value**: Gamma * 100000 (e.g., 45455 = 0.45455 gamma)
+
+==== cHRM (Chromaticity)
+
+**Purpose**: Defines color space primaries and white point
+**Size**: 32 bytes
+**Values**: 8 x/y pairs for red, green, blue, white point
+
+==== sRGB (Standard RGB)
+
+**Purpose**: Indicates standard RGB color space
+**Size**: 1 byte
+**Values**: Rendering intent (0-3)
+
+==== iCCP (ICC Profile)
+
+**Purpose**: Embeds ICC color profile
+**Size**: Variable
+**Contents**: Profile name + compressed ICC profile data
+
+==== cICP (Coding-Independent Code Points)
+
+**Purpose**: Color space for HDR and wide color gamut (PNG 3rd edition)
+**Size**: 4 bytes
+**Values**: Color primaries, transfer function, matrix coefficients, range
+
+==== mDCv (Mastering Display Color Volume)
+
+**Purpose**: HDR display metadata (PNG 3rd edition)
+**Size**: 24 bytes
+**Values**: Display primaries, white point, luminance
+
+=== Transparency Chunks
+
+==== tRNS (Transparency)
+
+**Purpose**: Defines transparency information
+**Size**: Variable (depends on color type)
+
+**For grayscale**: 2 bytes (gray value)
+**For RGB**: 6 bytes (R, G, B values)
+**For palette**: 1-256 bytes (alpha for each palette entry)
+
+==== bKGD (Background Color)
+
+**Purpose**: Suggests background color
+**Size**: Variable (depends on color type)
+
+**For grayscale**: 2 bytes
+**For RGB**: 6 bytes
+**For palette**: 1 byte (palette index)
+
+=== Text Chunks
+
+==== tEXt (Textual Data)
+
+**Purpose**: Stores Latin-1 text metadata
+**Size**: Variable
+**Contents**: Keyword (1-79 bytes) + null + text
+
+**Common Keywords**:
+
+* Title
+* Author
+* Description
+* Copyright
+* Creation Time
+* Software
+
+==== zTXt (Compressed Text)
+
+**Purpose**: Stores compressed Latin-1 text
+**Size**: Variable
+**Contents**: Keyword + null + compression method + compressed text
+
+==== iTXt (International Text)
+
+**Purpose**: Stores UTF-8 text with language tag
+**Size**: Variable
+**Contents**: Keyword + compression + language tag + translated keyword + text
+
+=== Physical Dimension Chunks
+
+==== pHYs (Physical Pixel Dimensions)
+
+**Purpose**: Specifies intended pixel size
+**Size**: 9 bytes
+
+**Contents**:
+
+* Pixels per unit X (4 bytes)
+* Pixels per unit Y (4 bytes)
+* Unit specifier (1 byte): 0=unknown, 1=meter
+
+**Usage**: Calculate DPI for print resolution
+
+==== sCAL (Physical Scale)
+
+**Purpose**: Specifies physical dimensions
+**Size**: Variable
+
+**Contents**:
+
+* Unit specifier (1 byte): 1=meter, 2=radian
+* Pixel width (ASCII)
+* Pixel height (ASCII)
+
+=== Metadata Chunks
+
+==== tIME (Last Modification Time)
+
+**Purpose**: Stores last modification timestamp
+**Size**: 7 bytes
+
+**Contents**:
+
+* Year (2 bytes)
+* Month (1 byte, 1-12)
+* Day (1 byte, 1-31)
+* Hour (1 byte, 0-23)
+* Minute (1 byte, 0-59)
+* Second (1 byte, 0-60)
+
+==== hIST (Histogram)
+
+**Purpose**: Approximate usage frequency of palette colors
+**Size**: Variable (2 bytes per palette entry)
+
+==== sPLT (Suggested Palette)
+
+**Purpose**: Suggests reduced palette for displays
+**Size**: Variable
+
+==== sBIT (Significant Bits)
+
+**Purpose**: Original number of significant bits
+**Size**: Variable (depends on color type)
+
+==== oFFs (Image Offset)
+
+**Purpose**: Image position offset
+**Size**: 9 bytes
+
+==== pCAL (Pixel Calibration)
+
+**Purpose**: Calibration for scientific/medical imaging
+**Size**: Variable
+
+==== sTER (Stereo Image)
+
+**Purpose**: Indicates stereo image layout
+**Size**: 1 byte
+**Values**: 0=cross-fuse, 1=diverging-fuse
+
+== APNG (Animated PNG) Chunks
+
+=== acTL (Animation Control)
+
+**Purpose**: Defines animation parameters
+**Size**: 8 bytes
+**Required**: First for animated PNGs
+
+**Contents**:
+
+* Number of frames (4 bytes)
+* Number of plays (4 bytes, 0=infinite)
+
+=== fcTL (Frame Control)
+
+**Purpose**: Controls individual frame rendering
+**Size**: 26 bytes
+**Required**: Before each frame
+
+**Contents**:
+
+* Sequence number (4 bytes)
+* Frame width/height (4+4 bytes)
+* X/Y offset (4+4 bytes)
+* Delay numerator/denominator (2+2 bytes)
+* Dispose operation (1 byte)
+* Blend operation (1 byte)
+
+=== fdAT (Frame Data)
+
+**Purpose**: Contains frame image data
+**Size**: Variable
+**Contents**: Sequence number + image data
+
+== MNG (Multiple-Image Network Graphics) Chunks
+
+=== MHDR (MNG Header)
+
+**Purpose**: MNG file header
+**Required**: Yes (must be first)
+**Size**: 28 bytes
+
+=== MEND (MNG End)
+
+**Purpose**: Marks end of MNG file
+**Required**: Yes (must be last)
+**Size**: 0 bytes
+
+=== DHDR (Delta PNG Header)
+
+**Purpose**: Defines delta-PNG header
+**Size**: 4 or 20 bytes
+
+=== FRAM (Frame Parameters)
+
+**Purpose**: Controls frame rendering parameters
+**Size**: Variable
+
+=== Animation Control Chunks
+
+==== LOOP (Loop Control)
+
+**Purpose**: Defines animation loop
+**Size**: 5 or 6 bytes
+
+==== ENDL (End Loop)
+
+**Purpose**: Marks end of loop
+**Size**: 1 byte
+
+==== TERM (Termination Action)
+
+**Purpose**: Specifies termination behavior
+**Size**: 1 or 10 bytes
+
+=== Object Management Chunks
+
+==== DEFI (Object Definition)
+
+**Purpose**: Defines object parameters
+**Size**: 2, 3, 4, 12, or 28 bytes
+
+==== MOVE (Move Object)
+
+**Purpose**: Repositions object
+**Size**: 13 bytes
+
+==== CLIP (Clip Object)
+
+**Purpose**: Sets clipping boundaries
+**Size**: 21 bytes
+
+==== SHOW (Show Object)
+
+**Purpose**: Displays object
+**Size**: 0 or 2 bytes
+
+==== CLON (Clone Object)
+
+**Purpose**: Clones existing object
+**Size**: Variable
+
+==== DISC (Discard Objects)
+
+**Purpose**: Discards objects from buffer
+**Size**: Variable
+
+=== State Management Chunks
+
+==== SAVE (Save State)
+
+**Purpose**: Saves current state
+**Size**: 0 bytes
+
+==== SEEK (Seek to State)
+
+**Purpose**: Restores saved state
+**Size**: 0 bytes
+
+=== Background Chunk
+
+==== BACK (Background)
+
+**Purpose**: Sets background color
+**Size**: 6 or 10 bytes
+
+== JNG (JPEG Network Graphics) Chunks
+
+=== JHDR (JNG Header)
+
+**Purpose**: JNG file header
+**Required**: Yes (must be first)
+**Size**: 16 bytes
+
+**Contents**:
+
+* Width/height (4+4 bytes)
+* Color type, bit depth (1+1 byte)
+* Compression method (1 byte)
+* Interlace method (1 byte)
+* Alpha sample depth, compression (1+1 byte)
+* Alpha filter, interlace (1+1 byte)
+
+=== JDAT (JPEG Data)
+
+**Purpose**: Contains JPEG image data
+**Required**: Yes
+**Size**: Variable
+
+=== JSEP (8/12-bit Separator)
+
+**Purpose**: Separates 8-bit and 12-bit JPEG data
+**Size**: 0 bytes
+
+== Chunk Validation Rules
+
+=== General Rules
+
+All chunks must:
+
+* Have valid CRC-32 checksum
+* Follow PNG chunk structure (length + type + data + CRC)
+* Respect chunk ordering constraints
+* Meet size requirements
+
+=== Critical vs Ancillary
+
+**Critical chunks** (uppercase first letter):
+
+* Must be recognized by decoder
+* File is invalid if unknown critical chunk present
+* Examples: IHDR, PLTE, IDAT, IEND
+
+**Ancillary chunks** (lowercase first letter):
+
+* Can be safely ignored if unknown
+* File remains valid if unknown ancillary chunk present
+* Examples: gAMA, tEXt, tIME
+
+=== Private vs Public
+
+**Public chunks** (uppercase second letter):
+
+* Defined in PNG specification or registered
+* Examples: IHDR, gAMA, tEXt
+
+**Private chunks** (lowercase second letter):
+
+* Application-specific
+* Not defined in standard
+
+=== Safe to Copy
+
+**Safe-to-copy chunks** (lowercase fourth letter):
+
+* Can be copied when PNG is modified
+* Examples: tEXt, tIME
+
+**Unsafe-to-copy chunks** (uppercase fourth letter):
+
+* May become invalid if image data modified
+* Examples: hIST (depends on palette)
+
+== See Also
+
+* link:../README.adoc[PngConform Documentation]
+* link:COMPATIBILITY.adoc[Tool Compatibility]
+* link:CLI_OPTIONS.adoc[CLI Options Reference]

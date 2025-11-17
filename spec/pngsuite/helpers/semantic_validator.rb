@@ -54,6 +54,7 @@ module PngSuite
         @validation_service ||= begin
           PngConform::Readers::StreamingReader.open(@fixture_path) do |reader|
             service = PngConform::Services::ValidationService.new(reader)
+            # service.validate returns FileAnalysis
             @validation_result = service.validate
             service
           end
@@ -63,6 +64,7 @@ module PngSuite
         end
       end
 
+      # Returns FileAnalysis which delegates to ValidationResult
       def validation_result
         validation_service
         @validation_result

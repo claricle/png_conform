@@ -1,0 +1,859 @@
+= PngConform: A Comprehensive PNG Validator in Ruby
+
+image:https://img.shields.io/gem/v/png_conform.svg[Gem Version, link="https://rubygems.org/gems/png_conform"]
+image:https://img.shields.io/github/license/claricle/png_conform.svg[License, link="https://github.com/claricle/png_conform/blob/main/LICENSE"]
+image:https://github.com/claricle/png_conform/actions/workflows/rake.yml/badge.svg[Build Status, link="https://github.com/claricle/png_conform/actions/workflows/rake.yml"]
+
+== Purpose
+
+PngConform is a pure Ruby PNG file validator with comprehensive chunk validation
+and profile support. It validates file structure, chunk validity, CRC checksums,
+chunk ordering, and profile conformance for PNG files.
+
+The library provides pngcheck-compatible validation output while leveraging
+modern Ruby object-oriented design principles and a layered architecture for
+extensibility and maintainability.
+
+== Features
+
+* *46 Chunk Validators*: Complete validation of PNG (24), APNG (3), MNG (16), and JNG (3) chunks
+* *PNG 3rd Edition Support*: Includes cICP and mDCv chunks for HDR content
+* *MNG/JNG Support*: Full Multiple-image Network Graphics and JPEG Network Graphics validation
+* *CRC Validation*: CRC-32 checksum verification for all chunks with detailed error reporting
+* *Chunk Ordering*: Validates proper chunk sequence and dependencies
+* *6 Validation Profiles*: Minimal, web, print, archive, strict, and default profiles
+* *Enhanced Output Formats*:
+** Text output with colors and emojis (✅/❌/⚠️)
+** Comprehensive YAML output with image info, resolution, and recommendations
+** Comprehensive JSON output for CI/CD integration
+** Compression ratio reporting
+* *Analysis Features*:
+** *Retina/Resolution Analysis*: @1x/@2x/@3x calculations for mobile developers
+** *Optimization Suggestions*: File size reduction recommendations
+** *Comprehensive Metrics*: Detailed metrics for CI/CD automation
+** *iOS/Android Support*: Asset catalog and density bucket suggestions
+* *Multiple Output Modes*: Summary, verbose, very verbose, quiet, with optional palette/text/color output
+* *Clean Architecture*: Layered OO design following MECE principles
+* *CLI Interface*: Thor-based command-line tool with pngcheck-compatible options plus modern analysis features
+* *Comprehensive Testing*: Extensive RSpec test suite (936 examples, 100% passing)
+
+== Architecture
+
+PngConform uses a layered architecture with strict separation of concerns:
+
+.Layered Architecture
+[source]
+----
+╔════════════════════════════════════════════════════════════╗
+║                    Presentation Layer                      ║
+║                    (CLI, Reporters)                        ║
+╚════════════════════════════════════════════════════════════╝
+                            │
+╔════════════════════════════════════════════════════════════╗
+║                     Service Layer                          ║
+║           (ValidationService, ProfileManager)              ║
+╚════════════════════════════════════════════════════════════╝
+                            │
+╔════════════════════════════════════════════════════════════╗
+║                  Business Logic Layer                      ║
+║         (Validators, ChunkRegistry, Readers)               ║
+╚════════════════════════════════════════════════════════════╝
+                            │
+╔════════════════════════════════════════════════════════════╗
+║                    Domain Model Layer                      ║
+║     (ChunkInfo, ValidationResult, FileAnalysis)            ║
+╚════════════════════════════════════════════════════════════╝
+                            │
+╔════════════════════════════════════════════════════════════╗
+║                  Binary Parsing Layer                      ║
+║              (BinData structures)                          ║
+╚════════════════════════════════════════════════════════════╝
+----
+
+.Module Structure
+[source]
+----
+PngConform
+├── BinData (Binary parsing structures)
+│   ├── ChunkStructure
+│   ├── PngFile
+│   ├── MngFile ✅
+│   └── JngFile ✅
+├── Models (Domain models)
+│   ├── ChunkInfo
+│   ├── ValidationResult
+│   ├── ValidationError
+│   ├── FileAnalysis
+│   ├── ImageInfo
+│   ├── CompressionInfo
+│   └── DecodedChunkData
+├── Validators (Validation logic)
+│   ├── BaseValidator
+│   ├── ChunkRegistry
+│   ├── Critical (IHDR, PLTE, IDAT, IEND)
+│   └── Ancillary (gAMA, tRNS, tEXt, etc. - 20 validators)
+├── Services (Orchestration)
+│   ├── ValidationService
+│   └── ProfileManager
+├── Readers (File reading strategies)
+│   ├── StreamingReader
+│   └── FullLoadReader
+├── Reporters (Output formatting)
+│   ├── BaseReporter
+│   ├── SummaryReporter
+│   ├── VerboseReporter
+│   ├── VeryVerboseReporter
+│   ├── QuietReporter
+│   ├── PaletteReporter (decorator)
+│   ├── TextReporter (decorator)
+│   ├── ColorReporter (decorator)
+│   └── ReporterFactory
+├── Commands (CLI commands)
+│   ├── CheckCommand
+│   └── ListCommand
+└── Cli (Thor-based CLI)
+----
+
+.Data Flow
+[source]
+----
+File Input
+    │
+    ▼
+CLI (CheckCommand)
+    │
+    ├─► ProfileManager (load profile)
+    │
+    └─► ReporterFactory (create reporter)
+        │
+        ▼
+ValidationService
+    │
+    ├─► BinData Parser (read PNG structure)
+    │
+    ├─► ChunkRegistry (lookup validators)
+    │
+    └─► Validators (validate chunks)
+        │
+        ├─► BaseValidator methods (check_crc, check_length, etc.)
+        │
+        └─► ValidationContext (store state)
+            │
+            ▼
+    ValidationResult
+        │
+        ├─► FileAnalysis (file-level results)
+        ├─► ChunkInfo[] (chunk-level results)
+        └─► ValidationError[] (errors/warnings/info)
+            │
+            ▼
+    Reporter (format output)
+        │
+        ├─► SummaryReporter
+        ├─► VerboseReporter
+        ├─► VeryVerboseReporter
+        └─► QuietReporter
+            │
+            ▼
+    Output (STDOUT)
+----
+
+== Installation
+
+Add this line to your application's Gemfile:
+
+[source,ruby]
+----
+gem "png_conform"
+----
+
+And then execute:
+
+[source,shell]
+----
+bundle install
+----
+
+Or install it yourself as:
+
+[source,shell]
+----
+gem install png_conform
+----
+
+[[cli-usage]]
+== CLI Usage
+
+=== General
+
+PngConform provides a command-line interface with pngcheck-compatible options.
+
+=== Basic usage
+
+[source,shell]
+----
+png_conform check FILE [FILE...]
+----
+
+.Basic validation (successful)
+[example]
+====
+[source,shell]
+----
+$ png_conform check image.png
+✅ OK: image.png (800x600, 8-bit/color RGB, non-interlaced)
+----
+====
+
+.Basic validation (with errors)
+[example]
+====
+[source,shell]
+----
+$ png_conform check corrupted.png
+❌ ERROR: corrupted.png, (PNG, 1024 bytes, 3 chunks)
+  ERROR: IHDR: invalid bit depth 3 for color type 2
+  ERROR: CRC error in chunk IDAT
+  WARNING: Missing recommended chunk gAMA
+----
+====
+
+=== CLI options
+
+==== Verbosity options
+
+`-v, --verbose`:: Display chunk-level information
+`-vv, --very-verbose`:: Display detailed chunk data
+`-q, --quiet`:: Suppress all output except errors
+
+.Verbose output example (with colors and emojis)
+[example]
+====
+[source,shell]
+----
+$ png_conform check -v image.png
+📄 image.png (32768 bytes)
+
+  ✓ 📦 IHDR at 0x0000c (13 bytes)
+  ✓ 📦 gAMA at 0x00025 (4 bytes)
+  ✓ 📦 cHRM at 0x00035 (32 bytes)
+  ✓ 📦 IDAT at 0x00061 (65445 bytes)
+  ✓ 📦 IEND at 0x10072 (0 bytes)
+
+✓ No errors detected in image.png (5 chunks)
+----
+====
+
+.Verbose with errors
+[example]
+====
+[source,shell]
+----
+$ png_conform check -v corrupted.png
+📄 corrupted.png (1024 bytes)
+
+  ✗ 📦 IHDR at 0x0000c (13 bytes)
+  ✓ 📦 PLTE at 0x00025 (12 bytes)
+  ✗ 📦 IDAT at 0x00035 (891 bytes)
+  ✓ 📦 IEND at 0x003ec (0 bytes)
+
+VALIDATION ERRORS:
+  ❌ ERROR: IHDR: invalid bit depth 3 for color type 2
+  ❌ ERROR: CRC error in chunk IDAT (expected 0x12345678, got 0x87654321)
+  ⚠️  WARNING: Missing recommended chunk gAMA
+
+❌ 2 errors, 1 warning in corrupted.png (4 chunks)
+----
+====
+
+.Comprehensive YAML output (includes image info, resolution, and recommendations)
+[example]
+====
+[source,shell]
+----
+$ png_conform check --format yaml image.png
+---
+filename: "./spec/fixtures/pngsuite/background/bgwn6a08.png"
+file_type: PNG
+file_size: 202
+compression_ratio: -97.3
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: 6
+  color_type_name: RGBA
+  interlaced: false
+chunks:
+  total: 5
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - bKGD
+  - gAMA
+resolution:
+  dimensions: 32x32
+  megapixels: 0.0
+  dpi:
+  retina:
+    at_1x: 14.1x14.1pt
+    at_2x: 7.1x7.1pt
+    at_3x: 4.7x4.7pt
+    recommended: "@1x (too small for higher densities)"
+    ios:
+    - Custom size
+    android: ldpi or mdpi
+recommendations:
+- Image is too small for Retina displays - consider @2x/@3x versions
+- Add pHYs chunk with DPI information for print compatibility
+----
+====
+
+.JSON output example
+[example]
+====
+[source,shell]
+----
+$ png_conform check --format json image.png
+{
+  "filename": "image.png",
+  "file_type": "PNG",
+  "file_size": 32768,
+  "crc_errors_count": 0,
+  "compression_ratio": -89.2
+}
+----
+====
+.YAML with errors
+[example]
+====
+[source,shell]
+----
+$ png_conform check --format yaml corrupted.png
+---
+filename: corrupted.png
+file_type: PNG
+file_size: 1024
+crc_errors_count: 1
+valid: false
+errors:
+- severity: error
+  message: 'IHDR: invalid bit depth 3 for color type 2'
+  chunk_type: IHDR
+- severity: error
+  message: 'CRC error in chunk IDAT'
+  chunk_type: IDAT
+  expected: '0x12345678'
+  actual: '0x87654321'
+- severity: warning
+  message: Missing recommended chunk gAMA
+----
+====
+
+.JSON with errors
+[example]
+====
+[source,shell]
+----
+$ png_conform check --format json corrupted.png
+{
+  "filename": "corrupted.png",
+  "file_type": "PNG",
+  "file_size": 1024,
+  "crc_errors_count": 1,
+  "valid": false,
+  "errors": [
+    {
+      "severity": "error",
+      "message": "IHDR: invalid bit depth 3 for color type 2",
+      "chunk_type": "IHDR"
+    },
+    {
+      "severity": "error",
+      "message": "CRC error in chunk IDAT",
+      "chunk_type": "IDAT",
+      "expected": "0x12345678",
+      "actual": "0x87654321"
+    },
+    {
+      "severity": "warning",
+      "message": "Missing recommended chunk gAMA"
+    }
+  ]
+}
+----
+====
+
+.Disable colors
+[example]
+====
+[source,shell]
+----
+$ png_conform check --no-color image.png
+OK: image.png (800x600, 8-bit/color RGB, non-interlaced)
+----
+====
+
+==== Output options
+
+`-f, --format FORMAT`:: Output format: text (default), yaml, json
+`--no-color`:: Disable colored output
+`-c, --color`:: Display RGB color values (only with `-p` or `-t`)
+`-p, --palette`:: Display palette entries
+`-t, --text`:: Display text chunk contents
+`-7, --seven-bit`:: Check for 7-bit ASCII in tEXt chunks
+
+.Palette display example
+[example]
+====
+[source,shell]
+----
+$ png_conform check -p indexed.png
+OK: indexed.png (32x32, 2-bit palette, non-interlaced)
+  chunk IHDR at offset 0x0000c, length 13
+  chunk PLTE at offset 0x00025, length 12
+    0:  (255,255,255) = gray100
+    1:  (204,204,204) = gray80
+    2:  (153,153,153) = gray60
+    3:  (102,102,102) = gray40
+  chunk IDAT at offset 0x0003d, length 147
+  chunk IEND at offset 0x000d4, length 0
+----
+====
+
+==== Profile options
+
+`--profile PROFILE`:: Use validation profile (minimal, web, print, archive, strict, default)
+`--strict`:: Shortcut for `--profile strict`
+
+.Profile validation example
+[example]
+====
+[source,shell]
+----
+$ png_conform check --profile web image.png
+WARN: image.png: missing required chunk gAMA (web profile)
+WARN: image.png: missing required chunk sRGB (web profile)
+OK: image.png (800x600, 8-bit/color RGB, non-interlaced)
+----
+====
+
+==== Analysis options
+
+`--resolution`:: Display resolution and Retina analysis (@1x/@2x/@3x)
+`--optimize`:: Show file size optimization suggestions
+`--metrics`:: Display comprehensive metrics for CI/CD
+`--mobile-ready`:: Check mobile and Retina readiness
+
+.Resolution and Retina analysis (shown by default)
+[example]
+====
+[source,shell]
+----
+$ png_conform check icon.png
+✅ OK: icon.png, (PNG, 202 bytes, 5 chunks, 🗜️ -97.3%)
+
+RESOLUTION ANALYSIS:
+  Dimensions: 32x32 (0.0 megapixels)
+  DPI: Not specified
+
+  Retina Analysis:
+    @1x: 14.1x14.1pt (Small icon)
+    @2x: 7.1x7.1pt (Small icon)
+    @3x: 4.7x4.7pt (Small icon)
+    Recommended: @1x (too small for higher densities)
+    iOS: Custom size
+    Android: ldpi or mdpi
+
+  Recommendations:
+    [HIGH] Image is too small for Retina displays - consider @2x/@3x versions
+    [MEDIUM] Add pHYs chunk with DPI information for print compatibility
+----
+====
+
+.Optimization suggestions
+[example]
+====
+[source,shell]
+----
+$ png_conform check --optimize large-photo.png
+✅ OK: large-photo.png, (PNG, 4.5 MB, 8 chunks, 🗜️ -42.1%)
+
+OPTIMIZATION SUGGESTIONS:
+  1. [HIGH] Convert from 16-bit to 8-bit depth (saves ~45% = 2.1MB)
+  2. [MEDIUM] Remove 3 unnecessary chunks (tIME, pHYs, oFFs) (saves 156 bytes)
+  3. [LOW] Remove interlacing for smaller file size (saves ~15% = 680KB)
+
+  Total Potential Savings: 2.8MB (62.2%)
+----
+====
+
+.Mobile and Retina readiness check
+[example]
+====
+[source,shell]
+----
+$ png_conform check --mobile-ready app-icon@2x.png
+✅ OK: app-icon@2x.png, (PNG, 2.3 KB, 5 chunks, 🗜️ -88.5%)
+
+MOBILE & RETINA READINESS:
+  Status: ✓ READY
+
+  Checks:
+    Retina Ready: ✓
+    Mobile Friendly: ✓
+    Web Suitable: ✓
+
+  Retina Densities:
+    @1x: 44.0x44.0pt
+    @2x: 22.0x22.0pt
+    @3x: 14.7x14.7pt
+    Recommended: @2x
+
+  Screen Coverage:
+    Mobile (375x667): 23.5% x 13.2%
+    Desktop (1920x1080): 4.6% x 8.1%
+
+  Load Time: 25ms (fast)
+----
+====
+
+=== List profiles
+
+Display available validation profiles:
+
+[source,shell]
+----
+png_conform list
+----
+
+.Profile listing output
+[example]
+====
+[source,shell]
+----
+$ png_conform list
+Available validation profiles:
+
+minimal
+  Required chunks: IHDR, IDAT, IEND
+  Optional chunks: (any)
+  Prohibited chunks: (none)
+
+web
+  Required chunks: IHDR, IDAT, IEND, gAMA, sRGB
+  Optional chunks: tRNS, bKGD, tEXt, iTXt, zTXt
+  Prohibited chunks: (none)
+
+print
+  Required chunks: IHDR, IDAT, IEND, iCCP
+  Optional chunks: gAMA, cHRM, tRNS, bKGD
+  Prohibited chunks: sRGB
+
+archive
+  Required chunks: IHDR, IDAT, IEND, tIME
+  Optional chunks: (any)
+  Prohibited chunks: (none)
+
+strict
+  Required chunks: IHDR, IDAT, IEND
+  Optional chunks: (critical chunks only)
+  Prohibited chunks: (unknown chunks)
+
+default
+  Required chunks: IHDR, IDAT, IEND
+  Optional chunks: (any)
+  Prohibited chunks: (none)
+----
+====
+
+[[ruby-api]]
+== Ruby API
+
+=== General
+
+PngConform provides a comprehensive Ruby API for programmatic validation.
+
+=== Basic validation
+
+[source,ruby]
+----
+require "png_conform"
+
+# Validate a file
+service = PngConform::Services::ValidationService.new
+result = service.validate_file("image.png")
+
+if result.valid?
+  puts "File is valid"
+  puts "Image: #{result.image_info.width}x#{result.image_info.height}"
+  puts "Chunks: #{result.chunks.count}"
+else
+  puts "Validation errors:"
+  result.errors.each do |error|
+    puts "  #{error.severity}: #{error.message}"
+  end
+end
+----
+
+=== Using profiles
+
+[source,ruby]
+----
+# Load a specific profile
+profile_mgr = PngConform::Services::ProfileManager.new
+profile = profile_mgr.load_profile("web")
+
+# Validate with profile
+service = PngConform::Services::ValidationService.new
+result = service.validate_file("image.png", profile: profile)
+
+# Check profile conformance
+profile_result = profile_mgr.validate_file_against_profile(
+  "image.png",
+  "web"
+)
+
+if profile_result.profile_errors.any?
+  puts "Profile violations:"
+  profile_result.profile_errors.each do |error|
+    puts "  #{error.message}"
+  end
+end
+----
+
+=== Custom reporters
+
+[source,ruby]
+----
+# Use specific reporter
+reporter = PngConform::Reporters::VerboseReporter.new
+service = PngConform::Services::ValidationService.new
+result = service.validate_file("image.png")
+
+reporter.report(result)
+
+# Create custom reporter combinations
+factory = PngConform::Reporters::ReporterFactory.new
+reporter = factory.create_reporter(
+  verbose: true,
+  show_palette: true,
+  show_text: true,
+  colorize: true
+)
+
+reporter.report(result)
+----
+
+=== Accessing chunk data
+
+[source,ruby]
+----
+result = service.validate_file("image.png")
+
+# Iterate through chunks
+result.chunks.each do |chunk|
+  puts "Chunk: #{chunk.type}"
+  puts "  Offset: #{chunk.offset}"
+  puts "  Length: #{chunk.length}"
+  puts "  CRC: 0x#{chunk.crc.to_s(16).upcase}"
+
+  # Access decoded data
+  if chunk.decoded_data
+    case chunk.type
+    when "IHDR"
+      puts "  Dimensions: #{chunk.decoded_data.width}x#{chunk.decoded_data.height}"
+      puts "  Bit depth: #{chunk.decoded_data.bit_depth}"
+      puts "  Color type: #{chunk.decoded_data.color_type}"
+    when "gAMA"
+      puts "  Gamma: #{chunk.decoded_data.gamma}"
+    when "tEXt"
+      puts "  Keyword: #{chunk.decoded_data.keyword}"
+      puts "  Text: #{chunk.decoded_data.text}"
+    end
+  end
+end
+----
+
+[[chunk-validation]]
+== Chunk Validation
+
+=== General
+
+PngConform validates all standard PNG chunk types with dedicated validators.
+
+=== Critical chunks
+
+==== IHDR (image header)
+
+The IHDR chunk must be the first chunk and contains image metadata.
+
+Validation checks:
+
+* Width and height must be non-zero
+* Bit depth must be valid for color type
+* Color type must be 0, 2, 3, 4, or 6
+* Compression method must be 0 (deflate)
+* Filter method must be 0 (adaptive)
+* Interlace method must be 0 (none) or 1 (Adam7)
+
+==== PLTE (palette)
+
+Required for indexed-color images, optional for truecolor.
+
+Validation checks:
+
+* Length must be divisible by 3 (RGB triplets)
+* Number of entries must not exceed 2^bit_depth
+* Must appear before IDAT chunks
+* Required for color type 3
+* Must not appear for grayscale images
+
+==== IDAT (image data)
+
+Contains compressed image data. Multiple IDAT chunks must be consecutive.
+
+Validation checks:
+
+* IDAT chunks must be consecutive
+* Compressed data must be valid zlib format
+* Decompressed data must match expected size
+* Filter types must be valid (0-4)
+
+==== IEND (image trailer)
+
+Marks the end of the PNG file.
+
+Validation checks:
+
+* Must be the last chunk
+* Data length must be 0
+* Must appear exactly once
+
+=== Ancillary chunks
+
+==== Color space chunks
+
+`gAMA`:: Gamma correction value
+`cHRM`:: Primary chromaticities and white point
+`sRGB`:: Standard RGB color space
+`iCCP`:: ICC color profile
+`cICP`:: Coding-independent code points (HDR)
+
+==== Transparency chunks
+
+`tRNS`:: Transparency information
+`bKGD`:: Background color
+
+==== Text chunks
+
+`tEXt`:: Uncompressed Latin-1 text
+`zTXt`:: Compressed Latin-1 text
+`iTXt`:: International UTF-8 text
+
+==== Physical dimensions
+
+`pHYs`:: Physical pixel dimensions
+`sCAL`:: Physical scale
+
+==== Time stamp
+
+`tIME`:: Last modification time
+
+==== Other chunks
+
+`hIST`:: Palette histogram
+`sPLT`:: Suggested palette
+`sBIT`:: Significant bits
+`oFFs`:: Image offset
+`pCAL`:: Pixel calibration
+`sTER`:: Stereo image indicator
+`mDCv`:: Mastering display color volume (HDR)
+
+[[validation-profiles]]
+== Validation Profiles
+
+=== General
+
+Profiles define conformance requirements for different use cases.
+
+=== Available profiles
+
+==== minimal
+
+Basic PNG structure validation only.
+
+* Required: IHDR, IDAT, IEND
+* Optional: Any chunks
+* Prohibited: None
+
+==== web
+
+Optimized for web display.
+
+* Required: IHDR, IDAT, IEND, gAMA, sRGB
+* Optional: tRNS, bKGD, tEXt, iTXt, zTXt
+* Prohibited: None
+
+==== print
+
+For high-quality print reproduction.
+
+* Required: IHDR, IDAT, IEND, iCCP
+* Optional: gAMA, cHRM, tRNS, bKGD
+* Prohibited: sRGB
+
+==== archive
+
+Long-term preservation requirements.
+
+* Required: IHDR, IDAT, IEND, tIME
+* Optional: Any chunks
+* Prohibited: None
+
+==== strict
+
+Only standard chunks allowed.
+
+* Required: IHDR, IDAT, IEND
+* Optional: Critical chunks only
+* Prohibited: Unknown chunks
+
+==== default
+
+Standard PNG validation.
+
+* Required: IHDR, IDAT, IEND
+* Optional: Any chunks
+* Prohibited: None
+
+[[development]]
+== Development
+
+After checking out the repo, run `bin/setup` to install dependencies. Then, run
+`rake spec` to run the tests. You can also run `bin/console` for an interactive
+prompt that will allow you to experiment.
+
+To install this gem onto your local machine, run `bundle exec rake install`.
+
+== Contributing
+
+Bug reports and pull requests are welcome on GitHub at
+https://github.com/claricle/png_conform.
+
+
+== Credits
+
+PngConform is inspired by https://github.com/pnggroup/pngcheck/[pngcheck],
+originally developed by Greg Roelofs and contributors, and now maintained by the
+PNG Development Group.
+
+
+== Copyright and license
+
+Copyright Ribose.
+
+The gem is available as open source under the Ribose BSD-2-Clause License.

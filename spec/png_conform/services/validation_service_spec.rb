@@ -16,9 +16,10 @@ RSpec.describe PngConform::Services::ValidationService do
         ]
       end
 
-      it "returns a validation result" do
+      it "returns a file analysis" do
         result = service.validate
-        expect(result).to be_a(PngConform::Models::ValidationResult)
+        expect(result).to be_a(PngConform::Models::FileAnalysis)
+        expect(result.validation_result).to be_a(PngConform::Models::ValidationResult)
       end
 
       it "validates the PNG signature" do

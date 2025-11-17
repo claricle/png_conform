@@ -8,6 +8,8 @@ RSpec.describe PngConform::Models::FileAnalysis do
       PngConform::Models::ValidationResult,
       valid?: true,
       error_summary: "ERROR: test.png\n  Invalid CRC",
+      chunks: [],
+      chunk_count: 0,
     )
   end
 
@@ -29,11 +31,16 @@ RSpec.describe PngConform::Models::FileAnalysis do
   describe "#chunk_count" do
     it "returns number of chunks" do
       chunks = [
-        instance_double(PngConform::Models::ChunkInfo),
-        instance_double(PngConform::Models::ChunkInfo),
-        instance_double(PngConform::Models::ChunkInfo),
+        instance_double(PngConform::Models::Chunk, type: "IHDR"),
+        instance_double(PngConform::Models::Chunk, type: "IDAT"),
+        instance_double(PngConform::Models::Chunk, type: "IEND"),
       ]
-      analysis = described_class.new(chunks: chunks)
+      result = instance_double(
+        PngConform::Models::ValidationResult,
+        chunks: chunks,
+        chunk_count: 3,
+      )
+      analysis = described_class.new(validation_result: result)
       expect(analysis.chunk_count).to eq(3)
     end
 
@@ -169,11 +176,17 @@ RSpec.describe PngConform::Models::FileAnalysis do
     end
 
     it "returns success message for valid files" do
-      chunks = Array.new(4) { instance_double(PngConform::Models::ChunkInfo) }
+      chunks = Array.new(4) { instance_double(PngConform::Models::Chunk, type: "IDAT") }
+      result = instance_double(
+        PngConform::Models::ValidationResult,
+        valid?: true,
+        error_summary: "",
+        chunks: chunks,
+        chunk_count: 4,
+      )
       analysis = described_class.new(
         file_path: "test.png",
-        validation_result: validation_result,
-        chunks: chunks,
+        validation_result: result,
         compression_info: compression_info,
       )
 
@@ -184,11 +197,17 @@ RSpec.describe PngConform::Models::FileAnalysis do
     end
 
     it "handles missing compression_info" do
-      chunks = Array.new(2) { instance_double(PngConform::Models::ChunkInfo) }
+      chunks = Array.new(2) { instance_double(PngConform::Models::Chunk, type: "IDAT") }
+      result = instance_double(
+        PngConform::Models::ValidationResult,
+        valid?: true,
+        error_summary: "",
+        chunks: chunks,
+        chunk_count: 2,
+      )
       analysis = described_class.new(
         file_path: "test.png",
-        validation_result: validation_result,
-        chunks: chunks,
+        validation_result: result,
       )
 
       summary = analysis.validation_summary
@@ -198,10 +217,16 @@ RSpec.describe PngConform::Models::FileAnalysis do
     end
 
     it "handles zero chunks" do
+      result = instance_double(
+        PngConform::Models::ValidationResult,
+        valid?: true,
+        error_summary: "",
+        chunks: [],
+        chunk_count: 0,
+      )
       analysis = described_class.new(
         file_path: "test.png",
-        validation_result: validation_result,
-        chunks: [],
+        validation_result: result,
       )
 
       summary = analysis.validation_summary
@@ -251,12 +276,15 @@ RSpec.describe PngConform::Models::FileAnalysis do
 
   describe "attribute initialization" do
     it "accepts all attributes" do
+      result = instance_double(
+        PngConform::Models::ValidationResult,
+        chunks: [],
+      )
       analysis = described_class.new(
         file_path: "test.png",
         file_size: 2048,
         file_type: "PNG",
-        validation_result: validation_result,
-        chunks: [],
+        validation_result: result,
         image_info: image_info,
         compression_info: compression_info,
       )
@@ -264,7 +292,7 @@ RSpec.describe PngConform::Models::FileAnalysis do
       expect(analysis.file_path).to eq("test.png")
       expect(analysis.file_size).to eq(2048)
       expect(analysis.file_type).to eq("PNG")
-      expect(analysis.validation_result).to eq(validation_result)
+      expect(analysis.validation_result).to eq(result)
       expect(analysis.chunks).to eq([])
       expect(analysis.image_info).to eq(image_info)
       expect(analysis.compression_info).to eq(compression_info)

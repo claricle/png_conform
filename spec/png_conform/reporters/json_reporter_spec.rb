@@ -3,18 +3,29 @@
 RSpec.describe PngConform::Reporters::JsonReporter do
   let(:output) { StringIO.new }
   let(:reporter) { described_class.new(output) }
-  let(:result) { PngConform::Models::ValidationResult.new }
 
-  before do
-    result.filename = "test.png"
-    result.file_type = "PNG"
-    result.file_size = 1000
-    result.crc_errors_count = 0
+  let(:validation_result) do
+    PngConform::Models::ValidationResult.new.tap do |r|
+      r.filename = "test.png"
+      r.file_type = "PNG"
+      r.file_size = 1000
+      r.crc_errors_count = 0
+      r.valid = true
+    end
+  end
+
+  let(:file_analysis) do
+    PngConform::Models::FileAnalysis.new.tap do |fa|
+      fa.file_path = "test.png"
+      fa.file_size = 1000
+      fa.file_type = "PNG"
+      fa.validation_result = validation_result
+    end
   end
 
   describe "#report" do
     it "outputs JSON format" do
-      reporter.report(result)
+      reporter.report(file_analysis)
       output.rewind
       json_output = output.read
 
@@ -24,8 +35,8 @@ RSpec.describe PngConform::Reporters::JsonReporter do
     end
 
     it "includes CRC error count" do
-      result.crc_errors_count = 2
-      reporter.report(result)
+      validation_result.crc_errors_count = 2
+      reporter.report(file_analysis)
       output.rewind
       json_output = output.read
 
@@ -33,7 +44,7 @@ RSpec.describe PngConform::Reporters::JsonReporter do
     end
 
     it "produces valid JSON" do
-      reporter.report(result)
+      reporter.report(file_analysis)
       output.rewind
       json_output = output.read
 
@@ -41,7 +52,7 @@ RSpec.describe PngConform::Reporters::JsonReporter do
     end
 
     it "pretty-prints JSON" do
-      reporter.report(result)
+      reporter.report(file_analysis)
       output.rewind
       json_output = output.read
 

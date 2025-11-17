@@ -10,13 +10,22 @@ module PngConform
       attribute :file_size, :integer
       attribute :file_type, :string # 'PNG', 'MNG', 'JNG'
       attribute :validation_result, ValidationResult
-      attribute :chunks, ChunkInfo, collection: true
       attribute :image_info, ImageInfo
       attribute :compression_info, CompressionInfo
 
+      # Analyzer results (proper Model → Formatter pattern)
+      attribute :resolution_analysis, :hash
+      attribute :optimization_analysis, :hash
+      attribute :metrics, :hash
+
       # Total chunk count
       def chunk_count
-        chunks&.size || 0
+        chunks.size
+      end
+
+      # Get chunks (either from direct attribute or validation_result)
+      def chunks
+        validation_result&.chunks || []
       end
 
       # Check if file is valid
@@ -69,14 +78,98 @@ module PngConform
       # Alias for compatibility with reporters
       alias filename file_path
 
-      # Delegate to validation_result
+      # Delegate to validation_result for API compatibility
       def errors
         validation_result&.errors || []
+      end
+
+      def error_messages
+        validation_result&.error_messages || []
+      end
+
+      def error_count
+        validation_result&.error_count || 0
+      end
+
+      def warning_count
+        validation_result&.warning_count || 0
+      end
+
+      def info_count
+        validation_result&.info_count || 0
       end
 
       # Delegate to compression_info
       def compression_ratio
         compression_info&.compression_ratio
+      end
+
+      # Convert to complete hash for serialization
+      # This provides a single source of truth for all output formats
+      def to_h
+        hash = {
+          "filename" => file_path,
+          "file_type" => file_type,
+          "file_size" => file_size,
+          "compression_ratio" => compression_ratio,
+          "crc_errors_count" => validation_result&.crc_errors_count || 0,
+          "valid" => valid?,
+        }
+
+        # Add image info if available
+        hash["image"] = image_info.to_h if image_info
+
+        # Add chunks info
+        if chunks.any?
+          hash["chunks"] = {
+            "total" => chunk_count,
+            "types" => chunks.map(&:type).uniq.sort,
+          }
+        end
+
+        # Add errors if any
+        if validation_result&.errors&.any?
+          hash["errors"] = validation_result.errors.map do |error|
+            error_hash = {
+              "severity" => error.severity,
+              "message" => error.message,
+            }
+            error_hash["chunk_type"] = error.chunk_type if error.chunk_type
+            error_hash["expected"] = error.expected if error.expected
+            error_hash["actual"] = error.actual if error.actual
+            error_hash
+          end
+        end
+
+        # Add resolution analysis if available
+        hash["resolution"] = resolution_analysis if resolution_analysis && !resolution_analysis.empty?
+
+        # Add optimization if available
+        if optimization_analysis && optimization_analysis[:suggestions]&.any?
+          hash["optimization"] = {
+            "suggestions" => optimization_analysis[:suggestions],
+            "total_savings_bytes" => optimization_analysis[:potential_savings_bytes],
+            "total_savings_percent" => optimization_analysis[:potential_savings_percent],
+          }
+        end
+
+        # Add recommendations
+        recs = extract_recommendations
+        hash["recommendations"] = recs if recs&.any?
+
+        hash
+      end
+
+      # Extract recommendations from analyzers
+      def extract_recommendations
+        recs = []
+
+        # From resolution analysis
+        if resolution_analysis && resolution_analysis[:recommendations]
+          recs.concat(resolution_analysis[:recommendations].map { |r| r[:message] })
+        end
+
+        recs.empty? ? nil : recs
       end
     end
   end

@@ -148,8 +148,12 @@ module PngConform
           has_srgb: @result.has_chunk?("sRGB"),
           has_iccp: @result.has_chunk?("iCCP"),
           has_transparency: @result.has_chunk?("tRNS"),
-          has_metadata: @result.chunks.any? { |c| TEXT_CHUNKS.include?(c.type) },
-          metadata_chunks_count: @result.chunks.count { |c| METADATA_CHUNKS.include?(c.type) },
+          has_metadata: @result.chunks.any? do |c|
+            TEXT_CHUNKS.include?(c.type)
+          end,
+          metadata_chunks_count: @result.chunks.count do |c|
+            METADATA_CHUNKS.include?(c.type)
+          end,
           bytes_per_pixel: calculate_bytes_per_pixel,
         }
       end

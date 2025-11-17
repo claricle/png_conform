@@ -16,13 +16,12 @@ def basic_validation(file_path)
   puts "Example 1: Basic Validation"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   if result.valid?
     puts "✓ File is valid!"
     puts "  Dimensions: #{result.image_info.width}x#{result.image_info.height}"
-    puts "  Color type: #{result.image_info.color_type_name}"
+    puts "  Color type: #{result.image_info.color_type}"
     puts "  Bit depth: #{result.image_info.bit_depth}"
     puts "  Chunks: #{result.chunks.count}"
   else
@@ -40,24 +39,31 @@ def profile_validation(file_path, profile_name)
   puts "Example 2: Profile-Based Validation (#{profile_name})"
   puts "=" * 60
 
-  profile_manager = PngConform::Services::ProfileManager.new
-  profile = profile_manager.load_profile(profile_name)
+  profile = PngConform::Services::ProfileManager.get_profile(profile_name)
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path, profile: profile)
+  if profile
+    puts "Profile: #{profile[:name]} - #{profile[:description]}"
+    puts "Required chunks: #{profile[:required_chunks].join(', ')}"
+    puts
 
-  puts "Profile: #{profile.name} - #{profile.description}"
-  puts "Required chunks: #{profile.required_chunks.join(', ')}"
-  puts
+    result = PngConform::Services::ValidationService.validate_file(file_path)
+    chunk_types = result.chunks.map(&:type)
 
-  profile_errors = result.errors.select { |e| e.message.include?("profile") }
-  if profile_errors.empty?
-    puts "✓ File conforms to #{profile_name} profile"
-  else
-    puts "✗ Profile violations:"
-    profile_errors.each do |error|
-      puts "  #{error.message}"
+    # Validate against profile
+    profile_result = PngConform::Services::ProfileManager.validate_file_against_profile(
+      chunk_types, profile_name
+    )
+
+    if profile_result[:valid]
+      puts "✓ File conforms to #{profile_name} profile"
+    else
+      puts "✗ Profile violations:"
+      profile_result[:errors].each do |error|
+        puts "  #{error}"
+      end
     end
+  else
+    puts "✗ Profile not found: #{profile_name}"
   end
   puts
 end
@@ -68,8 +74,7 @@ def inspect_chunks(file_path)
   puts "Example 3: Detailed Chunk Inspection"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   puts "File: #{file_path}"
   puts "Chunks found: #{result.chunks.count}"
@@ -79,22 +84,34 @@ def inspect_chunks(file_path)
     puts "Chunk: #{chunk.type}"
     puts "  Offset: 0x#{chunk.offset.to_s(16).rjust(8, '0')}"
     puts "  Length: #{chunk.length} bytes"
-    puts "  CRC: 0x#{chunk.crc.to_s(16).upcase.rjust(8, '0')}"
-    puts "  CRC Valid: #{chunk.crc_valid? ? '✓' : '✗'}"
+    puts "  CRC: #{chunk.crc_expected}"
+    puts "  CRC Valid: #{chunk.valid_crc ? '✓' : '✗'}"
 
     # Display decoded data for specific chunks
-    if chunk.decoded_data
+    if chunk.data
       case chunk.type
       when "IHDR"
-        data = chunk.decoded_data
-        puts "  Width: #{data.width}"
-        puts "  Height: #{data.height}"
-        puts "  Color Type: #{data.color_type_name}"
+        # Extract IHDR data manually
+        width = chunk.data.bytes[0..3].pack("C*").unpack1("N")
+        height = chunk.data.bytes[4..7].pack("C*").unpack1("N")
+        bit_depth = chunk.data.bytes[8]
+        color_type = chunk.data.bytes[9]
+        puts "  Width: #{width}"
+        puts "  Height: #{height}"
+        puts "  Bit Depth: #{bit_depth}"
+        puts "  Color Type: #{color_type}"
       when "gAMA"
-        puts "  Gamma: #{chunk.decoded_data.gamma}"
+        gamma_value = chunk.data.bytes[0..3].pack("C*").unpack1("N")
+        puts "  Gamma: #{gamma_value / 100_000.0}"
       when "tEXt"
-        puts "  Keyword: #{chunk.decoded_data.keyword}"
-        puts "  Text: #{chunk.decoded_data.text[0..50]}..."
+        text = chunk.data.to_s
+        null_pos = text.index("\x00")
+        if null_pos
+          keyword = text[0...null_pos]
+          content = text[(null_pos + 1)..-1]
+          puts "  Keyword: #{keyword}"
+          puts "  Text: #{content[0..50]}..."
+        end
       end
     end
     puts
@@ -107,7 +124,6 @@ def batch_validation(directory)
   puts "Example 4: Batch Validation"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
   results = {
     valid: [],
     invalid: [],
@@ -115,7 +131,7 @@ def batch_validation(directory)
   }
 
   Dir.glob(File.join(directory, "*.png")).each do |file|
-    result = service.validate_file(file)
+    result = PngConform::Services::ValidationService.validate_file(file)
     if result.valid?
       results[:valid] << file
     else
@@ -146,8 +162,7 @@ def export_results(file_path, format = :yaml)
   puts "Example 5: Export Results (#{format.upcase})"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   case format
   when :yaml

@@ -90,24 +90,23 @@ module PngConform
         Readers::StreamingReader.open(file_path) do |reader|
           # Perform validation
           validator = Services::ValidationService.new(reader, file_path)
-          validation_result = validator.validate
+          file_analysis = validator.validate
 
           # Track if any errors were found
-          @errors_found = true unless validation_result.valid?
+          @errors_found = true unless file_analysis.valid?
 
           # Use reporter to output result
-          reporter.report(validation_result)
+          reporter.report(file_analysis)
 
-          # Show additional analysis based on format and options
-          # For text output (default), show features unless quiet mode
+          # For text output (default), show additional analysis unless quiet
           if (options[:format].nil? || options[:format] == "text") && !options[:quiet]
-            show_resolution_analysis(validation_result)
-            show_optimization_suggestions(validation_result)
+            show_resolution_analysis(file_analysis)
+            show_optimization_suggestions(file_analysis)
           end
 
-          # Explicit flags always show (even in YAML/JSON if requested)
-          show_metrics(validation_result) if options[:metrics]
-          show_mobile_readiness(validation_result) if options[:mobile_ready]
+          # Explicit flags always show
+          show_metrics(file_analysis) if options[:metrics]
+          show_mobile_readiness(file_analysis) if options[:mobile_ready]
         end
       rescue StandardError => e
         puts "Error processing #{file_path}: #{e.message}"
@@ -131,10 +130,9 @@ module PngConform
       end
 
       # Show optimization suggestions for the file
-      def show_optimization_suggestions(result)
-        analyzer = Analyzers::OptimizationAnalyzer.new(result)
-        analysis = analyzer.analyze
-
+      def show_optimization_suggestions(file_analysis)
+        analysis = file_analysis.optimization_analysis
+        return unless analysis && analysis[:suggestions]
         return if analysis[:suggestions].empty?
 
         puts "\n#{colorize('OPTIMIZATION SUGGESTIONS:', :bold)}"
@@ -157,17 +155,19 @@ module PngConform
       end
 
       # Show comprehensive metrics
-      def show_metrics(result)
-        analyzer = Analyzers::MetricsAnalyzer.new(result)
+      def show_metrics(file_analysis)
+        metrics = file_analysis.metrics
+        return unless metrics
 
         case options[:format]
         when "json"
-          puts analyzer.to_json
+          require "json"
+          puts JSON.pretty_generate(metrics)
         when "yaml"
-          puts analyzer.to_yaml
+          require "yaml"
+          puts metrics.to_yaml
         else
           # Text format with colored output
-          metrics = analyzer.analyze
           puts "\n#{colorize('METRICS:', :bold)}"
           puts "  File: #{metrics[:file][:filename]} (#{metrics[:file][:size_kb]} KB)"
           puts "  Image: #{metrics[:image][:dimensions]}, #{metrics[:image][:color_type_name]}, " \
@@ -179,9 +179,9 @@ module PngConform
       end
 
       # Show resolution and Retina analysis
-      def show_resolution_analysis(result)
-        analyzer = Analyzers::ResolutionAnalyzer.new(result)
-        analysis = analyzer.analyze
+      def show_resolution_analysis(file_analysis)
+        analysis = file_analysis.resolution_analysis
+        return unless analysis
 
         puts "\n#{colorize('RESOLUTION ANALYSIS:', :bold)}"
 
@@ -230,9 +230,9 @@ module PngConform
       end
 
       # Show mobile and Retina readiness
-      def show_mobile_readiness(result)
-        analyzer = Analyzers::ResolutionAnalyzer.new(result)
-        analysis = analyzer.analyze
+      def show_mobile_readiness(file_analysis)
+        analysis = file_analysis.resolution_analysis
+        return unless analysis
 
         puts "\n#{colorize('MOBILE & RETINA READINESS:', :bold)}"
 

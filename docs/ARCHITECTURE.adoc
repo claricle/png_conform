@@ -1,0 +1,681 @@
+= PngConform Architecture
+
+== Overview
+
+PngConform is a pure Ruby implementation of PNG/MNG/JNG validity checking with profile support. The architecture follows strict object-oriented principles, MECE (Mutually Exclusive, Collectively Exhaustive) design, and separation of concerns.
+
+== Core Architectural Principles
+
+=== Object-Oriented Design
+
+*Encapsulation*:: Each class has a single, well-defined responsibility
+*Inheritance*:: Chunk validators inherit from base classes with clear contracts
+*Polymorphism*:: Different chunk types implement common validation interfaces
+*Abstraction*:: Implementation details hidden behind clean interfaces
+
+=== MECE Structure
+
+Each layer and component has:
+
+* *Mutually Exclusive*: No overlap in responsibilities
+* *Collectively Exhaustive*: Complete coverage of the problem domain
+
+=== Separation of Concerns
+
+Clear boundaries between:
+
+* Binary parsing (BinData layer)
+* Domain modeling (Lutaml::Model layer)
+* Business logic (Validators)
+* Presentation (Reporters)
+* Interface (CLI)
+
+== Layered Architecture
+
+[source]
+----
+┌─────────────────────────────────────────────────────────────┐
+│                     Presentation Layer                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
+│  │  CLI (Thor)  │  │   Reporter   │  │ ColorOutput  │      │
+│  └──────────────┘  └──────────────┘  └──────────────┘      │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│                   Application/Service Layer                  │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │              ValidationService                        │   │
+│  │  • Orchestrates validation workflow                   │   │
+│  │  • Manages profiles                                   │   │
+│  │  • Coordinates validators                             │   │
+│  └──────────────────────────────────────────────────────┘   │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│                      Business Logic Layer                    │
+│  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐       │
+│  │  Validator  │  │    Profile   │  │ ChunkRegistry│       │
+│  │  (Base)     │  │              │  │              │       │
+│  └──────┬──────┘  └──────────────┘  └──────────────┘       │
+│         │                                                    │
+│  ┌──────▼──────────────────────────────────────────┐       │
+│  │         Chunk Validators                         │       │
+│  │  ┌────────────┐  ┌────────────┐  ┌───────────┐ │       │
+│  │  │ IHDRVal    │  │ PLTEVal    │  │ IDATVal   │ │       │
+│  │  └────────────┘  └────────────┘  └───────────┘ │       │
+│  │  ┌────────────┐  ┌────────────┐  ┌───────────┐ │       │
+│  │  │ bKGDVal    │  │ tRNSVal    │  │ MHDRVal   │ │       │
+│  │  └────────────┘  └────────────┘  └───────────┘ │       │
+│  │  ... (40+ chunk validators)                     │       │
+│  └──────────────────────────────────────────────────┘       │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│                      Domain Model Layer                      │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │          Models (Lutaml::Model)                       │   │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐     │   │
+│  │  │   Chunk    │  │   Result   │  │ Validation │     │   │
+│  │  │            │  │            │  │   Error    │     │   │
+│  │  └────────────┘  └────────────┘  └────────────┘     │   │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐     │   │
+│  │  │  ChunkData │  │  FileInfo  │  │  Profile   │     │   │
+│  │  │  (various) │  │            │  │  Config    │     │   │
+│  │  └────────────┘  └────────────┘  └────────────┘     │   │
+│  └──────────────────────────────────────────────────────┘   │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+┌───────────────────────────▼─────────────────────────────────┐
+│                  Binary Parsing Layer (BinData)              │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │          Binary Structures                            │   │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐     │   │
+│  │  │  PngFile   │  │  MngFile   │  │  JngFile   │     │   │
+│  │  └────────────┘  └────────────┘  └────────────┘     │   │
+│  │  ┌────────────┐  ┌────────────┐  ┌────────────┐     │   │
+│  │  │ChunkStruct │  │ IHDRStruct │  │ PLTEStruct │     │   │
+│  │  └────────────┘  └────────────┘  └────────────┘     │   │
+│  │  ... (40+ chunk structures)                          │   │
+│  └──────────────────────────────────────────────────────┘   │
+│  ┌──────────────────────────────────────────────────────┐   │
+│  │          File Readers                                 │   │
+│  │  ┌────────────┐  ┌────────────┐                      │   │
+│  │  │  Streaming │  │  FullLoad  │                      │   │
+│  │  │  Reader    │  │  Reader    │                      │   │
+│  │  └────────────┘  └────────────┘                      │   │
+│  └──────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+----
+
+== Module Structure
+
+=== Top-Level Module: `PngConform`
+
+All classes are namespaced under `PngConform` to avoid pollution of global namespace.
+
+[source,ruby]
+----
+module PngConform
+  # Binary parsing layer
+  module BinData
+    class PngFile < ::BinData::Record
+    class MngFile < ::BinData::Record
+    class ChunkStructure < ::BinData::Record
+    # ... chunk-specific structures
+  end
+
+  # Domain models
+  module Models
+    class Chunk < Lutaml::Model::Serializable
+    class Result < Lutaml::Model::Serializable
+    class ValidationError < Lutaml::Model::Serializable
+    class Profile < Lutaml::Model::Serializable
+  end
+
+  # Business logic - Validators
+  module Validators
+    class Base
+
+    module Critical
+      class IhdrValidator < Base
+      class PlteValidator < Base
+      class IdatValidator < Base
+      class IendValidator < Base
+    end
+
+    module Ancillary
+      class BkgdValidator < Base
+      class ChrmValidator < Base
+      # ... 30+ ancillary validators
+    end
+
+    module Apng
+      class ActlValidator < Base
+      class FctlValidator < Base
+      class FdatValidator < Base
+    end
+
+    module Mng
+      class MhdrValidator < Base
+      class MendValidator < Base
+      # ... MNG-specific validators
+    end
+
+    module Jng
+      class JhdrValidator < Base
+      class JdatValidator < Base
+      # ... JNG-specific validators
+    end
+  end
+
+  # Services/Application logic
+  module Services
+    class ValidationService
+    class ProfileManager
+    class ChunkRegistry
+  end
+
+  # Infrastructure
+  module Readers
+    class StreamingReader
+    class FullLoadReader
+  end
+
+  module Reporters
+    class PngcheckReporter
+    class VerboseReporter
+    class JsonReporter
+  end
+
+  # Presentation
+  class CLI < Thor
+end
+----
+
+== Core Classes and Responsibilities
+
+=== Binary Parsing Layer
+
+==== `PngConform::BinData::PngFile`
+
+*Responsibility*: Binary structure definition for PNG files
+
+*MECE*: Exclusively handles binary format definition
+
+* Signature validation
+* Chunk sequence structure
+* Endianness handling
+
+==== `PngConform::BinData::ChunkStructure`
+
+*Responsibility*: Generic chunk binary structure
+
+*MECE*: Exclusively handles chunk-level binary format
+
+* Length field (4 bytes, big-endian)
+* Type field (4 bytes, ASCII)
+* Data field (variable)
+* CRC field (4 bytes)
+
+==== `PngConform::Readers::StreamingReader`
+
+*Responsibility*: Memory-efficient chunk-by-chunk reading
+
+*MECE*: Exclusively handles streaming I/O
+
+* Reads chunks one at a time
+* Minimal memory footprint
+* Suitable for large files
+
+==== `PngConform::Readers::FullLoadReader`
+
+*Responsibility*: Load entire file into memory
+
+*MECE*: Exclusively handles full-file reading
+
+* Reads entire file at once
+* Faster for small/medium files
+* Enables random access to chunks
+
+=== Domain Model Layer
+
+==== `PngConform::Models::Chunk`
+
+*Responsibility*: Domain representation of a PNG chunk
+
+*MECE*: Exclusively represents chunk data in domain terms
+
+*Attributes*:
+
+* `type`: String (4-byte chunk type)
+* `length`: Integer (data length)
+* `data`: Binary string (chunk data)
+* `crc`: Integer (CRC-32 value)
+* `crc_valid`: Boolean (calculated)
+* `position`: Integer (file offset)
+
+==== `PngConform::Models::Result`
+
+*Responsibility*: Validation result aggregation
+
+*MECE*: Exclusively represents validation outcomes
+
+*Attributes*:
+
+* `file_info`: FileInfo (dimensions, color type, etc.)
+* `chunks`: Array<Chunk> (all chunks found)
+* `errors`: Array<ValidationError> (all errors)
+* `warnings`: Array<ValidationError> (all warnings)
+* `valid`: Boolean (overall validity)
+* `profile`: Profile (validation profile used)
+
+==== `PngConform::Models::ValidationError`
+
+*Responsibility*: Single validation error/warning
+
+*MECE*: Exclusively represents one validation issue
+
+*Attributes*:
+
+* `severity`: Symbol (:error, :warning, :info)
+* `chunk_type`: String (related chunk)
+* `message`: String (human-readable description)
+* `position`: Integer (file offset)
+* `code`: Symbol (error code for programmatic use)
+
+==== `PngConform::Models::Profile`
+
+*Responsibility*: Validation profile configuration
+
+*MECE*: Exclusively defines what's valid for a profile
+
+*Attributes*:
+
+* `name`: String (e.g., "PNG baseline", "MNG-VLC")
+* `required_chunks`: Array<String> (must be present)
+* `allowed_chunks`: Array<String> (may be present)
+* `forbidden_chunks`: Array<String> (must not be present)
+* `chunk_rules`: Hash (ordering, dependencies, etc.)
+
+=== Business Logic Layer
+
+==== `PngConform::Validators::Base`
+
+*Responsibility*: Common validator interface and utilities
+
+*MECE*: Exclusively provides validator infrastructure
+
+*Interface*:
+
+[source,ruby]
+----
+class Base
+  def validate(chunk, context)
+    # Returns array of ValidationError
+  end
+
+  protected
+
+  def error(message, code:, severity: :error)
+  def warning(message, code:)
+  def check_range(value, min, max, field_name)
+  def check_required_chunk(chunk_type, context)
+end
+----
+
+==== `PngConform::Validators::Critical::IhdrValidator`
+
+*Responsibility*: IHDR chunk validation
+
+*MECE*: Exclusively validates IHDR requirements
+
+*Validations*:
+
+* Width > 0 and <= 2^31-1
+* Height > 0 and <= 2^31-1
+* Bit depth valid for color type
+* Color type in allowed set (0,2,3,4,6)
+* Compression method = 0
+* Filter method = 0
+* Interlace method = 0 or 1
+* Must be first chunk after signature
+
+==== `PngConform::Services::ValidationService`
+
+*Responsibility*: Orchestrate validation workflow
+
+*MECE*: Exclusively coordinates validation process
+
+*Methods*:
+
+[source,ruby]
+----
+class ValidationService
+  def initialize(profile: :png_baseline)
+
+  def validate_file(path, streaming: false)
+    # Returns Result
+  end
+
+  def validate_io(io, streaming: false)
+    # Returns Result
+  end
+
+  private
+
+  def read_chunks(source, streaming)
+  def validate_signature(signature)
+  def validate_chunk_sequence(chunks)
+  def validate_individual_chunks(chunks)
+  def aggregate_results(chunks, errors)
+end
+----
+
+==== `PngConform::Services::ChunkRegistry`
+
+*Responsibility*: Map chunk types to validators
+
+*MECE*: Exclusively manages chunk type -> validator mapping
+
+*Methods*:
+
+[source,ruby]
+----
+class ChunkRegistry
+  def self.validator_for(chunk_type)
+    # Returns appropriate validator class
+  end
+
+  def self.register(chunk_type, validator_class)
+
+  def self.critical?(chunk_type)
+  def self.ancillary?(chunk_type)
+  def self.private?(chunk_type)
+  def self.safe_to_copy?(chunk_type)
+end
+----
+
+=== Presentation Layer
+
+==== `PngConform::Reporters::PngcheckReporter`
+
+*Responsibility*: Format output to match pngcheck exactly
+
+*MECE*: Exclusively handles pngcheck-compatible output
+
+*Methods*:
+
+[source,ruby]
+----
+class PngcheckReporter
+  def format(result, verbose: 0, color: false)
+    # Returns formatted string matching pngcheck output
+  end
+
+  private
+
+  def format_ok(result)
+  def format_errors(result)
+  def format_chunk_info(chunk, verbose_level)
+  def compression_ratio(result)
+end
+----
+
+==== `PngConform::CLI`
+
+*Responsibility*: Command-line interface
+
+*MECE*: Exclusively handles CLI concerns
+
+*Commands*:
+
+* `validate`: Validate PNG/MNG/JNG files
+* `version`: Show version
+* `help`: Show help
+
+*Options* (matching pngcheck):
+
+* `-v, --verbose`: Verbose output (can stack: -v, -vv, -vvv, -vvvv)
+* `-q, --quiet`: Quiet mode (errors only)
+* `-c, --color`: Colorized output
+* `-7`: Print tEXt chunks, escape chars >= 128
+* `-t`: Print tEXt chunks
+* `-p`: Print palette contents
+* `-s`: Search for PNGs within file
+* `-x`: Extract PNGs found by search
+* `-w`: Suppress windowBits warning
+
+== Data Flow
+
+=== Validation Flow
+
+[source]
+----
+1. File Input
+   ↓
+2. Reader Selection (Streaming vs FullLoad)
+   ↓
+3. Binary Parsing (BinData)
+   ↓
+4. Domain Model Creation (Chunk objects)
+   ↓
+5. Profile Loading (based on file type/user choice)
+   ↓
+6. Signature Validation
+   ↓
+7. Chunk Sequence Validation
+   ↓
+8. Individual Chunk Validation (parallel possible)
+   ↓
+9. Result Aggregation
+   ↓
+10. Reporter Formatting
+    ↓
+11. Output to Console/File
+----
+
+=== Chunk Validation Flow
+
+[source]
+----
+For each chunk:
+  1. Look up validator in ChunkRegistry
+  2. Parse chunk data into typed structure (BinData)
+  3. Create domain Chunk object
+  4. Invoke validator with chunk + context
+  5. Collect errors/warnings
+  6. Add to result
+----
+
+=== Context Object
+
+The validation context flows through the validation process:
+
+[source,ruby]
+----
+class ValidationContext
+  attr_reader :file_type        # :png, :mng, :jng
+  attr_reader :profile          # Profile object
+  attr_reader :seen_chunks      # Hash of chunk types seen
+  attr_reader :ihdr_data        # IHDR info (width, height, etc.)
+  attr_reader :has_plte         # Boolean
+  attr_reader :color_type       # Integer from IHDR
+  attr_reader :bit_depth        # Integer from IHDR
+  attr_reader :chunk_sequence   # Array of chunk types
+
+  def record_chunk(chunk)
+  def requires_plte?
+  def allows_plte?
+  def in_mng_top_level?
+end
+----
+
+== Profile System
+
+=== Profile Hierarchy
+
+[source]
+----
+Profile (Base)
+├── PngBaselineProfile
+├── PngExtendedProfile
+├── ApngProfile
+├── MngVlcProfile
+├── MngLcProfile
+├── MngFullProfile
+└── JngProfile
+----
+
+Each profile defines:
+
+. Required chunks (must appear)
+. Allowed chunks (may appear)
+. Forbidden chunks (must not appear)
+. Chunk ordering rules
+. Chunk dependency rules
+. Special validation rules
+
+=== Profile Configuration Example
+
+[source,ruby]
+----
+class PngBaselineProfile < Profile
+  def initialize
+    super("PNG Baseline")
+
+    @required_chunks = %w[IHDR IDAT IEND]
+
+    @allowed_chunks = %w[
+      PLTE bKGD cHRM gAMA hIST iCCP pHYs sBIT
+      sPLT sRGB tEXt tIME tRNS zTXt
+    ]
+
+    @chunk_rules = {
+      "IHDR" => { position: :first },
+      "PLTE" => { before: "IDAT", after: "IHDR" },
+      "IDAT" => { consecutive: true },
+      "IEND" => { position: :last }
+    }
+
+    @dependencies = {
+      "tRNS" => { requires_one_of: ["IHDR", "PLTE"] }
+    }
+  end
+end
+----
+
+== Extension Points
+
+The architecture supports extension through:
+
+. *New Chunk Validators*: Implement `Validators::Base`, register in `ChunkRegistry`
+. *New Profiles*: Subclass `Profile`, define rules
+. *New Reporters*: Implement reporter interface
+. *New Readers*: Implement reader interface
+
+== Error Handling Strategy
+
+. *Parse Errors*: Caught at BinData layer, converted to ValidationErrors
+. *Validation Errors*: Collected, not thrown (allows complete validation)
+. *I/O Errors*: Bubble up as exceptions (critical failures)
+. *CRC Errors*: Recorded as validation errors
+
+== Performance Considerations
+
+. *Streaming vs Full-Load*: User choice based on file size
+. *Lazy Validation*: Only validate requested verbosity level
+. *Parallel Validation*: Chunks validated independently (future optimization)
+. *Caching*: Profile objects cached, chunk structures reused
+
+== Testing Strategy
+
+. *Unit Tests*: Each validator class tested independently
+. *Integration Tests*: Full validation flows tested
+. *Fixture Tests*: Compare output with pngcheck reference
+. *Property Tests*: Generate valid/invalid PNGs programmatically
+. *Performance Tests*: Benchmark streaming vs full-load
+
+== Dependencies
+
+*Runtime*:
+
+* `bindata` (~> 2.5): Binary parsing
+* `lutaml-model` (~> 0.7): Domain models
+* `thor` (~> 1.0): CLI framework
+
+*Development*:
+
+* `rspec` (~> 3.0): Testing
+* `rubocop` (~> 1.0): Linting
+* `yard` (~> 0.9): Documentation
+
+== File Organization
+
+[source]
+----
+lib/png_conform/
+├── version.rb
+├── cli.rb
+├── bindata/
+│   ├── png_file.rb
+│   ├── mng_file.rb
+│   ├── jng_file.rb
+│   └── chunks/
+│       ├── ihdr_structure.rb
+│       ├── plte_structure.rb
+│       └── ... (40+ structures)
+├── models/
+│   ├── chunk.rb
+│   ├── result.rb
+│   ├── validation_error.rb
+│   ├── profile.rb
+│   ├── file_info.rb
+│   └── validation_context.rb
+├── validators/
+│   ├── base.rb
+│   ├── critical/
+│   │   ├── ihdr_validator.rb
+│   │   ├── plte_validator.rb
+│   │   ├── idat_validator.rb
+│   │   └── iend_validator.rb
+│   ├── ancillary/
+│   │   └── ... (30+ validators)
+│   ├── apng/
+│   │   └── ... (APNG validators)
+│   ├── mng/
+│   │   └── ... (MNG validators)
+│   └── jng/
+│       └── ... (JNG validators)
+├── services/
+│   ├── validation_service.rb
+│   ├── profile_manager.rb
+│   └── chunk_registry.rb
+├── readers/
+│   ├── streaming_reader.rb
+│   └── full_load_reader.rb
+├── reporters/
+│   ├── pngcheck_reporter.rb
+│   ├── verbose_reporter.rb
+│   └── json_reporter.rb
+└── profiles/
+    ├── png_baseline.rb
+    ├── png_extended.rb
+    ├── apng.rb
+    ├── mng_vlc.rb
+    ├── mng_lc.rb
+    └── jng.rb
+----
+
+== Summary
+
+This architecture provides:
+
+* ✅ *Strict OO*: Each class has single responsibility, clear interfaces
+* ✅ *MECE*: No overlapping responsibilities, complete coverage
+* ✅ *Separation of Concerns*: Clear layer boundaries
+* ✅ *Abstraction*: Implementation details hidden
+* ✅ *Extensibility*: Easy to add new chunks, profiles, reporters
+* ✅ *Testability*: Each component independently testable
+* ✅ *Maintainability*: Clear structure, well-documented
+* ✅ *Performance*: Both streaming and full-load modes
+* ✅ *Compatibility*: Output matches pngcheck exactly

@@ -1,0 +1,913 @@
+= CLI, API, and Environment Options Reference
+
+== Purpose
+
+Comprehensive reference for all command-line interface options, Ruby API methods, and environment variables in MECE (Mutually Exclusive, Collectively Exhaustive) organization.
+
+== Command-Line Interface (CLI)
+
+=== General
+
+All CLI commands follow the pattern:
+[source,shell]
+----
+png_conform COMMAND [OPTIONS] [ARGUMENTS]
+----
+
+=== Commands
+
+==== General
+
+Commands are mutually exclusive - use exactly one per invocation.
+
+==== check
+
+**Purpose**: Validate PNG/MNG/JNG files
+
+**Syntax**:
+[source,shell]
+----
+png_conform check [OPTIONS] FILE [FILE...]
+----
+
+**Arguments**:
+
+* `FILE`: Path to PNG/MNG/JNG file(s) to validate (required, multiple allowed)
+
+==== list
+
+**Purpose**: Display available validation profiles
+
+**Syntax**:
+[source,shell]
+----
+png_conform list
+----
+
+**Arguments**: None
+
+==== version
+
+**Purpose**: Display version information
+
+**Syntax**:
+[source,shell]
+----
+png_conform version
+----
+
+**Arguments**: None
+
+=== Options
+
+==== General
+
+Options are organized by category in MECE structure.
+
+==== Output Format Options
+
+Mutually exclusive - select exactly one:
+
+`-f, --format FORMAT`::
+Output format selection
++
+**Values**: `text` (default), `yaml`, `json`
++
+**Default**: `text`
++
+**Example**:
+[source,shell]
+----
+png_conform check --format yaml image.png
+png_conform check --format json image.png
+----
+
+==== Verbosity Options
+
+Mutually exclusive - select at most one:
+
+`-v, --verbose`::
+Display chunk-level information
++
+**Example**:
+[source,shell]
+----
+png_conform check --verbose image.png
+# Shows: chunk list with offsets and sizes
+----
+
+`-vv, --very-verbose`::
+Display detailed chunk data including filters
++
+**Example**:
+[source,shell]
+----
+png_conform check --very-verbose image.png
+# Shows: chunks + filter details
+----
+
+`-q, --quiet`::
+Suppress all output except errors
++
+**Example**:
+[source,shell]
+----
+png_conform check --quiet images/*.png
+# Only shows files with errors
+----
+
+==== Display Enhancement Options
+
+Can be combined:
+
+`--no-color`::
+Disable colored output
++
+**Default**: Colors enabled
++
+**Example**:
+[source,shell]
+----
+png_conform check --no-color image.png
+----
+
+`-p, --palette`::
+Display palette, transparency, and histogram chunks
++
+**Example**:
+[source,shell]
+----
+png_conform check --palette indexed.png
+----
+
+`-t, --text`::
+Display text chunk contents
++
+**Example**:
+[source,shell]
+----
+png_conform check --text image.png
+# Shows: tEXt, zTXt, iTXt chunks
+----
+
+`-7, --seven-bit`::
+Escape characters >= 128 for 7-bit terminals
++
+**Used with**: `-t` or `-p`
+
+==== Validation Profile Options
+
+Mutually exclusive - select at most one:
+
+`--profile PROFILE`::
+Use specific validation profile
++
+**Values**: `minimal`, `web`, `print`, `archive`, `strict`, `default`
++
+**Example**:
+[source,shell]
+----
+png_conform check --profile web image.png
+png_conform check --profile print document.png
+----
+
+`--strict`::
+Shortcut for `--profile strict`
++
+**Equivalent to**: `--profile strict`
+
+==== Analysis Options
+
+Can be combined:
+
+`--resolution`::
+Show resolution and Retina analysis
++
+**Shows**: @1x/@2x/@3x calculations, iOS/Android suggestions, DPI info
++
+**Default**: Enabled for text output
++
+**Example**:
+[source,shell]
+----
+png_conform check --resolution icon@2x.png
+----
+
+`--optimize`::
+Show file size optimization suggestions
++
+**Shows**: Chunk removal, bit depth reduction, palette conversion opportunities
++
+**Default**: Enabled for text output
++
+**Example**:
+[source,shell]
+----
+png_conform check --optimize large-photo.png
+----
+
+`--metrics`::
+Display comprehensive metrics
++
+**Shows**: File, image, chunk, validation, compression, and quality metrics
++
+**Formats**: Text, JSON, YAML
++
+**Example**:
+[source,shell]
+----
+png_conform check --metrics --format json image.png
+----
+
+`--mobile-ready`::
+Check mobile and Retina readiness
++
+**Shows**: Overall readiness, retina densities, screen coverage, load time
++
+**Example**:
+[source,shell]
+----
+png_conform check --mobile-ready app-icon.png
+----
+
+==== Option Combinations
+
+===== Common Combinations
+
+**Quiet mode** (errors only):
+[source,shell]
+----
+png_conform check -q images/*.png
+----
+
+**Comprehensive analysis**:
+[source,shell]
+----
+png_conform check --verbose --metrics --resolution image.png
+----
+
+**CI/CD mode**:
+[source,shell]
+----
+png_conform check --format json --metrics images/*.png > report.json
+----
+
+**Mobile development**:
+[source,shell]
+----
+png_conform check --mobile-ready icons/*.png
+----
+
+===== Invalid Combinations
+
+**Conflicting verbosity**:
+[source,shell]
+----
+png_conform check -q -v image.png
+# Warning: --quiet and --verbose are mutually exclusive, using --quiet
+----
+
+**Conflicting formats**:
+[source,shell]
+----
+png_conform check --format yaml --format json image.png
+# Error: Only one format allowed
+----
+
+== Ruby API
+
+=== General
+
+Object-oriented API for programmatic integration.
+
+=== Validation Service
+
+==== General
+
+Main entry point for validation.
+
+==== Basic Usage
+
+[source,ruby]
+----
+require "png_conform"
+
+# Validate a file
+service = PngConform::Services::ValidationService.new
+result = service.validate_file("image.png")
+
+# Check if valid
+if result.valid?
+  puts "File is valid"
+else
+  puts "Errors: #{result.error_count}"
+end
+----
+
+==== Methods
+
+`ValidationService.validate_file(filepath)`::
+Class method for quick validation
++
+**Parameters**: `filepath` (String)
++
+**Returns**: FileAnalysis object
++
+**Example**:
+[source,ruby]
+----
+result = PngConform::Services::ValidationService.validate_file("image.png")
+----
+
+`ValidationService#validate`::
+Instance method for validation with reader
++
+**Returns**: FileAnalysis object
++
+**Example**:
+[source,ruby]
+----
+reader = PngConform::Readers::StreamingReader.new("image.png")
+service = PngConform::Services::ValidationService.new(reader)
+result = service.validate
+----
+
+=== FileAnalysis Object
+
+==== General
+
+Complete analysis result with validation, image info, and analyzer results.
+
+==== Attributes
+
+`file_path`::
+Path to analyzed file (String)
+
+`file_size`::
+File size in bytes (Integer)
+
+`file_type`::
+File type: "PNG", "MNG", "JNG" (String)
+
+`validation_result`::
+Detailed validation results (ValidationResult object)
+
+`image_info`::
+Image dimensions and properties (ImageInfo object)
+
+`compression_info`::
+Compression statistics (CompressionInfo object)
+
+`resolution_analysis`::
+Resolution and Retina analysis (Hash)
+
+`optimization_analysis`::
+File size optimization suggestions (Hash)
+
+`metrics`::
+Comprehensive metrics for CI/CD (Hash)
+
+==== Methods
+
+`valid?`::
+Check if file passed validation (Boolean)
+
+`error_count`::
+Number of errors found (Integer)
+
+`warning_count`::
+Number of warnings found (Integer)
+
+`chunks`::
+Array of chunks in file (Array<Chunk>)
+
+`to_h`::
+Convert to hash for serialization (Hash)
+
+=== Profile Manager
+
+==== General
+
+Manages validation profiles.
+
+==== Methods
+
+`ProfileManager.profile_exists?(name)`::
+Check if profile exists
++
+**Parameters**: `name` (String or Symbol)
++
+**Returns**: Boolean
+
+`ProfileManager.available_profiles`::
+List all available profiles
++
+**Returns**: Array<String>
+
+`ProfileManager#load_profile(name)`::
+Load specific profile
++
+**Parameters**: `name` (String)
++
+**Returns**: Profile object
+
+=== Analyzers
+
+==== General
+
+Analyzers compute specific analysis from validation results.
+
+==== ResolutionAnalyzer
+
+[source,ruby]
+----
+analyzer = PngConform::Analyzers::ResolutionAnalyzer.new(file_analysis)
+analysis = analyzer.analyze
+
+# Access Retina info
+retina = analysis[:retina]
+puts "At @2x: #{retina[:at_2x][:dimensions_pt]}"
+puts "iOS: #{retina[:ios_asset_catalog].join(', ')}"
+----
+
+==== OptimizationAnalyzer
+
+[source,ruby]
+----
+analyzer = PngConform::Analyzers::OptimizationAnalyzer.new(file_analysis)
+analysis = analyzer.analyze
+
+# Get suggestions
+analysis[:suggestions].each do |suggestion|
+  puts "[#{suggestion[:priority]}] #{suggestion[:description]}"
+  puts "Savings: #{suggestion[:savings_bytes]} bytes"
+end
+----
+
+==== MetricsAnalyzer
+
+[source,ruby]
+----
+analyzer = PngConform::Analyzers::MetricsAnalyzer.new(file_analysis)
+metrics = analyzer.analyze
+
+# Access metrics
+puts "File: #{metrics[:file][:size_kb]} KB"
+puts "Image: #{metrics[:image][:dimensions]}"
+puts "Chunks: #{metrics[:chunks][:total_count]}"
+----
+
+==== ComparisonAnalyzer
+
+[source,ruby]
+----
+result1 = service.validate_file("before.png")
+result2 = service.validate_file("after.png")
+
+analyzer = PngConform::Analyzers::ComparisonAnalyzer.new(result1, result2)
+comparison = analyzer.analyze
+
+# Check differences
+puts comparison[:files][:size_change]
+puts "Chunks added: #{comparison[:chunks][:added].join(', ')}"
+----
+
+== Environment Variables
+
+=== General
+
+Environment variables for runtime configuration.
+
+=== Available Variables
+
+`PNGCONFORM_DEFAULT_PROFILE`::
+Set default validation profile
++
+**Values**: Profile names (`minimal`, `web`, `print`, `archive`, `strict`, `default`)
++
+**Default**: `default`
++
+**Example**:
+[source,shell]
+----
+export PNGCONFORM_DEFAULT_PROFILE=web
+png_conform check image.png  # Uses web profile
+----
+
+`PNGCONFORM_COLOR`::
+Enable/disable colored output
++
+**Values**: `true`, `false`, `1`, `0`
++
+**Default**: `true`
++
+**Example**:
+[source,shell]
+----
+export PNGCONFORM_COLOR=false
+png_conform check image.png  # No colors
+----
+
+`PNGCONFORM_FORMAT`::
+Set default output format
++
+**Values**: `text`, `yaml`, `json`
++
+**Default**: `text`
++
+**Example**:
+[source,shell]
+----
+export PNGCONFORM_FORMAT=json
+png_conform check image.png  # JSON output
+----
+
+== Option Precedence
+
+=== General
+
+When the same option is specified multiple ways, precedence is:
+
+. Command-line flags (highest priority)
+. Environment variables
+. Configuration files (if implemented)
+. Built-in defaults (lowest priority)
+
+=== Examples
+
+[example]
+====
+[source,shell]
+----
+# Environment variable
+export PNGCONFORM_FORMAT=yaml
+
+# Command-line flag overrides
+png_conform check --format json image.png
+# Output: JSON (flag wins)
+----
+====
+
+== Exit Codes
+
+=== General
+
+PngConform uses standard Unix exit codes.
+
+=== Exit Code Values
+
+`0`::
+Success - all files valid
+
+`1`::
+Failure - one or more files invalid or error occurred
+
+`2`::
+Usage error - invalid command or options
+
+=== Examples
+
+[example]
+====
+[source,shell]
+----
+#!/bin/bash
+png_conform check image.png
+if [ $? -eq 0 ]; then
+  echo "Valid"
+else
+  echo "Invalid or error"
+fi
+----
+====
+
+== Configuration
+
+=== Validation Profiles
+
+==== General
+
+Profiles define validation requirements for different use cases.
+
+==== Available Profiles
+
+`minimal`::
+Basic PNG structure validation
++
+**Required**: IHDR, IDAT, IEND
++
+**Use Case**: Minimal valid PNG checking
+
+`web`::
+Browser-optimized validation
++
+**Required**: IHDR, IDAT, IEND
++
+**Optional**: gAMA, sRGB, pHYs, tEXt, zTXt, iTXt, tIME, bKGD, tRNS, PLTE
++
+**Prohibited**: iCCP, cHRM, sBIT
++
+**Use Case**: Web-ready images
+
+`print`::
+Print-quality validation
++
+**Required**: IHDR, IDAT, IEND, pHYs
++
+**Optional**: gAMA, sRGB, cHRM, iCCP, sBIT, tEXt, zTXt, iTXt, tIME, bKGD, tRNS, PLTE
++
+**Use Case**: Print-ready images with physical dimensions
+
+`archive`::
+Long-term preservation
++
+**Required**: IHDR, IDAT, IEND, tIME
++
+**Optional**: All standard chunks
++
+**Use Case**: Archival storage with complete metadata
+
+`strict`::
+Full specification compliance
++
+**Required**: IHDR, IDAT, IEND
++
+**Optional**: All standard PNG chunks
++
+**Prohibited**: Unknown chunks
++
+**Use Case**: Strict spec compliance
+
+`default`::
+Permissive validation
++
+**Required**: IHDR, IDAT, IEND
++
+**Optional**: All chunks
++
+**Prohibited**: None
++
+**Use Case**: General validation
+
+== Complete Option Matrix
+
+=== Validation Options
+
+[cols="2,3,2,3",options="header"]
+|===
+|Category |Option |Type |Purpose
+
+|Format
+|`--format FORMAT`
+|Choice
+|Output format (text/yaml/json)
+
+|Verbosity
+|`-v, --verbose`
+|Flag
+|Show chunk details
+
+|Verbosity
+|`-vv, --very-verbose`
+|Flag
+|Show filter details
+
+|Verbosity
+|`-q, --quiet`
+|Flag
+|Errors only
+
+|Display
+|`--no-color`
+|Flag
+|Disable colors
+
+|Display
+|`-p, --palette`
+|Flag
+|Show palette
+
+|Display
+|`-t, --text`
+|Flag
+|Show text chunks
+
+|Display
+|`-7, --seven-bit`
+|Flag
+|Escape high chars
+
+|Profile
+|`--profile PROFILE`
+|Choice
+|Validation profile
+
+|Profile
+|`--strict`
+|Flag
+|Strict mode
+
+|Analysis
+|`--resolution`
+|Flag
+|Retina analysis
+
+|Analysis
+|`--optimize`
+|Flag
+|Optimization tips
+
+|Analysis
+|`--metrics`
+|Flag
+|Comprehensive metrics
+
+|Analysis
+|`--mobile-ready`
+|Flag
+|Mobile readiness check
+|===
+
+=== Option Categories (MECE)
+
+==== Output Control
+
+Determines what gets output and how:
+
+* Format selection (`--format`)
+* Verbosity level (`-v`, `-vv`, `-q`)
+* Color control (`--no-color`)
+
+==== Content Selection
+
+Determines which content to display:
+
+* Palette display (`-p`)
+* Text chunks (`-t`)
+* Character encoding (`-7`)
+
+==== Validation Mode
+
+Determines validation strictness:
+
+* Profile selection (`--profile`)
+* Strict mode (`--strict`)
+
+==== Analysis Features
+
+Determines which analysis to perform:
+
+* Resolution analysis (`--resolution`)
+* Optimization analysis (`--optimize`)
+* Metrics generation (`--metrics`)
+* Mobile readiness (`--mobile-ready`)
+
+== Ruby API Reference
+
+=== Modules and Classes
+
+==== Module Hierarchy
+
+[source]
+----
+PngConform
+├── Services
+│   ├── ValidationService
+│   └── ProfileManager
+├── Analyzers
+│   ├── ResolutionAnalyzer
+│   ├── OptimizationAnalyzer
+│   ├── MetricsAnalyzer
+│   └── ComparisonAnalyzer
+├── Models
+│   ├── FileAnalysis
+│   ├── ValidationResult
+│   ├── ImageInfo
+│   └── ...
+└── Reporters
+    ├── YamlReporter
+    ├── JsonReporter
+    └── ...
+----
+
+=== Complete API Methods (MECE)
+
+==== Validation Operations
+
+`ValidationService.validate_file(path)`::
+Validate file by path
++
+**Returns**: FileAnalysis
+
+`ValidationService#validate`::
+Validate with custom reader
++
+**Returns**: FileAnalysis
+
+==== Profile Operations
+
+`ProfileManager.profile_exists?(name)`::
+Check profile existence
++
+**Returns**: Boolean
+
+`ProfileManager.available_profiles`::
+List all profiles
++
+**Returns**: Array<String>
+
+`ProfileManager#load_profile(name)`::
+Load specific profile
++
+**Returns**: Profile
+
+==== Analysis Operations
+
+`ResolutionAnalyzer#analyze`::
+Compute resolution analysis
++
+**Returns**: Hash
+
+`OptimizationAnalyzer#analyze`::
+Compute optimization suggestions
++
+**Returns**: Hash
+
+`MetricsAnalyzer#analyze`::
+Compute comprehensive metrics
++
+**Returns**: Hash
+
+`ComparisonAnalyzer#analyze`::
+Compare two files
++
+**Returns**: Hash
+
+==== Reporting Operations
+
+`Reporter#report(file_analysis)`::
+Generate formatted output
++
+**Input**: FileAnalysis
++
+**Output**: Formatted string
+
+== Usage Patterns
+
+=== By Use Case
+
+==== Web Development
+
+[source,shell]
+----
+# Validation
+png_conform check --profile web --optimize images/*.png
+
+# Get metrics for CI
+png_conform check --format json --metrics images/*.png > metrics.json
+----
+
+==== Mobile Development
+
+[source,shell]
+----
+# Check Retina readiness
+png_conform check --mobile-ready icons/*.png
+
+# Verify icon sizes
+png_conform check --resolution icon@2x.png
+----
+
+==== Quality Assurance
+
+[source,shell]
+----
+# Comprehensive validation
+png_conform check -vv --metrics test-images/*.png
+
+# Compare before/after
+png_conform check original.png
+png_conform check optimized.png
+----
+
+==== Print Production
+
+[source,shell]
+----
+# Check print readiness
+png_conform check --profile print --resolution document.png
+----
+
+==== Archival
+
+[source,shell]
+----
+# Verify complete metadata
+png_conform check --profile archive -t archive/*.png
+----
+
+== See Also
+
+* link:../README.adoc[PngConform Documentation]
+* link:CHUNK_TYPES.adoc[Chunk Types Reference]
+* link:COMPATIBILITY.adoc[Tool Compatibility]

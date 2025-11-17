@@ -36,6 +36,17 @@ module PngConform
         parts << (animated ? "animated" : "static")
         parts.join(", ")
       end
+
+      # Convert to hash for serialization
+      def to_h
+        {
+          "width" => width,
+          "height" => height,
+          "bit_depth" => bit_depth,
+          "color_type" => color_type,
+          "interlaced" => interlaced,
+        }.compact
+      end
     end
   end
 end

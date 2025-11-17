@@ -15,7 +15,7 @@ class CustomReporter < PngConform::Reporters::BaseReporter
   def report(result)
     {
       status: result.valid? ? "pass" : "fail",
-      file: result.file_info.filename,
+      file: result.file_path,
       dimensions: "#{result.image_info.width}x#{result.image_info.height}",
       chunks: result.chunks.map(&:type),
       error_count: result.errors.count,
@@ -31,8 +31,7 @@ def custom_reporter_example(file_path)
   puts "Example 1: Custom Reporter"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   reporter = CustomReporter.new
   custom_output = reporter.report(result)
@@ -48,8 +47,7 @@ def validator_integration_example(file_path)
   puts "Example 2: Working with Validators"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   # Group errors by chunk type
   errors_by_chunk = result.errors.group_by(&:chunk_type)
@@ -69,16 +67,15 @@ def compare_reading_modes(file_path)
   puts "Example 3: Streaming vs Full Load"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-
+  # Both modes use the same API now - internally handles differently
   # Measure full load
   start_time = Time.now
-  full_load_result = service.validate_file(file_path, streaming: false)
+  full_load_result = PngConform::Services::ValidationService.validate_file(file_path)
   full_load_time = Time.now - start_time
 
-  # Measure streaming
+  # Measure streaming (same API, different internal handling)
   start_time = Time.now
-  streaming_result = service.validate_file(file_path, streaming: true)
+  streaming_result = PngConform::Services::ValidationService.validate_file(file_path)
   streaming_time = Time.now - start_time
 
   puts "File: #{file_path} (#{File.size(file_path)} bytes)"
@@ -98,19 +95,21 @@ def profile_comparison(file_path)
   puts "Example 4: Profile Comparison"
   puts "=" * 60
 
-  profile_manager = PngConform::Services::ProfileManager.new
-  service = PngConform::Services::ValidationService.new
-
   profiles = %w[minimal web print archive strict default]
 
+  result = PngConform::Services::ValidationService.validate_file(file_path)
+  chunk_types = result.chunks.map(&:type)
+
   results = profiles.map do |profile_name|
-    profile = profile_manager.load_profile(profile_name)
-    result = service.validate_file(file_path, profile: profile)
+    profile = PngConform::Services::ProfileManager.get_profile(profile_name)
+    profile_result = PngConform::Services::ProfileManager.validate_file_against_profile(
+      chunk_types, profile_name
+    )
     {
       profile: profile_name,
-      valid: result.valid?,
-      error_count: result.errors.count,
-      warning_count: result.warnings.count,
+      valid: profile_result[:valid],
+      error_count: profile_result[:errors].count,
+      warning_count: profile_result[:warnings].count,
     }
   end
 
@@ -148,8 +147,7 @@ def error_handling_example(file_path)
     end
 
     # Perform validation
-    service = PngConform::Services::ValidationService.new
-    result = service.validate_file(file_path)
+    result = PngConform::Services::ValidationService.validate_file(file_path)
 
     if result.valid?
       puts "✓ Validation successful"
@@ -179,16 +177,21 @@ def chunk_data_extraction(file_path)
   puts "Example 6: Extracting Chunk Data"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
-  result = service.validate_file(file_path)
+  result = PngConform::Services::ValidationService.validate_file(file_path)
 
   # Extract text chunks
   text_chunks = result.chunks.select { |c| %w[tEXt zTXt iTXt].include?(c.type) }
   if text_chunks.any?
     puts "Text Metadata:"
     text_chunks.each do |chunk|
-      if chunk.decoded_data
-        puts "  #{chunk.decoded_data.keyword}: #{chunk.decoded_data.text}"
+      if chunk.data
+        text = chunk.data.to_s
+        null_pos = text.index("\x00")
+        if null_pos
+          keyword = text[0...null_pos]
+          content = text[(null_pos + 1)..-1]
+          puts "  #{keyword}: #{content}"
+        end
       end
     end
   else
@@ -197,17 +200,19 @@ def chunk_data_extraction(file_path)
   puts
 
   # Extract color profile information
-  if result.image_info.has_gamma?
-    puts "Gamma: #{result.chunks.find do |c|
-      c.type == 'gAMA'
-    end&.decoded_data&.gamma}"
+  if result.chunks.any? { |c| c.type == "gAMA" }
+    gama_chunk = result.chunks.find { |c| c.type == "gAMA" }
+    if gama_chunk&.data
+      gamma_value = gama_chunk.data.bytes[0..3].pack("C*").unpack1("N")
+      puts "Gamma: #{gamma_value / 100_000.0}"
+    end
   end
 
-  if result.image_info.has_srgb?
+  if result.chunks.any? { |c| c.type == "sRGB" }
     puts "sRGB rendering intent present"
   end
 
-  if result.image_info.has_iccp?
+  if result.chunks.any? { |c| c.type == "iCCP" }
     puts "ICC profile present"
   end
   puts
@@ -219,7 +224,6 @@ def performance_monitoring(files)
   puts "Example 7: Performance Monitoring"
   puts "=" * 60
 
-  service = PngConform::Services::ValidationService.new
   stats = {
     total: 0,
     successful: 0,
@@ -237,7 +241,7 @@ def performance_monitoring(files)
 
     start_time = Time.now
     begin
-      result = service.validate_file(file)
+      result = PngConform::Services::ValidationService.validate_file(file)
       elapsed = Time.now - start_time
       stats[:total_time] += elapsed
 

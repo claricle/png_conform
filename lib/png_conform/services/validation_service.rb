@@ -2,6 +2,12 @@
 
 require_relative "../validators/chunk_registry"
 require_relative "../models/validation_result"
+require_relative "../models/file_analysis"
+require_relative "../models/image_info"
+require_relative "../models/compression_info"
+require_relative "../analyzers/resolution_analyzer"
+require_relative "../analyzers/optimization_analyzer"
+require_relative "../analyzers/metrics_analyzer"
 
 module PngConform
   module Services
@@ -47,12 +53,12 @@ module PngConform
       # This is the main entry point for validation. It processes all chunks
       # in order, validates them, and collects the results.
       #
-      # @return [ValidationResult] Aggregated validation results
+      # @return [FileAnalysis] Complete file analysis with all data
       def validate
         validate_signature
         validate_chunks
         validate_chunk_sequence
-        build_result
+        build_file_analysis
       end
 
       # Validate PNG signature
@@ -173,14 +179,41 @@ module PngConform
         add_error("Missing IDAT chunk (at least one required)")
       end
 
-      # Build final validation result
+      # Build complete FileAnalysis with validation results and analyzer data
       #
-      # Aggregates errors from two sources:
-      # 1. @results - errors added directly by ValidationService
-      # 2. context - errors added by validators during validation
+      # Proper Model → Formatter pattern
+      # - Builds ValidationResult (legacy)
+      # - Extracts ImageInfo and CompressionInfo
+      # - Runs all analyzers HERE (not in reporters)
+      # - Returns complete FileAnalysis model
       #
-      # @return [ValidationResult] Aggregated results
-      def build_result
+      # @return [FileAnalysis] Complete analysis model
+      def build_file_analysis
+        # First build the ValidationResult (legacy structure)
+        validation_result = build_validation_result
+
+        # Extract image info from IHDR
+        image_info = extract_image_info(validation_result)
+
+        # Build complete FileAnalysis
+        Models::FileAnalysis.new.tap do |analysis|
+          analysis.file_path = @filepath || "unknown"
+          analysis.file_size = validation_result.file_size
+          analysis.file_type = validation_result.file_type
+          analysis.validation_result = validation_result
+          # chunks delegated to validation_result (no need to set)
+          analysis.image_info = image_info
+          analysis.compression_info = extract_compression_info(validation_result)
+
+          # Run analyzers HERE (proper Model → Formatter pattern)
+          analysis.resolution_analysis = run_resolution_analysis(validation_result)
+          analysis.optimization_analysis = run_optimization_analysis(validation_result)
+          analysis.metrics = run_metrics_analysis(validation_result)
+        end
+      end
+
+      # Build ValidationResult (original method renamed)
+      def build_validation_result
         Models::ValidationResult.new.tap do |result|
           # Set file metadata
           result.filename = @filepath || "unknown"
@@ -351,6 +384,70 @@ module PngConform
           # If decompression fails, we can't calculate ratio
           # Return 0.0 instead of nil so it appears in YAML/JSON
           0.0
+        end
+      end
+
+      # Extract ImageInfo from IHDR chunk
+      def extract_image_info(result)
+        ihdr = result.ihdr_chunk
+        return nil unless ihdr&.data && ihdr.data.bytesize >= 13
+
+        width = ihdr.data.bytes[0..3].pack("C*").unpack1("N")
+        height = ihdr.data.bytes[4..7].pack("C*").unpack1("N")
+        bit_depth = ihdr.data.bytes[8]
+        color_type = ihdr.data.bytes[9]
+        interlace = ihdr.data.bytes[12]
+
+        Models::ImageInfo.new.tap do |info|
+          info.width = width
+          info.height = height
+          info.bit_depth = bit_depth
+          info.color_type = color_type_name(color_type)
+          info.interlaced = interlace == 1
+          info.animated = false # Could check for APNG chunks
+        end
+      end
+
+      # Extract CompressionInfo
+      def extract_compression_info(result)
+        return nil unless result.compression_ratio
+
+        Models::CompressionInfo.new.tap do |info|
+          info.compression_ratio = result.compression_ratio
+          info.compressed_size = result.chunks.select { |c| c.type == "IDAT" }.sum(&:length)
+        end
+      end
+
+      # Run resolution analyzer
+      def run_resolution_analysis(result)
+        Analyzers::ResolutionAnalyzer.new(result).analyze
+      rescue StandardError => e
+        { error: "Resolution analysis failed: #{e.message}" }
+      end
+
+      # Run optimization analyzer
+      def run_optimization_analysis(result)
+        Analyzers::OptimizationAnalyzer.new(result).analyze
+      rescue StandardError => e
+        { error: "Optimization analysis failed: #{e.message}" }
+      end
+
+      # Run metrics analyzer
+      def run_metrics_analysis(result)
+        Analyzers::MetricsAnalyzer.new(result).analyze
+      rescue StandardError => e
+        { error: "Metrics analysis failed: #{e.message}" }
+      end
+
+      # Helper to convert color type code to name
+      def color_type_name(code)
+        case code
+        when 0 then "grayscale"
+        when 2 then "truecolor"
+        when 3 then "palette"
+        when 4 then "grayscale+alpha"
+        when 6 then "truecolor+alpha"
+        else "unknown"
         end
       end
     end
