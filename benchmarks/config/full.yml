@@ -1,0 +1,32 @@
+# Full benchmark configuration - comprehensive testing
+
+# Files to test (all files)
+test_files:
+  pattern: "spec/fixtures/pngsuite/**/*.png"
+  exclude: []
+  limit: null  # Test all files
+
+# More iterations for statistical significance
+iterations: 5
+warmup_runs: 2
+
+timeout: 30
+
+# Tool configuration
+tools:
+  png_conform:
+    enabled: true
+    options:
+      cli_options: ["--quiet"]
+
+  pngcheck:
+    enabled: true
+    options:
+      cli_options: ["-q"]
+
+# Output configuration
+output:
+  format: "text"
+  file: "results/full_benchmark.txt"
+  verbose: true
+  include_raw_data: true

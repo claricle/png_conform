@@ -1,0 +1,570 @@
+= PNG Validation Benchmark Suite
+
+== Purpose
+
+This benchmark suite compares the performance of [`png_conform`](../README.adoc) against [`pngcheck`](https://github.com/pnggroup/pngcheck), focusing on execution time and memory usage metrics.
+
+The benchmark suite measures real-world performance differences between the pure Ruby implementation (png_conform) and the native C implementation (pngcheck) when validating PNG files.
+
+== Features
+
+* *Performance Comparison*: Measures execution time and memory usage
+* *Statistical Analysis*: Calculates mean, median, standard deviation, min/max
+* *Multiple Output Formats*: Text, JSON, CSV, and Markdown reports
+* *Configurable Testing*: YAML-based configuration for flexible benchmark runs
+* *Progress Tracking*: Real-time progress indicators during execution
+* *Warmup Runs*: Eliminates cold start effects for accurate measurements
+
+== Architecture
+
+.Benchmark System Components
+[source]
+----
+run_benchmark.rb (CLI)
+        │
+        └─► BenchmarkRunner (Orchestrator)
+                │
+                ├─► PngConformRunner
+                ├─► PngcheckRunner
+                ├─► MetricsCollector
+                └─► ReportGenerator
+----
+
+=== Component Responsibilities
+
+`run_benchmark.rb`:: Command-line interface with option parsing
+`BenchmarkRunner`:: Coordinates file discovery, tool execution, and reporting
+`ToolRunner`:: Base class for tool execution with performance measurement
+`PngConformRunner`:: Executes [`png_conform`](../exe/png_conform) CLI
+`PngcheckRunner`:: Executes system `pngcheck` binary
+`MetricsCollector`:: Gathers and analyzes performance statistics
+`ReportGenerator`:: Formats output in multiple formats
+
+== Installation
+
+=== Prerequisites
+
+Ensure both tools are available:
+
+[source,shell]
+----
+# png_conform (from project root)
+bundle install
+
+# pngcheck (system binary)
+brew install pngcheck  # macOS
+# or
+apt-get install pngcheck  # Linux
+----
+
+=== Verify Installation
+
+[source,shell]
+----
+# Check png_conform
+./exe/png_conform --version
+
+# Check pngcheck
+which pngcheck
+pngcheck -h
+----
+
+== Usage
+
+=== Basic Usage
+
+Run default benchmark with all PNG files in the test suite:
+
+[source,shell]
+----
+./benchmarks/run_benchmark.rb
+----
+
+.Default benchmark output
+[example]
+====
+[source,shell]
+----
+$ ./benchmarks/run_benchmark.rb
+Initializing benchmark...
+Checking tool availability...
+  ✓ png_conform is available
+  ✓ pngcheck is available
+
+Found 177 PNG files to test
+
+Running benchmarks...
+  Iterations: 3
+  Warmup runs: 1
+
+Benchmarking png_conform...
+  [========================================] 100.0% (1062/1062) png_conform
+
+Benchmarking pngcheck...
+  [========================================] 100.0% (1062/1062) pngcheck
+
+Generating report...
+
+================================================================================
+PNG Validation Tool Benchmark Comparison
+================================================================================
+
+Configuration:
+  Files tested:     177 PNG files
+  Total runs:       1062
+
+Tools:
+  png_conform: 531/531 successful
+  pngcheck: 531/531 successful
+
+--------------------------------------------------------------------------------
+PERFORMANCE SUMMARY
+--------------------------------------------------------------------------------
+
+Tool           Avg Time    Files/sec   Peak Memory   Winner
+png_conform    45.2ms      22.1        45.2 MB
+pngcheck       12.3ms      81.3        8.5 MB        ✓
+
+Performance Difference:
+  pngcheck is 3.7x faster (72.8% faster)
+  pngcheck uses 5.3x less memory (81.2% less)
+----
+====
+
+=== Using Configuration Files
+
+==== Quick test (10 files, 2 iterations)
+
+[source,shell]
+----
+./benchmarks/run_benchmark.rb --config config/quick.yml
+----
+
+==== Full test with all files and more iterations
+
+[source,shell]
+----
+./benchmarks/run_benchmark.rb --config config/full.yml
+----
+
+==== Custom configuration
+
+.Create custom configuration file
+[example]
+====
+[source,yaml]
+----
+# my_config.yml
+test_files:
+  pattern: "spec/fixtures/pngsuite/basic/*.png"
+  limit: 20
+
+iterations: 10
+warmup_runs: 3
+
+output:
+  format: "json"
+  file: "results/my_benchmark.json"
+----
+
+[source,shell]
+----
+./benchmarks/run_benchmark.rb --config my_config.yml
+----
+====
+
+=== Command-Line Options
+
+==== File Selection
+
+`-p, --pattern PATTERN`:: File pattern to test (e.g., `spec/fixtures/**/*.png`)
+`-l, --limit N`:: Limit number of files to test
+
+.Test only 5 files from compression directory
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb \
+  --pattern "spec/fixtures/pngsuite/compression/*.png" \
+  --limit 5
+----
+====
+
+==== Execution Parameters
+
+`-i, --iterations N`:: Number of iterations per file (default: 3)
+`-w, --warmup N`:: Number of warmup runs (default: 1)
+`-t, --tool TOOL`:: Enable specific tool only (png_conform or pngcheck)
+
+.Run 10 iterations with 2 warmup runs
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb --iterations 10 --warmup 2
+----
+====
+
+.Benchmark only png_conform
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb --tool png_conform
+----
+====
+
+==== Output Configuration
+
+`-f, --format FORMAT`:: Output format: text, json, csv, markdown
+`-o, --output FILE`:: Write report to file instead of stdout
+`-q, --quiet`:: Suppress progress output
+
+.Generate JSON report
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb \
+  --format json \
+  --output results/benchmark_$(date +%Y%m%d).json
+----
+====
+
+.Generate CSV for spreadsheet analysis
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb \
+  --format csv \
+  --output results/benchmark.csv
+----
+====
+
+.Generate Markdown report
+[example]
+====
+[source,shell]
+----
+./benchmarks/run_benchmark.rb \
+  --format markdown \
+  --output results/BENCHMARK_RESULTS.md
+----
+====
+
+=== Configuration File Format
+
+Configuration files use YAML format:
+
+[source,yaml]
+----
+# File selection
+test_files:
+  pattern: "spec/fixtures/pngsuite/**/*.png"  # Glob pattern
+  exclude: []                                  # Patterns to exclude
+  limit: null                                  # null = all files
+
+# Execution settings
+iterations: 3      # Number of benchmark runs
+warmup_runs: 1     # Warmup runs (not counted)
+timeout: 30        # Timeout per file (seconds)
+
+# Tool configuration
+tools:
+  png_conform:
+    enabled: true
+    options:
+      cli_options: ["--quiet"]  # CLI arguments
+
+  pngcheck:
+    enabled: true
+    options:
+      cli_options: ["-q"]
+
+# Output settings
+output:
+  format: "text"              # text, json, csv, markdown
+  file: null                  # null = stdout, or file path
+  verbose: true               # Show progress
+  include_raw_data: false     # Include raw data in JSON output
+----
+
+== Output Formats
+
+=== Text Format
+
+Human-readable tables with performance statistics.
+
+.Text format example
+[example]
+====
+[source]
+----
+================================================================================
+PNG Validation Tool Benchmark Comparison
+================================================================================
+
+Configuration:
+  Files tested:     177 PNG files
+  Total runs:       1062
+
+--------------------------------------------------------------------------------
+PERFORMANCE SUMMARY
+--------------------------------------------------------------------------------
+
+Tool           Avg Time    Files/sec   Peak Memory   Winner
+png_conform    45.2ms      22.1        45.2 MB
+pngcheck       12.3ms      81.3        8.5 MB        ✓
+
+Performance Difference:
+  pngcheck is 3.7x faster (72.8% faster)
+  pngcheck uses 5.3x less memory (81.2% less)
+
+--------------------------------------------------------------------------------
+DETAILED STATISTICS
+--------------------------------------------------------------------------------
+
+png_conform:
+  Runs:        531/531 successful
+
+  Execution Time:
+    Mean:      45.2ms
+    Median:    43.1ms
+    Std Dev:   8.7ms
+    Min:       28.3ms
+    Max:       89.4ms
+
+  Memory Usage:
+    Mean:      45.2 MB
+    Median:    44.8 MB
+    Min:       42.1 MB
+    Max:       48.9 MB
+
+  Throughput:
+    Files/sec: 22.1
+    Time/file: 45.2ms
+
+pngcheck:
+  [similar statistics...]
+----
+====
+
+=== JSON Format
+
+Machine-readable structured data for CI/CD integration.
+
+.JSON format example
+[example]
+====
+[source,json]
+----
+{
+  "benchmark_info": {
+    "timestamp": "2025-11-18T08:00:00Z",
+    "files_tested": 177,
+    "total_runs": 1062,
+    "tools": ["png_conform", "pngcheck"]
+  },
+  "comparison": {
+    "tool1": "png_conform",
+    "tool2": "pngcheck",
+    "faster_tool": "pngcheck",
+    "time_difference_percent": 72.8,
+    "time_multiplier": 3.7,
+    "memory_efficient_tool": "pngcheck",
+    "memory_difference_percent": 81.2,
+    "memory_multiplier": 5.3
+  },
+  "tool_statistics": [
+    {
+      "tool": "png_conform",
+      "total_runs": 531,
+      "successful_runs": 531,
+      "execution_time": {
+        "mean": 45.2,
+        "median": 43.1,
+        "std_dev": 8.7,
+        "min": 28.3,
+        "max": 89.4
+      }
+    }
+  ]
+}
+----
+====
+
+=== CSV Format
+
+Spreadsheet-compatible format for data analysis.
+
+.CSV format example
+[example]
+====
+[source,csv]
+----
+Tool,File,Execution Time (ms),Peak Memory (MB),Success,Exit Code,Timed Out,Timestamp
+png_conform,spec/fixtures/pngsuite/basic/basn0g01.png,42.3,44.5,true,0,false,2025-11-18T08:00:00Z
+png_conform,spec/fixtures/pngsuite/basic/basn0g02.png,43.1,44.7,true,0,false,2025-11-18T08:00:01Z
+pngcheck,spec/fixtures/pngsuite/basic/basn0g01.png,11.2,8.3,true,0,false,2025-11-18T08:00:02Z
+...
+----
+====
+
+=== Markdown Format
+
+Documentation-friendly format for GitHub/GitLab.
+
+.Markdown format example
+[example]
+====
+[source,markdown]
+----
+# PNG Validation Tool Benchmark Comparison
+
+## Configuration
+
+- **Files tested**: 177 PNG files
+- **Total runs**: 1062
+- **Tools**: png_conform, pngcheck
+
+## Performance Summary
+
+| Metric | png_conform | pngcheck | Winner |
+|--------|----------|----------|--------|
+| Avg Time | 45.2ms | 12.3ms | pngcheck |
+| Files/sec | 22.1 | 81.3 | pngcheck |
+| Peak Memory | 45.2 MB | 8.5 MB | pngcheck |
+
+**Performance:** pngcheck is 3.7x faster (72.8% improvement)
+
+**Memory:** pngcheck uses 5.3x less memory (81.2% improvement)
+----
+====
+
+== Interpreting Results
+
+=== Performance Metrics
+
+Execution Time:: Time taken to validate a single PNG file (milliseconds)
+Files/sec:: Throughput - how many files can be validated per second
+Peak Memory:: Maximum resident set size during execution (megabytes)
+
+=== Statistical Measures
+
+Mean:: Average value across all runs
+Median:: Middle value when sorted (more robust against outliers)
+Std Dev:: Standard deviation - measure of variability
+Min/Max:: Minimum and maximum observed values
+
+=== Expected Results
+
+Based on the implementation differences:
+
+* *pngcheck* (native C): Faster execution, lower memory usage
+* *png_conform* (pure Ruby): Slower execution, higher memory usage, but more features
+
+The trade-off is between performance and functionality - png_conform provides comprehensive validation, modern chunk support, and rich reporting that pngcheck lacks.
+
+== Troubleshooting
+
+=== pngcheck not found
+
+.Error message
+[source]
+----
+Error: pngcheck is NOT available
+Install with: brew install pngcheck (macOS) or apt-get install pngcheck (Linux)
+----
+
+.Solution
+[source,shell]
+----
+# macOS
+brew install pngcheck
+
+# Linux (Debian/Ubuntu)
+sudo apt-get install pngcheck
+
+# Verify installation
+which pngcheck
+----
+
+=== Permission denied
+
+.Error message
+[source]
+----
+Permission denied: ./benchmarks/run_benchmark.rb
+----
+
+.Solution
+[source,shell]
+----
+chmod +x benchmarks/run_benchmark.rb
+----
+
+=== No files found
+
+.Error message
+[source]
+----
+Found 0 PNG files to test
+Error: No files found matching pattern
+----
+
+.Solution - check pattern and working directory
+[source,shell]
+----
+# Run from project root
+cd /path/to/pngconform
+
+# Verify files exist
+ls spec/fixtures/pngsuite/**/*.png | wc -l
+
+# Try with absolute path
+./benchmarks/run_benchmark.rb --pattern "$(pwd)/spec/fixtures/pngsuite/**/*.png"
+----
+
+== Development
+
+=== Running Tests
+
+To test the benchmark system itself:
+
+[source,shell]
+----
+# Quick sanity check
+./benchmarks/run_benchmark.rb --config config/quick.yml
+
+# Verify all output formats
+./benchmarks/run_benchmark.rb --limit 5 --format text
+./benchmarks/run_benchmark.rb --limit 5 --format json
+./benchmarks/run_benchmark.rb --limit 5 --format csv
+./benchmarks/run_benchmark.rb --limit 5 --format markdown
+----
+
+=== Adding New Tools
+
+To add a new validation tool to the benchmark:
+
+. Create a runner class in `lib/` inheriting from [`ToolRunner`](lib/tool_runner.rb)
+. Implement the `run` method
+. Add configuration in [`benchmark_runner.rb`](lib/benchmark_runner.rb)
+. Update configuration files
+
+== Contributing
+
+Improvements to the benchmark suite are welcome:
+
+* More sophisticated statistical analysis
+* Performance profiling integration
+* Visualization generation
+* CI/CD integration examples
+
+== Copyright and License
+
+Copyright Ribose.
+
+The benchmark suite is available as open source under the Ribose BSD-2-Clause License.
