@@ -1,0 +1,32 @@
+# Quick benchmark configuration - for rapid testing
+
+# Files to test (limited set)
+test_files:
+  pattern: "spec/fixtures/pngsuite/**/*.png"
+  exclude: []
+  limit: 10  # Only test 10 files
+
+# Fewer iterations for speed
+iterations: 2
+warmup_runs: 1
+
+timeout: 30
+
+# Tool configuration
+tools:
+  png_conform:
+    enabled: true
+    options:
+      cli_options: ["--quiet"]
+
+  pngcheck:
+    enabled: true
+    options:
+      cli_options: ["-q"]
+
+# Output configuration
+output:
+  format: "text"
+  file: null
+  verbose: true
+  include_raw_data: false

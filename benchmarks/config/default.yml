@@ -1,0 +1,35 @@
+# Default benchmark configuration
+
+# Files to test
+test_files:
+  pattern: "spec/fixtures/pngsuite/**/*.png"
+  exclude: []
+  limit: null  # null = all files
+
+# Number of benchmark iterations
+iterations: 3
+
+# Number of warmup runs (not counted in statistics)
+warmup_runs: 1
+
+# Timeout per file in seconds
+timeout: 30
+
+# Tool configuration
+tools:
+  png_conform:
+    enabled: true
+    options:
+      cli_options: ["--quiet"]
+
+  pngcheck:
+    enabled: true
+    options:
+      cli_options: ["-q"]
+
+# Output configuration
+output:
+  format: "text"  # Options: text, json, csv, markdown
+  file: null      # null = stdout, or specify a file path
+  verbose: true
+  include_raw_data: false
