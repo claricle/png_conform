@@ -97,10 +97,10 @@ class ReportGenerator
         timestamp: Time.now.iso8601,
         files_tested: summary[:files_tested],
         total_runs: summary[:total_runs],
-        tools: tools
+        tools: tools,
       },
       tool_statistics: summary[:tool_statistics],
-      raw_data: config[:include_raw_data] ? metrics_collector.export_raw_data : nil
+      raw_data: config[:include_raw_data] ? metrics_collector.export_raw_data : nil,
     }.compact
 
     # Add comparison if we have 2 tools
@@ -128,7 +128,7 @@ class ReportGenerator
           run[:success],
           run[:exit_code],
           run[:timed_out],
-          run[:timestamp].iso8601
+          run[:timestamp].iso8601,
         ]
       end
     end
@@ -184,12 +184,15 @@ class ReportGenerator
       stats = comparison[:stats][tool]
       is_winner = tool == comparison[:faster_tool]
 
+      # Handle nil throughput gracefully
+      files_per_sec = stats[:throughput]&.[](:files_per_second) || 0.0
+
       lines << sprintf("%-15s %10.1fms %10.1f/s %10.1f MB %8s",
-                      tool,
-                      stats[:execution_time][:mean],
-                      stats[:throughput][:files_per_second],
-                      stats[:memory][:mean],
-                      is_winner ? "✓" : "")
+                       tool,
+                       stats[:execution_time][:mean],
+                       files_per_sec,
+                       stats[:memory][:mean],
+                       is_winner ? "✓" : "")
     end
 
     lines.join("\n")
@@ -211,7 +214,7 @@ class ReportGenerator
     lines = []
     lines << "#{stats[:tool]}:"
     lines << "  Runs:        #{stats[:successful_runs]}/#{stats[:total_runs]} successful"
-    lines << "  Timeouts:    #{stats[:timeouts]}" if stats[:timeouts] > 0
+    lines << "  Timeouts:    #{stats[:timeouts]}" if stats[:timeouts].positive?
     lines << ""
     lines << "  Execution Time:"
     lines << "    Mean:      #{stats[:execution_time][:mean]}ms"
@@ -225,10 +228,14 @@ class ReportGenerator
     lines << "    Median:    #{stats[:memory][:median]} MB"
     lines << "    Min:       #{stats[:memory][:min]} MB"
     lines << "    Max:       #{stats[:memory][:max]} MB"
-    lines << ""
-    lines << "  Throughput:"
-    lines << "    Files/sec: #{stats[:throughput][:files_per_second]}"
-    lines << "    Time/file: #{stats[:throughput][:avg_time_per_file]}ms"
+
+    # Handle nil throughput gracefully
+    if stats[:throughput]
+      lines << ""
+      lines << "  Throughput:"
+      lines << "    Files/sec: #{stats[:throughput][:files_per_second]}"
+      lines << "    Time/file: #{stats[:throughput][:avg_time_per_file]}ms"
+    end
 
     lines.join("\n")
   end
@@ -242,11 +249,14 @@ class ReportGenerator
     stats1 = comparison[:stats][comparison[:tool1]]
     stats2 = comparison[:stats][comparison[:tool2]]
 
+    # Handle nil throughput gracefully
+    fps1 = stats1[:throughput]&.[](:files_per_second) || "N/A"
+    fps2 = stats2[:throughput]&.[](:files_per_second) || "N/A"
+
     lines << "| Avg Time | #{stats1[:execution_time][:mean]}ms | " \
              "#{stats2[:execution_time][:mean]}ms | " \
              "#{comparison[:faster_tool]} |"
-    lines << "| Files/sec | #{stats1[:throughput][:files_per_second]} | " \
-             "#{stats2[:throughput][:files_per_second]} | " \
+    lines << "| Files/sec | #{fps1} | #{fps2} | " \
              "#{comparison[:faster_tool]} |"
     lines << "| Peak Memory | #{stats1[:memory][:mean]} MB | " \
              "#{stats2[:memory][:mean]} MB | " \
@@ -269,7 +279,7 @@ class ReportGenerator
     lines << "### #{stats[:tool]}"
     lines << ""
     lines << "- **Successful runs**: #{stats[:successful_runs]}/#{stats[:total_runs]}"
-    lines << "- **Timeouts**: #{stats[:timeouts]}" if stats[:timeouts] > 0
+    lines << "- **Timeouts**: #{stats[:timeouts]}" if stats[:timeouts].positive?
     lines << ""
     lines << "**Execution Time:**"
     lines << "- Mean: #{stats[:execution_time][:mean]}ms"
@@ -279,8 +289,12 @@ class ReportGenerator
     lines << "**Memory Usage:**"
     lines << "- Mean: #{stats[:memory][:mean]} MB"
     lines << "- Range: #{stats[:memory][:min]} MB - #{stats[:memory][:max]} MB"
-    lines << ""
-    lines << "**Throughput:** #{stats[:throughput][:files_per_second]} files/sec"
+
+    # Handle nil throughput gracefully
+    if stats[:throughput]
+      lines << ""
+      lines << "**Throughput:** #{stats[:throughput][:files_per_second]} files/sec"
+    end
 
     lines.join("\n")
   end

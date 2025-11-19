@@ -15,7 +15,7 @@ options = {
   warmup: nil,
   limit: nil,
   tools: [],
-  verbose: true
+  verbose: true,
 }
 
 OptionParser.new do |opts|
@@ -31,7 +31,8 @@ OptionParser.new do |opts|
   opts.separator ""
   opts.separator "File Selection:"
 
-  opts.on("-p", "--pattern PATTERN", "File pattern (e.g., 'spec/fixtures/**/*.png')") do |pattern|
+  opts.on("-p", "--pattern PATTERN",
+          "File pattern (e.g., 'spec/fixtures/**/*.png')") do |pattern|
     options[:pattern] = pattern
   end
 
@@ -42,26 +43,31 @@ OptionParser.new do |opts|
   opts.separator ""
   opts.separator "Execution:"
 
-  opts.on("-i", "--iterations N", Integer, "Number of iterations per file (default: 3)") do |n|
+  opts.on("-i", "--iterations N", Integer,
+          "Number of iterations per file (default: 3)") do |n|
     options[:iterations] = n
   end
 
-  opts.on("-w", "--warmup N", Integer, "Number of warmup runs (default: 1)") do |n|
+  opts.on("-w", "--warmup N", Integer,
+          "Number of warmup runs (default: 1)") do |n|
     options[:warmup] = n
   end
 
-  opts.on("-t", "--tool TOOL", "Enable specific tool (png_conform, pngcheck)") do |tool|
+  opts.on("-t", "--tool TOOL",
+          "Enable specific tool (png_conform, pngcheck)") do |tool|
     options[:tools] << tool.to_sym
   end
 
   opts.separator ""
   opts.separator "Output:"
 
-  opts.on("-f", "--format FORMAT", "Output format: text, json, csv, markdown (default: text)") do |format|
+  opts.on("-f", "--format FORMAT",
+          "Output format: text, json, csv, markdown (default: text)") do |format|
     options[:format] = format
   end
 
-  opts.on("-o", "--output FILE", "Write report to file instead of stdout") do |file|
+  opts.on("-o", "--output FILE",
+          "Write report to file instead of stdout") do |file|
     options[:output] = file
   end
 
@@ -143,7 +149,7 @@ end
 # Run the benchmark
 begin
   runner = BenchmarkRunner.new(config)
-  result = runner.run
+  runner.run
 
   exit 0
 rescue StandardError => e

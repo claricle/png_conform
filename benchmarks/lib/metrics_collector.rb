@@ -26,7 +26,7 @@ class MetricsCollector
       success: metrics[:result][:success],
       exit_code: metrics[:result][:exit_code],
       timed_out: metrics[:result][:timed_out],
-      timestamp: Time.now
+      timestamp: Time.now,
     }
   end
 
@@ -57,7 +57,7 @@ class MetricsCollector
       timeouts: tool_runs.count { |r| r[:timed_out] },
       execution_time: calculate_stats(execution_times),
       memory: calculate_stats(memory_values),
-      throughput: calculate_throughput(tool_runs)
+      throughput: calculate_throughput(tool_runs),
     }
   end
 
@@ -96,8 +96,8 @@ class MetricsCollector
       memory_multiplier: mem_multiplier,
       stats: {
         tool1 => stats1,
-        tool2 => stats2
-      }
+        tool2 => stats2,
+      },
     }
   end
 
@@ -118,7 +118,7 @@ class MetricsCollector
       total_runs: @runs.size,
       tools: tools,
       files_tested: @runs.map { |r| r[:file] }.uniq.size,
-      tool_statistics: tools.map { |tool| calculate_statistics(tool) }.compact
+      tool_statistics: tools.map { |tool| calculate_statistics(tool) }.compact,
     }
   end
 
@@ -140,7 +140,7 @@ class MetricsCollector
       std_dev: calculate_std_dev(values).round(3),
       min: sorted.first.round(3),
       max: sorted.last.round(3),
-      count: size
+      count: size,
     }
   end
 
@@ -179,12 +179,15 @@ class MetricsCollector
     successful = runs.select { |r| r[:success] }
     return nil if successful.empty?
 
-    total_time = successful.sum { |r| r[:execution_time] } / 1000.0 # Convert to seconds
+    total_time = # Convert to seconds
+      successful.sum do |r|
+        r[:execution_time]
+      end / 1000.0
     files_count = successful.size
 
     {
       files_per_second: (files_count / total_time).round(2),
-      avg_time_per_file: (total_time / files_count * 1000).round(3) # milliseconds
+      avg_time_per_file: (total_time / files_count * 1000).round(3), # milliseconds
     }
   end
 end

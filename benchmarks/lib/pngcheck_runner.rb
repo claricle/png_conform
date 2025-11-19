@@ -30,7 +30,7 @@ class PngcheckRunner < ToolRunner
         exit_code: result[:exit_code],
         stdout: result[:stdout],
         stderr: result[:stderr],
-        timed_out: result[:timed_out]
+        timed_out: result[:timed_out],
       }
     end
   end
@@ -42,8 +42,8 @@ class PngcheckRunner < ToolRunner
 
     # Add -q (quiet) by default for consistent comparison
     cli_opts << "-q" unless cli_opts.include?("-q") ||
-                             cli_opts.include?("-v") ||
-                             cli_opts.include?("-vv")
+      cli_opts.include?("-v") ||
+      cli_opts.include?("-vv")
 
     cli_opts.join(" ")
   end
@@ -60,8 +60,8 @@ class PngcheckRunner < ToolRunner
         exit_code: -1,
         stdout: "",
         stderr: message,
-        timed_out: false
-      }
+        timed_out: false,
+      },
     }
   end
 end

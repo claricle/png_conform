@@ -49,20 +49,20 @@ class BenchmarkRunner
       test_files: {
         pattern: "spec/fixtures/pngsuite/**/*.png",
         exclude: [],
-        limit: nil
+        limit: nil,
       },
       iterations: 3,
       warmup_runs: 1,
       timeout: 30,
       tools: {
         png_conform: { enabled: true, options: {} },
-        pngcheck: { enabled: true, options: {} }
+        pngcheck: { enabled: true, options: {} },
       },
       output: {
         format: "text",
         file: nil,
-        verbose: true
-      }
+        verbose: true,
+      },
     }
   end
 
@@ -71,13 +71,13 @@ class BenchmarkRunner
 
     if config[:tools][:png_conform][:enabled]
       runners[:png_conform] = PngConformRunner.new(
-        config[:tools][:png_conform][:options]
+        config[:tools][:png_conform][:options],
       )
     end
 
     if config[:tools][:pngcheck][:enabled]
       runners[:pngcheck] = PngcheckRunner.new(
-        config[:tools][:pngcheck][:options]
+        config[:tools][:pngcheck][:options],
       )
     end
 
@@ -133,20 +133,26 @@ class BenchmarkRunner
         # Warmup runs (not recorded)
         config[:warmup_runs].times do
           current_run += 1
-          print_progress("Warmup", current_run, total_runs) if config[:output][:verbose]
+          if config[:output][:verbose]
+            print_progress("Warmup", current_run,
+                           total_runs)
+          end
           runner.run(file)
         end
 
         # Actual benchmark runs (recorded)
-        config[:iterations].times do |iteration|
+        config[:iterations].times do |_iteration|
           current_run += 1
-          print_progress(tool_name, current_run, total_runs) if config[:output][:verbose]
+          if config[:output][:verbose]
+            print_progress(tool_name, current_run,
+                           total_runs)
+          end
 
           metrics = runner.run(file)
           metrics_collector.record_run(
             tool_name.to_s,
             file,
-            metrics
+            metrics,
           )
         end
       end
@@ -179,7 +185,7 @@ class BenchmarkRunner
 
     {
       summary: metrics_collector.summary,
-      report: report
+      report: report,
     }
   end
 

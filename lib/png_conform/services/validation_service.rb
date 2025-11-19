@@ -5,9 +5,10 @@ require_relative "../models/validation_result"
 require_relative "../models/file_analysis"
 require_relative "../models/image_info"
 require_relative "../models/compression_info"
-require_relative "../analyzers/resolution_analyzer"
-require_relative "../analyzers/optimization_analyzer"
-require_relative "../analyzers/metrics_analyzer"
+# Lazy load analyzers - only require when needed (Phase 2: Lazy Loading)
+# require_relative "../analyzers/resolution_analyzer"
+# require_relative "../analyzers/optimization_analyzer"
+# require_relative "../analyzers/metrics_analyzer"
 
 module PngConform
   module Services
@@ -28,11 +29,12 @@ module PngConform
       # Convenience method to validate a file by path
       #
       # @param filepath [String] Path to PNG file
+      # @param options [Hash] Optional CLI options
       # @return [ValidationResult] Validation results
-      def self.validate_file(filepath)
+      def self.validate_file(filepath, options = {})
         require_relative "../readers/full_load_reader"
         reader = Readers::FullLoadReader.new(filepath)
-        service = new(reader, filepath)
+        service = new(reader, filepath, options)
         service.validate
       end
 
@@ -40,9 +42,11 @@ module PngConform
       #
       # @param reader [Object] File reader (StreamingReader or FullLoadReader)
       # @param filepath [String, nil] Optional file path (for reporting)
-      def initialize(reader, filepath = nil)
+      # @param options [Hash] CLI options for controlling behavior
+      def initialize(reader, filepath = nil, options = {})
         @reader = reader
         @filepath = filepath
+        @options = options
         @context = Validators::ValidationContext.new
         @results = []
         @chunks = [] # Store chunks as we read them
@@ -184,7 +188,7 @@ module PngConform
       # Proper Model → Formatter pattern
       # - Builds ValidationResult (legacy)
       # - Extracts ImageInfo and CompressionInfo
-      # - Runs all analyzers HERE (not in reporters)
+      # - Runs analyzers conditionally (Phase 1.1 optimization)
       # - Returns complete FileAnalysis model
       #
       # @return [FileAnalysis] Complete analysis model
@@ -205,10 +209,18 @@ module PngConform
           analysis.image_info = image_info
           analysis.compression_info = extract_compression_info(validation_result)
 
-          # Run analyzers HERE (proper Model → Formatter pattern)
-          analysis.resolution_analysis = run_resolution_analysis(validation_result)
-          analysis.optimization_analysis = run_optimization_analysis(validation_result)
-          analysis.metrics = run_metrics_analysis(validation_result)
+          # Run analyzers conditionally (Phase 1.1: saves ~80ms)
+          if need_resolution_analysis?
+            analysis.resolution_analysis = run_resolution_analysis(validation_result)
+          end
+
+          if need_optimization_analysis?
+            analysis.optimization_analysis = run_optimization_analysis(validation_result)
+          end
+
+          if need_metrics_analysis?
+            analysis.metrics = run_metrics_analysis(validation_result)
+          end
         end
       end
 
@@ -248,9 +260,11 @@ module PngConform
 
           result.crc_errors_count = crc_error_count
 
-          # Calculate compression ratio for PNG files
-          if result.file_type == "PNG"
+          # Calculate compression ratio for PNG files (Phase 1.2: lazy calculation)
+          if result.file_type == "PNG" && need_compression_ratio?
             result.compression_ratio = calculate_compression_ratio(result.chunks)
+          else
+            result.compression_ratio = 0.0
           end
 
           # Add errors from service (@results)
@@ -422,6 +436,7 @@ module PngConform
 
       # Run resolution analyzer
       def run_resolution_analysis(result)
+        require_relative "../analyzers/resolution_analyzer" unless defined?(Analyzers::ResolutionAnalyzer)
         Analyzers::ResolutionAnalyzer.new(result).analyze
       rescue StandardError => e
         { error: "Resolution analysis failed: #{e.message}" }
@@ -429,6 +444,7 @@ module PngConform
 
       # Run optimization analyzer
       def run_optimization_analysis(result)
+        require_relative "../analyzers/optimization_analyzer" unless defined?(Analyzers::OptimizationAnalyzer)
         Analyzers::OptimizationAnalyzer.new(result).analyze
       rescue StandardError => e
         { error: "Optimization analysis failed: #{e.message}" }
@@ -436,6 +452,7 @@ module PngConform
 
       # Run metrics analyzer
       def run_metrics_analysis(result)
+        require_relative "../analyzers/metrics_analyzer" unless defined?(Analyzers::MetricsAnalyzer)
         Analyzers::MetricsAnalyzer.new(result).analyze
       rescue StandardError => e
         { error: "Metrics analysis failed: #{e.message}" }
@@ -451,6 +468,34 @@ module PngConform
         when 6 then "truecolor+alpha"
         else "unknown"
         end
+      end
+
+      # Check if resolution analysis is needed (Phase 1.1)
+      def need_resolution_analysis?
+        return true unless @options[:quiet]
+
+        @options[:resolution] || @options[:mobile_ready]
+      end
+
+      # Check if optimization analysis is needed (Phase 1.1)
+      def need_optimization_analysis?
+        return true unless @options[:quiet]
+
+        @options[:optimize]
+      end
+
+      # Check if metrics analysis is needed (Phase 1.1)
+      def need_metrics_analysis?
+        return true if ["yaml", "json"].include?(@options[:format])
+
+        @options[:metrics]
+      end
+
+      # Check if compression ratio calculation is needed (Phase 1.2)
+      def need_compression_ratio?
+        return true if ["yaml", "json"].include?(@options[:format])
+
+        !@options[:quiet]
       end
     end
   end
