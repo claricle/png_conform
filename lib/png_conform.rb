@@ -40,60 +40,21 @@ module PngConform
   require_relative "png_conform/models/validation_result"
   require_relative "png_conform/models/file_analysis"
 
-  # Load validators (Phase 4 & 5 - implemented)
+  # Load base validator and registry (Phase 4 optimization: lazy validator loading)
+  # All validators are loaded on-demand by chunk_registry
   require_relative "png_conform/validators/base_validator"
-
-  # Critical validators
-  require_relative "png_conform/validators/critical/ihdr_validator"
-  require_relative "png_conform/validators/critical/plte_validator"
-  require_relative "png_conform/validators/critical/idat_validator"
-  require_relative "png_conform/validators/critical/iend_validator"
-
-  # Ancillary validators
-  require_relative "png_conform/validators/ancillary/gama_validator"
-  require_relative "png_conform/validators/ancillary/trns_validator"
-  require_relative "png_conform/validators/ancillary/chrm_validator"
-  require_relative "png_conform/validators/ancillary/srgb_validator"
-  require_relative "png_conform/validators/ancillary/iccp_validator"
-  require_relative "png_conform/validators/ancillary/text_validator"
-  require_relative "png_conform/validators/ancillary/ztxt_validator"
-  require_relative "png_conform/validators/ancillary/itxt_validator"
-  require_relative "png_conform/validators/ancillary/bkgd_validator"
-  require_relative "png_conform/validators/ancillary/phys_validator"
-  require_relative "png_conform/validators/ancillary/sbit_validator"
-  require_relative "png_conform/validators/ancillary/splt_validator"
-  require_relative "png_conform/validators/ancillary/hist_validator"
-  require_relative "png_conform/validators/ancillary/time_validator"
-  require_relative "png_conform/validators/ancillary/offs_validator"
-  require_relative "png_conform/validators/ancillary/pcal_validator"
-  require_relative "png_conform/validators/ancillary/scal_validator"
-  require_relative "png_conform/validators/ancillary/ster_validator"
-  require_relative "png_conform/validators/ancillary/cicp_validator"
-  require_relative "png_conform/validators/ancillary/mdcv_validator"
+  require_relative "png_conform/validators/chunk_registry"
 
   # Load services (Phase 9 - implemented)
-  require_relative "png_conform/validators/chunk_registry"
   require_relative "png_conform/services/validation_service"
   require_relative "png_conform/services/profile_manager"
 
   # Load analyzers (Phase 13 - Quick Win features)
-  require_relative "png_conform/analyzers/optimization_analyzer"
-  require_relative "png_conform/analyzers/metrics_analyzer"
-  require_relative "png_conform/analyzers/resolution_analyzer"
-  require_relative "png_conform/analyzers/comparison_analyzer"
+  # Analyzers are lazy-loaded on-demand in validation_service.rb (Phase 3 optimization)
+  # No upfront loading needed here
 
-  # Load reporters (Phase 10 & 7 - implemented)
-  require_relative "png_conform/reporters/visual_elements"
-  require_relative "png_conform/reporters/base_reporter"
-  require_relative "png_conform/reporters/summary_reporter"
-  require_relative "png_conform/reporters/verbose_reporter"
-  require_relative "png_conform/reporters/very_verbose_reporter"
-  require_relative "png_conform/reporters/quiet_reporter"
-  require_relative "png_conform/reporters/palette_reporter"
-  require_relative "png_conform/reporters/text_reporter"
-  require_relative "png_conform/reporters/color_reporter"
-  require_relative "png_conform/reporters/yaml_reporter"
-  require_relative "png_conform/reporters/json_reporter"
+  # Load reporter factory only (Phase 2 optimization: lazy reporter loading)
+  # Individual reporters are loaded on-demand by the factory
   require_relative "png_conform/reporters/reporter_factory"
 
   # Load CLI (Phase 11 - implemented)

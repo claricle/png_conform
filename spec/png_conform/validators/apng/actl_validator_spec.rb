@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/apng/actl_validator"
 
 RSpec.describe PngConform::Validators::Apng::ActlValidator do
   let(:context) { PngConform::Validators::ValidationContext.new }

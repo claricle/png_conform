@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/mng/clip_validator"
 
 RSpec.describe PngConform::Validators::Mng::ClipValidator do
   let(:validation_context) { PngConform::Validators::ValidationContext.new }

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/mng/dhdr_validator"
 
 RSpec.describe PngConform::Validators::Mng::DhdrValidator do
   let(:validation_context) { PngConform::Validators::ValidationContext.new }

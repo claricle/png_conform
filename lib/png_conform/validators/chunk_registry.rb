@@ -1,54 +1,14 @@
 # frozen_string_literal: true
 
-require_relative "critical/ihdr_validator"
-require_relative "critical/plte_validator"
-require_relative "critical/idat_validator"
-require_relative "critical/iend_validator"
-require_relative "ancillary/text_validator"
-require_relative "ancillary/ztxt_validator"
-require_relative "ancillary/itxt_validator"
-require_relative "ancillary/gama_validator"
-require_relative "ancillary/chrm_validator"
-require_relative "ancillary/srgb_validator"
-require_relative "ancillary/sbit_validator"
-require_relative "ancillary/bkgd_validator"
-require_relative "ancillary/iccp_validator"
-require_relative "ancillary/hist_validator"
-require_relative "ancillary/splt_validator"
-require_relative "ancillary/trns_validator"
-require_relative "ancillary/phys_validator"
-require_relative "ancillary/time_validator"
-require_relative "ancillary/offs_validator"
-require_relative "ancillary/pcal_validator"
-require_relative "ancillary/scal_validator"
-require_relative "ancillary/ster_validator"
-require_relative "ancillary/cicp_validator"
-require_relative "ancillary/mdcv_validator"
-require_relative "apng/actl_validator"
-require_relative "apng/fctl_validator"
-require_relative "apng/fdat_validator"
-require_relative "mng/mhdr_validator"
-require_relative "mng/mend_validator"
-require_relative "mng/dhdr_validator"
-require_relative "mng/fram_validator"
-require_relative "mng/defi_validator"
-require_relative "mng/back_validator"
-require_relative "mng/loop_validator"
-require_relative "mng/endl_validator"
-require_relative "mng/term_validator"
-require_relative "mng/save_validator"
-require_relative "mng/seek_validator"
-require_relative "mng/move_validator"
-require_relative "mng/clip_validator"
-require_relative "mng/show_validator"
-require_relative "mng/clon_validator"
-require_relative "mng/disc_validator"
-require_relative "jng/jhdr_validator"
-require_relative "jng/jdat_validator"
-require_relative "jng/jsep_validator"
-
 module PngConform
   module Validators
+    # Define validator category modules upfront for proper namespace resolution
+    module Critical; end
+    module Ancillary; end
+    module Apng; end
+    module Mng; end
+    module Jng; end
+
     # Registry of chunk types to their corresponding validator classes
     #
     # This class maintains a mapping between PNG chunk type codes and
@@ -66,81 +26,92 @@ module PngConform
     # - MNG (MHDR, MEND, DHDR, FRAM, DEFI, BACK, LOOP, ENDL, etc.)
     # - JNG (JHDR, JDAT, JSEP)
     #
+    # Validators are loaded lazily on-demand to improve startup performance.
+    #
     class ChunkRegistry
-      # Map of chunk type codes to validator classes
-      VALIDATORS = {
+      # Map of chunk type codes to validator file paths and class names
+      # Format: [file_path, module_path, class_name]
+      VALIDATOR_PATHS = {
         # Critical chunks
-        "IHDR" => Critical::IhdrValidator,
-        "PLTE" => Critical::PlteValidator,
-        "IDAT" => Critical::IdatValidator,
-        "IEND" => Critical::IendValidator,
+        "IHDR" => ["critical/ihdr_validator", "Critical", "IhdrValidator"],
+        "PLTE" => ["critical/plte_validator", "Critical", "PlteValidator"],
+        "IDAT" => ["critical/idat_validator", "Critical", "IdatValidator"],
+        "IEND" => ["critical/iend_validator", "Critical", "IendValidator"],
 
         # Text chunks
-        "tEXt" => Ancillary::TextValidator,
-        "zTXt" => Ancillary::ZtxtValidator,
-        "iTXt" => Ancillary::ItxtValidator,
+        "tEXt" => ["ancillary/text_validator", "Ancillary", "TextValidator"],
+        "zTXt" => ["ancillary/ztxt_validator", "Ancillary", "ZtxtValidator"],
+        "iTXt" => ["ancillary/itxt_validator", "Ancillary", "ItxtValidator"],
 
         # Color management
-        "gAMA" => Ancillary::GamaValidator,
-        "cHRM" => Ancillary::ChrmValidator,
-        "sRGB" => Ancillary::SrgbValidator,
-        "sBIT" => Ancillary::SbitValidator,
-        "bKGD" => Ancillary::BkgdValidator,
-        "iCCP" => Ancillary::IccpValidator,
+        "gAMA" => ["ancillary/gama_validator", "Ancillary", "GamaValidator"],
+        "cHRM" => ["ancillary/chrm_validator", "Ancillary", "ChrmValidator"],
+        "sRGB" => ["ancillary/srgb_validator", "Ancillary", "SrgbValidator"],
+        "sBIT" => ["ancillary/sbit_validator", "Ancillary", "SbitValidator"],
+        "bKGD" => ["ancillary/bkgd_validator", "Ancillary", "BkgdValidator"],
+        "iCCP" => ["ancillary/iccp_validator", "Ancillary", "IccpValidator"],
 
         # Palette support
-        "hIST" => Ancillary::HistValidator,
-        "sPLT" => Ancillary::SpltValidator,
-        "tRNS" => Ancillary::TrnsValidator,
+        "hIST" => ["ancillary/hist_validator", "Ancillary", "HistValidator"],
+        "sPLT" => ["ancillary/splt_validator", "Ancillary", "SpltValidator"],
+        "tRNS" => ["ancillary/trns_validator", "Ancillary", "TrnsValidator"],
 
         # Metadata
-        "pHYs" => Ancillary::PhysValidator,
-        "tIME" => Ancillary::TimeValidator,
-        "oFFs" => Ancillary::OffsValidator,
-        "pCAL" => Ancillary::PcalValidator,
-        "sCAL" => Ancillary::ScalValidator,
-        "sTER" => Ancillary::SterValidator,
+        "pHYs" => ["ancillary/phys_validator", "Ancillary", "PhysValidator"],
+        "tIME" => ["ancillary/time_validator", "Ancillary", "TimeValidator"],
+        "oFFs" => ["ancillary/offs_validator", "Ancillary", "OffsValidator"],
+        "pCAL" => ["ancillary/pcal_validator", "Ancillary", "PcalValidator"],
+        "sCAL" => ["ancillary/scal_validator", "Ancillary", "ScalValidator"],
+        "sTER" => ["ancillary/ster_validator", "Ancillary", "SterValidator"],
 
         # PNG 3rd edition
-        "cICP" => Ancillary::CicpValidator,
-        "mDCv" => Ancillary::MdcvValidator,
+        "cICP" => ["ancillary/cicp_validator", "Ancillary", "CicpValidator"],
+        "mDCv" => ["ancillary/mdcv_validator", "Ancillary", "MdcvValidator"],
 
         # APNG (Animated PNG)
-        "acTL" => Apng::ActlValidator,
-        "fcTL" => Apng::FctlValidator,
-        "fdAT" => Apng::FdatValidator,
+        "acTL" => ["apng/actl_validator", "Apng", "ActlValidator"],
+        "fcTL" => ["apng/fctl_validator", "Apng", "FctlValidator"],
+        "fdAT" => ["apng/fdat_validator", "Apng", "FdatValidator"],
 
         # MNG (Multiple-image Network Graphics)
-        "MHDR" => Mng::MhdrValidator,
-        "MEND" => Mng::MendValidator,
-        "DHDR" => Mng::DhdrValidator,
-        "FRAM" => Mng::FramValidator,
-        "DEFI" => Mng::DefiValidator,
-        "BACK" => Mng::BackValidator,
-        "LOOP" => Mng::LoopValidator,
-        "ENDL" => Mng::EndlValidator,
-        "TERM" => Mng::TermValidator,
-        "SAVE" => Mng::SaveValidator,
-        "SEEK" => Mng::SeekValidator,
-        "MOVE" => Mng::MoveValidator,
-        "CLIP" => Mng::ClipValidator,
-        "SHOW" => Mng::ShowValidator,
-        "CLON" => Mng::ClonValidator,
-        "DISC" => Mng::DiscValidator,
+        "MHDR" => ["mng/mhdr_validator", "Mng", "MhdrValidator"],
+        "MEND" => ["mng/mend_validator", "Mng", "MendValidator"],
+        "DHDR" => ["mng/dhdr_validator", "Mng", "DhdrValidator"],
+        "FRAM" => ["mng/fram_validator", "Mng", "FramValidator"],
+        "DEFI" => ["mng/defi_validator", "Mng", "DefiValidator"],
+        "BACK" => ["mng/back_validator", "Mng", "BackValidator"],
+        "LOOP" => ["mng/loop_validator", "Mng", "LoopValidator"],
+        "ENDL" => ["mng/endl_validator", "Mng", "EndlValidator"],
+        "TERM" => ["mng/term_validator", "Mng", "TermValidator"],
+        "SAVE" => ["mng/save_validator", "Mng", "SaveValidator"],
+        "SEEK" => ["mng/seek_validator", "Mng", "SeekValidator"],
+        "MOVE" => ["mng/move_validator", "Mng", "MoveValidator"],
+        "CLIP" => ["mng/clip_validator", "Mng", "ClipValidator"],
+        "SHOW" => ["mng/show_validator", "Mng", "ShowValidator"],
+        "CLON" => ["mng/clon_validator", "Mng", "ClonValidator"],
+        "DISC" => ["mng/disc_validator", "Mng", "DiscValidator"],
 
         # JNG (JPEG Network Graphics)
-        "JHDR" => Jng::JhdrValidator,
-        "JDAT" => Jng::JdatValidator,
-        "JSEP" => Jng::JsepValidator,
+        "JHDR" => ["jng/jhdr_validator", "Jng", "JhdrValidator"],
+        "JDAT" => ["jng/jdat_validator", "Jng", "JdatValidator"],
+        "JSEP" => ["jng/jsep_validator", "Jng", "JsepValidator"],
       }.freeze
 
       class << self
-        # Get validator class for a chunk type
+        # Get validator class for a chunk type (with lazy loading)
         #
         # @param chunk_type [String] Four-character chunk type code
         # @return [Class, nil] Validator class or nil if not found
         def validator_for(chunk_type)
-          VALIDATORS[chunk_type]
+          # Return cached validator if already loaded
+          return loaded_validators[chunk_type] if loaded_validators.key?(chunk_type)
+
+          # Check if validator path exists
+          validator_info = VALIDATOR_PATHS[chunk_type]
+          return nil unless validator_info
+
+          # Load validator on-demand
+          load_validator(chunk_type, validator_info)
         end
 
         # Check if a validator exists for a chunk type
@@ -148,14 +119,14 @@ module PngConform
         # @param chunk_type [String] Four-character chunk type code
         # @return [Boolean] True if validator exists
         def validator_exists?(chunk_type)
-          VALIDATORS.key?(chunk_type)
+          VALIDATOR_PATHS.key?(chunk_type)
         end
 
         # Get all registered chunk types
         #
         # @return [Array<String>] List of chunk type codes
         def chunk_types
-          VALIDATORS.keys
+          VALIDATOR_PATHS.keys
         end
 
         # Get validators by category
@@ -164,34 +135,34 @@ module PngConform
         #   (:critical, :text, :color, :palette, :metadata, :png3)
         # @return [Hash] Map of chunk types to validators in category
         def validators_by_category(category)
-          case category
+          chunk_types = case category
           when :critical
-            VALIDATORS.select { |k, _| %w[IHDR PLTE IDAT IEND].include?(k) }
+            %w[IHDR PLTE IDAT IEND]
           when :text
-            VALIDATORS.select { |k, _| %w[tEXt zTXt iTXt].include?(k) }
+            %w[tEXt zTXt iTXt]
           when :color
-            VALIDATORS.select do |k, _|
-              %w[gAMA cHRM sRGB sBIT bKGD iCCP].include?(k)
-            end
+            %w[gAMA cHRM sRGB sBIT bKGD iCCP]
           when :palette
-            VALIDATORS.select { |k, _| %w[hIST sPLT tRNS].include?(k) }
+            %w[hIST sPLT tRNS]
           when :metadata
-            VALIDATORS.select do |k, _|
-              %w[pHYs tIME oFFs pCAL sCAL sTER].include?(k)
-            end
+            %w[pHYs tIME oFFs pCAL sCAL sTER]
           when :png3
-            VALIDATORS.select { |k, _| %w[cICP mDCv].include?(k) }
+            %w[cICP mDCv]
           when :apng
-            VALIDATORS.select { |k, _| %w[acTL fcTL fdAT].include?(k) }
+            %w[acTL fcTL fdAT]
           when :mng
-            VALIDATORS.select do |k, _|
-              %w[MHDR MEND DHDR FRAM DEFI BACK LOOP ENDL TERM SAVE SEEK
-                 MOVE CLIP SHOW CLON DISC].include?(k)
-            end
+            %w[MHDR MEND DHDR FRAM DEFI BACK LOOP ENDL TERM SAVE SEEK
+               MOVE CLIP SHOW CLON DISC]
           when :jng
-            VALIDATORS.select { |k, _| %w[JHDR JDAT JSEP].include?(k) }
+            %w[JHDR JDAT JSEP]
           else
-            {}
+            []
+          end
+
+          # Load validators for this category
+          chunk_types.each_with_object({}) do |chunk_type, result|
+            validator = validator_for(chunk_type)
+            result[chunk_type] = validator if validator
           end
         end
 
@@ -199,7 +170,7 @@ module PngConform
         #
         # @return [Integer] Number of registered validators
         def count
-          VALIDATORS.size
+          VALIDATOR_PATHS.size
         end
 
         # Create validator instance for a chunk
@@ -212,6 +183,34 @@ module PngConform
           return nil unless validator_class
 
           validator_class.new(chunk, context)
+        end
+
+        private
+
+        # Cache for loaded validator classes
+        def loaded_validators
+          @loaded_validators ||= {}
+        end
+
+        # Load a validator class on-demand
+        #
+        # @param chunk_type [String] Chunk type code
+        # @param validator_info [Array] [file_path, module_name, class_name]
+        # @return [Class, nil] Loaded validator class
+        def load_validator(chunk_type, validator_info)
+          file_path, module_name, class_name = validator_info
+
+          # Require the validator file
+          require_relative file_path
+
+          # Resolve the constant (e.g., Critical::IhdrValidator)
+          validator_class = Validators.const_get(module_name).const_get(class_name)
+
+          # Cache and return
+          loaded_validators[chunk_type] = validator_class
+        rescue NameError, LoadError => e
+          warn "Failed to load validator for #{chunk_type}: #{e.message}"
+          loaded_validators[chunk_type] = nil
         end
       end
     end

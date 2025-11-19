@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/reporters/palette_reporter"
 
 RSpec.describe PngConform::Reporters::PaletteReporter do
   let(:reporter) { described_class.new }
