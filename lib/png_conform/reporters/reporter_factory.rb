@@ -1,21 +1,12 @@
 # frozen_string_literal: true
 
-require_relative "summary_reporter"
-require_relative "verbose_reporter"
-require_relative "very_verbose_reporter"
-require_relative "quiet_reporter"
-require_relative "palette_reporter"
-require_relative "text_reporter"
-require_relative "color_reporter"
-require_relative "yaml_reporter"
-require_relative "json_reporter"
-
 module PngConform
   module Reporters
     # Factory for creating reporter instances based on options.
     #
     # Implements the Factory pattern to provide a clean interface for
     # creating reporters with various combinations of options.
+    # Uses lazy loading to only require reporters when actually needed.
     class ReporterFactory
       # Create a reporter based on the specified options.
       #
@@ -34,30 +25,43 @@ module PngConform
         # Format takes priority over verbosity
         case format
         when "yaml"
+          require_relative "yaml_reporter" unless defined?(YamlReporter)
           return YamlReporter.new
         when "json"
+          require_relative "json_reporter" unless defined?(JsonReporter)
           return JsonReporter.new
         end
 
-        # Text reporters with verbosity levels
+        # Text reporters with verbosity levels - lazy load base and visual elements
+        require_relative "visual_elements" unless defined?(VisualElements)
+        require_relative "base_reporter" unless defined?(BaseReporter)
+
         reporter = if verbosity
                      case verbosity
                      when :quiet
+                       require_relative "quiet_reporter" unless defined?(QuietReporter)
                        QuietReporter.new($stdout, colorize: colorize)
                      when :verbose
+                       require_relative "verbose_reporter" unless defined?(VerboseReporter)
                        VerboseReporter.new($stdout, colorize: colorize)
                      when :very_verbose
+                       require_relative "very_verbose_reporter" unless defined?(VeryVerboseReporter)
                        VeryVerboseReporter.new($stdout, colorize: colorize)
                      when :summary
+                       require_relative "summary_reporter" unless defined?(SummaryReporter)
                        SummaryReporter.new($stdout, colorize: colorize)
                      else
+                       require_relative "summary_reporter" unless defined?(SummaryReporter)
                        SummaryReporter.new($stdout, colorize: colorize)
                      end
                    elsif quiet
+                     require_relative "quiet_reporter" unless defined?(QuietReporter)
                      QuietReporter.new($stdout, colorize: colorize)
                    elsif verbose
+                     require_relative "verbose_reporter" unless defined?(VerboseReporter)
                      VerboseReporter.new($stdout, colorize: colorize)
                    else
+                     require_relative "summary_reporter" unless defined?(SummaryReporter)
                      SummaryReporter.new($stdout, colorize: colorize)
                    end
 
@@ -76,6 +80,7 @@ module PngConform
       # @param reporter [BaseReporter] Reporter to wrap
       # @return [PaletteReporter] Wrapped reporter
       def self.wrap_with_palette(reporter)
+        require_relative "palette_reporter" unless defined?(PaletteReporter)
         PaletteReporter.new(reporter)
       end
 
@@ -86,6 +91,7 @@ module PngConform
       # @param escape_mode [Symbol] Explicit escape mode setting
       # @return [TextReporter] Wrapped reporter
       def self.wrap_with_text(reporter, seven_bit, escape_mode)
+        require_relative "text_reporter" unless defined?(TextReporter)
         mode = if escape_mode == :none
                  (seven_bit ? :seven_bit : :none)
                else
@@ -99,6 +105,7 @@ module PngConform
       # @param reporter [BaseReporter] Reporter to wrap
       # @return [ColorReporter] Wrapped reporter
       def self.wrap_with_color(reporter)
+        require_relative "color_reporter" unless defined?(ColorReporter)
         ColorReporter.new(reporter)
       end
 

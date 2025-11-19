@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/ancillary/gama_validator"
 
 RSpec.describe PngConform::Validators::Ancillary::GamaValidator do
   let(:context) { PngConform::Validators::ValidationContext.new }

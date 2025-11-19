@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "png_conform/reporters/yaml_reporter"
+
 RSpec.describe PngConform::Reporters::YamlReporter do
   let(:output) { StringIO.new }
   let(:reporter) { described_class.new(output) }

@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/reporters/color_reporter"
+require "png_conform/reporters/summary_reporter"
 
 RSpec.describe PngConform::Reporters::ColorReporter do
   let(:base_reporter) { PngConform::Reporters::SummaryReporter.new }

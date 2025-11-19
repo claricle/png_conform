@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/ancillary/sbit_validator"
 
 RSpec.describe PngConform::Validators::Ancillary::SbitValidator do
   let(:context) { PngConform::Validators::ValidationContext.new }

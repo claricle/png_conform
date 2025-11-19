@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/validators/mng/clon_validator"
 
 RSpec.describe PngConform::Validators::Mng::ClonValidator do
   let(:validation_context) { PngConform::Validators::ValidationContext.new }
