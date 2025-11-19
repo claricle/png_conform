@@ -88,8 +88,9 @@ module PngConform
 
         # Read and validate the file using streaming reader
         Readers::StreamingReader.open(file_path) do |reader|
-          # Perform validation
-          validator = Services::ValidationService.new(reader, file_path)
+          # Perform validation - pass options for conditional analyzers (Phase 1.1 + 1.2)
+          validator = Services::ValidationService.new(reader, file_path,
+                                                      options)
           file_analysis = validator.validate
 
           # Track if any errors were found

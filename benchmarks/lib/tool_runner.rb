@@ -58,7 +58,7 @@ class ToolRunner
       execution_time: ((end_time - start_time) * 1000).round(3), # milliseconds
       memory_used: end_memory - start_memory,
       peak_memory: end_memory,
-      result: result
+      result: result,
     }
   end
 
@@ -90,7 +90,7 @@ class ToolRunner
         stdout: "",
         stderr: "Command timed out after #{timeout} seconds",
         exit_code: -1,
-        timed_out: true
+        timed_out: true,
       }
     end
 
@@ -98,7 +98,7 @@ class ToolRunner
       stdout: stdout,
       stderr: stderr,
       exit_code: status.exitstatus,
-      timed_out: false
+      timed_out: false,
     }
   end
 end

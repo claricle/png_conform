@@ -31,7 +31,7 @@ class PngConformRunner < ToolRunner
         exit_code: result[:exit_code],
         stdout: result[:stdout],
         stderr: result[:stderr],
-        timed_out: result[:timed_out]
+        timed_out: result[:timed_out],
       }
     end
   end
@@ -43,8 +43,8 @@ class PngConformRunner < ToolRunner
 
     # Add --quiet by default to reduce output parsing overhead
     cli_opts << "--quiet" unless cli_opts.include?("--quiet") ||
-                                  cli_opts.include?("-q") ||
-                                  cli_opts.include?("--verbose")
+      cli_opts.include?("-q") ||
+      cli_opts.include?("--verbose")
 
     cli_opts.join(" ")
   end
@@ -61,8 +61,8 @@ class PngConformRunner < ToolRunner
         exit_code: -1,
         stdout: "",
         stderr: message,
-        timed_out: false
-      }
+        timed_out: false,
+      },
     }
   end
 end
