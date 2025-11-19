@@ -136,28 +136,28 @@ module PngConform
         # @return [Hash] Map of chunk types to validators in category
         def validators_by_category(category)
           chunk_types = case category
-          when :critical
-            %w[IHDR PLTE IDAT IEND]
-          when :text
-            %w[tEXt zTXt iTXt]
-          when :color
-            %w[gAMA cHRM sRGB sBIT bKGD iCCP]
-          when :palette
-            %w[hIST sPLT tRNS]
-          when :metadata
-            %w[pHYs tIME oFFs pCAL sCAL sTER]
-          when :png3
-            %w[cICP mDCv]
-          when :apng
-            %w[acTL fcTL fdAT]
-          when :mng
-            %w[MHDR MEND DHDR FRAM DEFI BACK LOOP ENDL TERM SAVE SEEK
-               MOVE CLIP SHOW CLON DISC]
-          when :jng
-            %w[JHDR JDAT JSEP]
-          else
-            []
-          end
+                        when :critical
+                          %w[IHDR PLTE IDAT IEND]
+                        when :text
+                          %w[tEXt zTXt iTXt]
+                        when :color
+                          %w[gAMA cHRM sRGB sBIT bKGD iCCP]
+                        when :palette
+                          %w[hIST sPLT tRNS]
+                        when :metadata
+                          %w[pHYs tIME oFFs pCAL sCAL sTER]
+                        when :png3
+                          %w[cICP mDCv]
+                        when :apng
+                          %w[acTL fcTL fdAT]
+                        when :mng
+                          %w[MHDR MEND DHDR FRAM DEFI BACK LOOP ENDL TERM SAVE SEEK
+                             MOVE CLIP SHOW CLON DISC]
+                        when :jng
+                          %w[JHDR JDAT JSEP]
+                        else
+                          []
+                        end
 
           # Load validators for this category
           chunk_types.each_with_object({}) do |chunk_type, result|
