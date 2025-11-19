@@ -261,11 +261,11 @@ module PngConform
           result.crc_errors_count = crc_error_count
 
           # Calculate compression ratio for PNG files (Phase 1.2: lazy calculation)
-          if result.file_type == "PNG" && need_compression_ratio?
-            result.compression_ratio = calculate_compression_ratio(result.chunks)
-          else
-            result.compression_ratio = 0.0
-          end
+          result.compression_ratio = if result.file_type == "PNG" && need_compression_ratio?
+                                       calculate_compression_ratio(result.chunks)
+                                     else
+                                       0.0
+                                     end
 
           # Add errors from service (@results)
           @results.select { |r| r[:type] == :error }.each do |r|
