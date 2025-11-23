@@ -16,8 +16,9 @@ extensibility and maintainability.
 
 == Features
 
-* *46 Chunk Validators*: Complete validation of PNG (24), APNG (3), MNG (16), and JNG (3) chunks
+* *47 Chunk Validators*: Complete validation of PNG (24), APNG (3), MNG (16), JNG (3), and Apple extensions (1) chunks
 * *PNG 3rd Edition Support*: Includes cICP and mDCv chunks for HDR content
+* *Apple Extensions Support*: Includes iDOT chunk for macOS/iOS display optimization
 * *MNG/JNG Support*: Full Multiple-image Network Graphics and JPEG Network Graphics validation
 * *CRC Validation*: CRC-32 checksum verification for all chunks with detailed error reporting
 * *Chunk Ordering*: Validates proper chunk sequence and dependencies
@@ -35,7 +36,7 @@ extensibility and maintainability.
 * *Multiple Output Modes*: Summary, verbose, very verbose, quiet, with optional palette/text/color output
 * *Clean Architecture*: Layered OO design following MECE principles
 * *CLI Interface*: Thor-based command-line tool with pngcheck-compatible options plus modern analysis features
-* *Comprehensive Testing*: Extensive RSpec test suite (936 examples, 100% passing)
+* *Comprehensive Testing*: Extensive RSpec test suite (941 examples, 100% passing)
 
 == Architecture
 
