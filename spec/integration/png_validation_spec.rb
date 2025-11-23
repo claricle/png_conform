@@ -10,7 +10,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn0g01.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be true
@@ -21,7 +20,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn2c08.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be true
@@ -31,7 +29,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn3p08.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be true
@@ -43,7 +40,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "corrupted/xhdn0g08.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be false
@@ -56,7 +52,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "ordering/oi1n0g16.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be true
@@ -66,7 +61,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "corrupted/xcsn0g01.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       expect(result.valid?).to be false
@@ -79,7 +73,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn2c08.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       chunk_types = result.chunks.map(&:type).uniq
@@ -95,7 +88,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn0g01.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       result = PngConform::Services::ValidationService.validate_file(file_path)
       chunk_types = result.chunks.map(&:type).uniq
@@ -113,7 +105,6 @@ RSpec.describe "PNG Validation Integration" do
       skip "PngSuite fixtures not available" unless File.directory?(fixture_dir)
 
       file_path = File.join(fixture_dir, "basic/non_interlaced/basn2c08.png")
-      skip "Test file not found" unless File.exist?(file_path)
 
       # Validate file
       result = PngConform::Services::ValidationService.validate_file(file_path)
