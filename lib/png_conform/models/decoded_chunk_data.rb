@@ -139,5 +139,38 @@ module PngConform
                year, month, day, hour, minute, second)
       end
     end
+
+    # iDOT chunk decoded data
+    class IdotData < DecodedChunkData
+      attribute :display_scale, :integer
+      attribute :pixel_format, :integer
+      attribute :color_space, :integer
+      attribute :backing_scale_factor, :integer
+      attribute :flags, :integer
+      attribute :reserved1, :integer
+      attribute :reserved2, :integer
+
+      def summary
+        parts = []
+        parts << "display scale: #{display_scale}" if display_scale
+        parts << "pixel format: #{pixel_format}" if pixel_format
+        parts << "color space: #{color_space}" if color_space
+        parts << "backing scale: #{backing_scale_factor}" if backing_scale_factor
+        parts.join(", ")
+      end
+
+      # Format all seven values for detailed display
+      def detailed_info
+        [
+          display_scale,
+          pixel_format,
+          color_space,
+          backing_scale_factor,
+          flags,
+          reserved1,
+          reserved2,
+        ].join(", ")
+      end
+    end
   end
 end

@@ -22,6 +22,7 @@ module PngConform
     # - Palette support (hIST, sPLT, tRNS)
     # - Metadata (pHYs, tIME, oFFs, pCAL, sCAL, sTER)
     # - PNG 3rd edition (cICP, mDCv)
+    # - Apple extensions (iDOT)
     # - APNG (acTL, fcTL, fdAT)
     # - MNG (MHDR, MEND, DHDR, FRAM, DEFI, BACK, LOOP, ENDL, etc.)
     # - JNG (JHDR, JDAT, JSEP)
@@ -67,6 +68,9 @@ module PngConform
         # PNG 3rd edition
         "cICP" => ["ancillary/cicp_validator", "Ancillary", "CicpValidator"],
         "mDCv" => ["ancillary/mdcv_validator", "Ancillary", "MdcvValidator"],
+
+        # Apple extensions
+        "iDOT" => ["ancillary/idot_validator", "Ancillary", "IdotValidator"],
 
         # APNG (Animated PNG)
         "acTL" => ["apng/actl_validator", "Apng", "ActlValidator"],
