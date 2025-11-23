@@ -60,7 +60,7 @@ module PngConform
 
         # Check chunk length
         def check_length
-          actual_length = chunk.chunk_data.length
+          actual_length = chunk.chunk_data.bytesize
 
           unless actual_length == EXPECTED_LENGTH
             add_error("iDOT chunk wrong length (#{actual_length} byte(s), " \
