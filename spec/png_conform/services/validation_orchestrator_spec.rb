@@ -2,11 +2,11 @@
 
 require "spec_helper"
 
-RSpec.describe PngConform::Services::ValidationService do
+RSpec.describe PngConform::Services::ValidationOrchestrator do
   describe "#validate" do
     context "with valid PNG structure" do
       let(:reader) { create_mock_reader(valid_chunks) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:valid_chunks) do
         [
@@ -17,13 +17,13 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "returns a file analysis" do
-        result = service.validate
+        result = orchestrator.validate
         expect(result).to be_a(PngConform::Models::FileAnalysis)
         expect(result.validation_result).to be_a(PngConform::Models::ValidationResult)
       end
 
       it "validates the PNG signature" do
-        result = service.validate
+        result = orchestrator.validate
         # Should not have signature errors for valid structure
         signature_errors = result.errors.select do |e|
           e.message.include?("signature")
@@ -32,7 +32,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "validates chunk sequence" do
-        result = service.validate
+        result = orchestrator.validate
         # IHDR first, IEND last, IDAT present - should be valid
         expect(result.error_count).to eq(0)
       end
@@ -40,7 +40,7 @@ RSpec.describe PngConform::Services::ValidationService do
 
     context "with missing IHDR" do
       let(:reader) { create_mock_reader(chunks_without_ihdr) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:chunks_without_ihdr) do
         [
@@ -50,7 +50,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "adds error for missing IHDR" do
-        result = service.validate
+        result = orchestrator.validate
         expect(result.error_count).to be > 0
         ihdr_errors = result.errors.select { |e| e.message.include?("IHDR") }
         expect(ihdr_errors).not_to be_empty
@@ -59,7 +59,7 @@ RSpec.describe PngConform::Services::ValidationService do
 
     context "with missing IEND" do
       let(:reader) { create_mock_reader(chunks_without_iend) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:chunks_without_iend) do
         [
@@ -69,7 +69,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "adds error for missing IEND" do
-        result = service.validate
+        result = orchestrator.validate
         expect(result.error_count).to be > 0
         iend_errors = result.errors.select { |e| e.message.include?("IEND") }
         expect(iend_errors).not_to be_empty
@@ -78,7 +78,7 @@ RSpec.describe PngConform::Services::ValidationService do
 
     context "with missing IDAT" do
       let(:reader) { create_mock_reader(chunks_without_idat) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:chunks_without_idat) do
         [
@@ -88,7 +88,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "adds error for missing IDAT" do
-        result = service.validate
+        result = orchestrator.validate
         expect(result.error_count).to be > 0
         idat_errors = result.errors.select { |e| e.message.include?("IDAT") }
         expect(idat_errors).not_to be_empty
@@ -97,7 +97,7 @@ RSpec.describe PngConform::Services::ValidationService do
 
     context "with unknown critical chunk" do
       let(:reader) { create_mock_reader(chunks_with_unknown_critical) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:chunks_with_unknown_critical) do
         [
@@ -109,7 +109,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "adds error for unknown critical chunk" do
-        result = service.validate
+        result = orchestrator.validate
         expect(result.error_count).to be > 0
         unknown_errors = result.errors.select do |e|
           e.message.include?("Unknown") && e.message.include?("critical")
@@ -120,7 +120,7 @@ RSpec.describe PngConform::Services::ValidationService do
 
     context "with unknown ancillary chunk" do
       let(:reader) { create_mock_reader(chunks_with_unknown_ancillary) }
-      let(:service) { described_class.new(reader, "test.png") }
+      let(:orchestrator) { described_class.new(reader, "test.png") }
 
       let(:chunks_with_unknown_ancillary) do
         [
@@ -132,7 +132,7 @@ RSpec.describe PngConform::Services::ValidationService do
       end
 
       it "does not add error for unknown ancillary chunk" do
-        result = service.validate
+        result = orchestrator.validate
         # Unknown ancillary chunks are allowed per PNG spec
         # Check that there are no critical chunk errors
         unknown_critical_errors = result.errors.select do |e|

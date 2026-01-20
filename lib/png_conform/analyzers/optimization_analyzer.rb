@@ -1,20 +1,14 @@
 # frozen_string_literal: true
 
+require_relative "../configuration"
+
 module PngConform
   module Analyzers
     # Analyzes PNG files for optimization opportunities
     class OptimizationAnalyzer
-      # Chunks that are often unnecessary for web/mobile use
-      UNNECESSARY_FOR_WEB = %w[tIME pHYs oFFs pCAL sCAL sTER].freeze
-
-      # Text chunk types
-      TEXT_CHUNKS = %w[tEXt zTXt iTXt].freeze
-
-      # Metadata chunk types
-      METADATA_CHUNKS = %w[tEXt zTXt iTXt tIME pHYs].freeze
-
-      def initialize(result)
+      def initialize(result, config: Configuration.instance)
         @result = result
+        @config = config
         @suggestions = []
       end
 
@@ -37,7 +31,7 @@ module PngConform
 
       def check_unnecessary_chunks
         unnecessary = @result.chunks.select do |c|
-          UNNECESSARY_FOR_WEB.include?(c.type)
+          @config.unnecessary_web_chunks.include?(c.type)
         end
         return if unnecessary.empty?
 
@@ -61,14 +55,17 @@ module PngConform
         # Estimate if 8-bit would be sufficient
         if could_use_8_bit?
           current_size = @result.file_size
-          estimated_savings = (current_size * 0.45).to_i # ~45% reduction
+          estimated_savings = (
+            current_size *
+            @config.optimization_percentages[:bit_depth_reduction] / 100.0
+          ).to_i
 
           @suggestions << {
             type: :reduce_bit_depth,
             priority: :high,
             savings_bytes: estimated_savings,
             description: "Convert from 16-bit to 8-bit depth " \
-                        "(estimated ~45% file size reduction)",
+                        "(estimated ~#{@config.optimization_percentages[:bit_depth_reduction]}% file size reduction)",
             current: "16-bit",
             recommended: "8-bit",
           }
@@ -79,15 +76,18 @@ module PngConform
         # Get color type from IHDR
         ihdr = @result.ihdr_chunk
         return unless ihdr && get_color_type(ihdr) == 2 # RGB
-        return if @result.file_size < 10_000 # Skip small files
+        return if @result.file_size < @config.size_thresholds[:palette_opportunity]
 
         # If it's RGB but could be palette
         @suggestions << {
           type: :convert_to_palette,
           priority: :medium,
-          savings_bytes: (@result.file_size * 0.30).to_i,
+          savings_bytes: (
+            @result.file_size *
+            @config.optimization_percentages[:palette_conversion] / 100.0
+          ).to_i,
           description: "Consider converting to palette mode if using limited colors " \
-                      "(potential ~30% reduction)",
+                      "(potential ~#{@config.optimization_percentages[:palette_conversion]}% reduction)",
           current: "RGB (Truecolor)",
           recommended: "Indexed (Palette)",
         }
@@ -99,25 +99,30 @@ module PngConform
         return unless ihdr && get_interlace_method(ihdr) == 1
 
         # Interlaced PNGs are larger
-        savings = (@result.file_size * 0.15).to_i
+        savings = (
+          @result.file_size *
+          @config.optimization_percentages[:interlace_removal] / 100.0
+        ).to_i
 
         @suggestions << {
           type: :remove_interlacing,
           priority: :low,
           savings_bytes: savings,
           description: "Remove interlacing for smaller file size " \
-                      "(~15% reduction, but slower initial display)",
+                      "(~#{@config.optimization_percentages[:interlace_removal]}% reduction, but slower initial display)",
           current: "Adam7 interlaced",
           recommended: "Non-interlaced",
         }
       end
 
       def check_text_chunks
-        text_chunks = @result.chunks.select { |c| TEXT_CHUNKS.include?(c.type) }
+        text_chunks = @result.chunks.select do |c|
+          @config.text_chunks.include?(c.type)
+        end
         return if text_chunks.empty?
 
         total_text_size = text_chunks.sum { |c| c.length + 12 }
-        return if total_text_size < 500 # Ignore small metadata
+        return if total_text_size < @config.size_thresholds[:text_metadata]
 
         @suggestions << {
           type: :reduce_metadata,
@@ -131,14 +136,15 @@ module PngConform
 
       def check_metadata_size
         metadata_chunks = @result.chunks.select do |c|
-          METADATA_CHUNKS.include?(c.type)
+          @config.metadata_chunks.include?(c.type)
         end
 
         total_metadata = metadata_chunks.sum { |c| c.length + 12 }
         file_size = @result.file_size
 
-        # If metadata is more than 10% of file size
-        return unless total_metadata > file_size * 0.1
+        # If metadata is more than threshold percent of file size
+        threshold = @config.optimization_percentages[:metadata_threshold]
+        return unless total_metadata > file_size * threshold / 100.0
 
         @suggestions << {
           type: :excessive_metadata,
@@ -173,7 +179,7 @@ module PngConform
       def could_use_8_bit?
         # Conservative heuristic: suggest 8-bit for smaller files
         # Without pixel analysis, we're conservative
-        @result.file_size < 100_000
+        @result.file_size < @config.size_thresholds[:small_file]
       end
 
       def calculate_total_savings

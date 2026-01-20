@@ -36,6 +36,10 @@ module PngConform
               --metrics               Show detailed metrics (JSON/YAML)
               --resolution            Show resolution and Retina analysis
               --mobile-ready          Check mobile and Retina readiness
+              --batch                 Enable batch chunk validation (default: enabled)
+              --no-batch              Disable batch chunk validation
+              --parallel, -j         Enable parallel processing for multiple files
+              --jobs, -j NUM         Number of parallel threads (default: CPU count)
 
             Examples:
               png_conform check image.png
@@ -72,6 +76,14 @@ module PngConform
                         desc: "Show resolution and Retina/DPI analysis"
     option :mobile_ready, type: :boolean, default: false,
                           desc: "Check mobile and Retina readiness"
+    option :batch, type: :boolean, default: true,
+                   desc: "Enable batch chunk validation (faster for files with many chunks)"
+    option :no_batch, type: :boolean, default: false,
+                      desc: "Disable batch chunk validation"
+    option :parallel, type: :boolean, default: false, aliases: "-j",
+                      desc: "Enable parallel processing for multiple files"
+    option :jobs, type: :numeric, default: nil, aliases: "-j",
+                  desc: "Number of parallel threads (default: CPU count)"
     def check(*files)
       Commands::CheckCommand.new(files, options).run
     end

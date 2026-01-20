@@ -1,22 +1,14 @@
 # frozen_string_literal: true
 
+require_relative "../configuration"
+
 module PngConform
   module Analyzers
     # Analyzes PNG resolution and DPI for various use cases
     class ResolutionAnalyzer
-      # Standard DPI values
-      SCREEN_DPI = 72
-      PRINT_DPI_LOW = 150
-      PRINT_DPI_STANDARD = 300
-      PRINT_DPI_HIGH = 600
-
-      # Retina display densities
-      RETINA_1X = 1.0
-      RETINA_2X = 2.0
-      RETINA_3X = 3.0
-
-      def initialize(result)
+      def initialize(result, config: Configuration.instance)
         @result = result
+        @config = config
         ihdr = result.ihdr_chunk
         @width = ihdr ? get_width(ihdr) : 0
         @height = ihdr ? get_height(ihdr) : 0
@@ -63,9 +55,9 @@ module PngConform
       def retina_analysis
         analysis = {
           is_retina_ready: check_retina_ready,
-          at_1x: calculate_physical_size(RETINA_1X),
-          at_2x: calculate_physical_size(RETINA_2X),
-          at_3x: calculate_physical_size(RETINA_3X),
+          at_1x: calculate_physical_size(@config.retina_scalers["1x"]),
+          at_2x: calculate_physical_size(@config.retina_scalers["2x"]),
+          at_3x: calculate_physical_size(@config.retina_scalers["3x"]),
         }
 
         analysis[:recommended_density] = recommend_density
@@ -82,7 +74,7 @@ module PngConform
         height_inches = @height.to_f / @dpi
 
         {
-          capable: @dpi >= PRINT_DPI_LOW,
+          capable: @dpi >= @config.print_dpi_thresholds[:minimum],
           dpi: @dpi,
           physical_size: {
             width_inches: width_inches.round(2),
@@ -97,9 +89,11 @@ module PngConform
 
       def web_analysis
         {
-          suitable_for_web: @width <= 4096 && @height <= 4096,
+          suitable_for_web: @width <= @config.size_thresholds[:large_for_web] &&
+            @height <= @config.size_thresholds[:large_for_web],
           typical_screen_size: calculate_screen_coverage,
-          mobile_friendly: @width <= 1920 && @height <= 1920,
+          mobile_friendly: @width <= @config.size_thresholds[:large_for_mobile] &&
+            @height <= @config.size_thresholds[:large_for_mobile],
           retina_optimized: @width >= 1000 && @height >= 1000,
           load_time_estimate: estimate_load_time,
         }
@@ -119,15 +113,15 @@ module PngConform
       end
 
       def check_retina_ready
-        @width >= 88 && @height >= 88
+        @width >= @config.size_thresholds[:retina_ready_min] &&
+          @height >= @config.size_thresholds[:retina_ready_min]
       end
 
       def calculate_physical_size(density)
-        css_reference_dpi = 163
-        effective_dpi = css_reference_dpi * density
+        effective_dpi = @config.css_reference_dpi * density
 
-        width_points = (@width.to_f / effective_dpi * 72).round(1)
-        height_points = (@height.to_f / effective_dpi * 72).round(1)
+        width_points = (@width.to_f / effective_dpi * @config.screen_dpi).round(1)
+        height_points = (@height.to_f / effective_dpi * @config.screen_dpi).round(1)
 
         {
           width_points: width_points,
@@ -181,15 +175,19 @@ module PngConform
         return "Unknown" unless @dpi
 
         case @dpi
-        when 0...PRINT_DPI_LOW then "Not suitable"
-        when PRINT_DPI_LOW...PRINT_DPI_STANDARD then "Acceptable"
-        when PRINT_DPI_STANDARD...PRINT_DPI_HIGH then "Good"
-        else "Excellent"
+        when 0...@config.print_dpi_thresholds[:minimum]
+          "Not suitable"
+        when @config.print_dpi_thresholds[:minimum]...@config.print_dpi_thresholds[:good]
+          "Acceptable"
+        when @config.print_dpi_thresholds[:good]...@config.print_dpi_thresholds[:excellent]
+          "Good"
+        else
+          "Excellent"
         end
       end
 
       def suitable_print_sizes
-        return [] unless @dpi && @dpi >= PRINT_DPI_LOW
+        return [] unless @dpi && @dpi >= @config.print_dpi_thresholds[:minimum]
 
         width_in = @width.to_f / @dpi
         height_in = @height.to_f / @dpi
@@ -227,8 +225,7 @@ module PngConform
 
       def estimate_load_time
         file_size = @result.file_size
-        mbps = 5
-        bytes_per_second = (mbps * 1_000_000 / 8).to_i
+        bytes_per_second = @config.network_speeds[:fast]
         seconds = file_size.to_f / bytes_per_second
 
         if seconds < 0.1
@@ -243,7 +240,8 @@ module PngConform
       def generate_recommendations
         recs = []
 
-        if @width < 100 && @height < 100
+        if @width < @config.size_thresholds[:retina_ready_min] &&
+            @height < @config.size_thresholds[:retina_ready_min]
           recs << {
             category: :retina,
             priority: :high,
@@ -259,7 +257,8 @@ module PngConform
           }
         end
 
-        if @width > 3000 || @height > 3000
+        if @width > @config.size_thresholds[:very_large] ||
+            @height > @config.size_thresholds[:very_large]
           recs << {
             category: :web,
             priority: :high,

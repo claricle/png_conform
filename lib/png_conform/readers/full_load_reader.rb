@@ -21,12 +21,14 @@ module PngConform
     #   end
     #
     class FullLoadReader
-      attr_reader :io, :png
+      attr_reader :io, :png, :total_bytes_read
 
       # Initialize a new full-load reader
       #
       # @param filepath_or_io [String, IO] File path or IO object to read from
-      def initialize(filepath_or_io)
+      # @param options [Hash] Options for reading behavior
+      # @option options [Boolean] :validate_crc (true) Calculate CRC during reading
+      def initialize(filepath_or_io, options = {})
         if filepath_or_io.is_a?(String)
           # File path provided
           @filepath = filepath_or_io
@@ -38,6 +40,8 @@ module PngConform
           @owns_io = false
         end
         @png = nil
+        @total_bytes_read = 0
+        @validate_crc = options.fetch(:validate_crc, true)
       end
 
       # Read the entire PNG file structure
@@ -48,6 +52,11 @@ module PngConform
 
         @io.rewind
         @png = BinData::PngFile.read(@io)
+
+        # Calculate total bytes from chunks
+        @total_bytes_read = @png.chunks.sum { |c| 12 + c.data_length }
+
+        @png
       end
 
       # Get PNG signature
@@ -75,9 +84,9 @@ module PngConform
         elsif @io.respond_to?(:stat)
           @io.stat.size
         else
-          # Fallback: calculate from PNG structure
+          # Use cached total bytes from chunks
           read unless @png
-          8 + @png.chunks.sum { |c| 12 + c.length }
+          8 + @total_bytes_read
         end
       end
 

@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require "yaml"
+require_relative "../configuration"
+
 module PngConform
   module Services
     # Profile manager for PNG validation profiles
@@ -7,16 +10,11 @@ module PngConform
     # Manages validation profiles that define which chunks are required,
     # optional, or prohibited for different PNG use cases.
     #
-    # Profiles can be used to validate PNG files against specific standards:
-    # - Web: Optimized for web browsers
-    # - Print: High quality for printing
-    # - Archive: Long-term preservation
-    # - Minimal: Minimal valid PNG
-    # - Strict: Full PNG specification compliance
+    # Profiles can be loaded from YAML configuration files or use built-in defaults.
     #
     class ProfileManager
-      # Built-in validation profiles
-      PROFILES = {
+      # Built-in validation profiles (fallback if YAML not available)
+      BUILTIN_PROFILES = {
         # Minimal valid PNG - only critical chunks
         minimal: {
           name: "Minimal",
@@ -99,10 +97,12 @@ module PngConform
       class << self
         # Get profile by name
         #
+        # Loads from YAML if available, otherwise uses built-in profiles
+        #
         # @param name [Symbol, String] Profile name
         # @return [Hash, nil] Profile configuration or nil if not found
         def get_profile(name)
-          PROFILES[name.to_sym]
+          profiles_from_yaml[name.to_sym] || BUILTIN_PROFILES[name.to_sym]
         end
 
         # Check if a profile exists
@@ -110,14 +110,15 @@ module PngConform
         # @param name [Symbol, String] Profile name
         # @return [Boolean] True if profile exists
         def profile_exists?(name)
-          PROFILES.key?(name.to_sym)
+          sym_name = name.to_sym
+          profiles_from_yaml.key?(sym_name) || BUILTIN_PROFILES.key?(sym_name)
         end
 
         # Get all available profile names
         #
         # @return [Array<Symbol>] List of profile names
         def available_profiles
-          PROFILES.keys
+          (profiles_from_yaml.keys | BUILTIN_PROFILES.keys).uniq.sort
         end
 
         # Get profile information
@@ -149,7 +150,7 @@ module PngConform
             )
           elsif profile[:required_chunks].include?(chunk_type)
             success_result("#{chunk_type} chunk required and present")
-          elsif profile[:optional_chunks].include?(chunk_type)
+          elsif profile[:optional_chunks].include?(chunk_type) || profile[:optional_chunks] == ["*"]
             success_result("#{chunk_type} chunk optional and present")
           else
             warning_result(
@@ -211,7 +212,35 @@ module PngConform
           results
         end
 
+        # Reload profiles from YAML
+        #
+        # @return [void]
+        def reload_yaml_profiles!
+          @profiles_from_yaml = nil
+        end
+
         private
+
+        # Load profiles from YAML configuration file
+        #
+        # @return [Hash] Profiles loaded from YAML
+        def profiles_from_yaml
+          @profiles_from_yaml ||= load_yaml_profiles
+        end
+
+        # Load profiles from YAML file
+        #
+        # @return [Hash] Loaded profiles or empty hash if file not found
+        def load_yaml_profiles
+          config_path = File.join(File.dirname(__FILE__),
+                                  "../../config/validation_profiles.yml")
+          return {} unless File.exist?(config_path)
+
+          YAML.load_file(config_path).transform_keys(&:to_sym)
+        rescue StandardError => e
+          warn "Failed to load profiles from YAML: #{e.message}"
+          {}
+        end
 
         # Create success result
         #

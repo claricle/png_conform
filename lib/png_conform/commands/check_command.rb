@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "../services/validation_service"
+require_relative "../container"
+require_relative "../utils/colorizer"
 require_relative "../services/profile_manager"
 require_relative "../reporters/reporter_factory"
-require_relative "../readers/streaming_reader"
 
 module PngConform
   module Commands
@@ -11,6 +11,7 @@ module PngConform
     #
     # Coordinates between readers, validators, and reporters to analyze
     # PNG files according to specified options and profiles.
+    #
     class CheckCommand
       attr_reader :files, :options
 
@@ -61,11 +62,102 @@ module PngConform
       end
 
       # Validate all specified files.
+      #
+      # Uses parallel validation if --parallel flag is set with multiple files.
+      # Otherwise processes files sequentially.
       def validate_files
         reporter = create_reporter
 
+        # Use parallel validation if enabled and multiple files
+        if files.length > 1 && @options[:parallel]
+          validate_files_parallel(reporter)
+        else
+          validate_files_sequential(reporter)
+        end
+      end
+
+      # Validate files sequentially (original behavior)
+      #
+      # @param reporter [Reporters::BaseReporter] Reporter for output
+      def validate_files_sequential(reporter)
         files.each do |file_path|
           validate_single_file(file_path, reporter)
+        end
+      end
+
+      # Validate files in parallel for better performance
+      #
+      # @param reporter [Reporters::BaseReporter] Reporter for output
+      def validate_files_parallel(reporter)
+        require_relative "../services/parallel_validator"
+
+        parallel_validator = Services::ParallelValidator.new(files, @options)
+        results = parallel_validator.validate_all
+
+        # Process results and report
+        results.each do |result|
+          if result.key?(:error)
+            handle_validation_error(result)
+            next
+          end
+
+          @errors_found = true unless result.valid?
+          reporter.report(result)
+
+          # Show additional analysis for text format
+          show_additional_analysis(result) if should_show_analysis?
+        end
+      rescue Interrupt
+        # Handle Ctrl+C gracefully
+        puts "\nValidation interrupted by user."
+        raise
+      rescue StandardError => e
+        puts "Error during parallel validation: #{e.message}"
+        puts e.backtrace.join("\n") if @options[:verbose]
+        @errors_found = true
+      end
+
+      # Handle validation error from parallel processing
+      #
+      # @param error_result [Hash] Error result from parallel validation
+      def handle_validation_error(error_result)
+        puts "Error: #{error_result[:error]}"
+        @errors_found = true
+
+        if error_result[:backtrace] && @options[:verbose]
+          puts "Backtrace:"
+          error_result[:backtrace].each { |line| puts "  #{line}" }
+        end
+      end
+
+      # Check if additional analysis should be shown
+      #
+      # @return [Boolean] True if analysis should be shown
+      def should_show_analysis?
+        return false if @options[:quiet]
+        return true if @options[:metrics] || @options[:mobile_ready] || @options[:resolution] || @options[:optimize]
+
+        # Text format shows analysis by default (unless quiet)
+        @options[:format].nil? || @options[:format] == "text"
+      end
+
+      # Show additional analysis (resolution, optimization, metrics)
+      #
+      # @param file_analysis [FileAnalysis] File analysis results
+      def show_additional_analysis(file_analysis)
+        show_resolution_analysis(file_analysis) if @options[:resolution] || @options[:mobile_ready]
+        show_optimization_suggestions(file_analysis) if @options[:optimize]
+        show_metrics(file_analysis) if @options[:metrics]
+        show_mobile_readiness(file_analysis) if @options[:mobile_ready]
+
+        # Default: show resolution and optimization for text format (unless quiet)
+        if (@options[:format].nil? || @options[:format] == "text") &&
+            !@options[:quiet] &&
+            !@options[:resolution] &&
+            !@options[:mobile_ready] &&
+            !@options[:optimize]
+          show_resolution_analysis(file_analysis)
+          show_optimization_suggestions(file_analysis)
         end
       end
 
@@ -86,12 +178,12 @@ module PngConform
           return
         end
 
-        # Read and validate the file using streaming reader
-        Readers::StreamingReader.open(file_path) do |reader|
-          # Perform validation - pass options for conditional analyzers (Phase 1.1 + 1.2)
-          validator = Services::ValidationService.new(reader, file_path,
-                                                      options)
-          file_analysis = validator.validate
+        # Use container to create reader and orchestrator
+        Container.open_reader(:streaming, file_path) do |reader|
+          options_with_path = @options.merge(filepath: file_path)
+          orchestrator = Container.validation_orchestrator(reader, file_path,
+                                                           options_with_path)
+          file_analysis = orchestrator.validate
 
           # Track if any errors were found
           @errors_found = true unless file_analysis.valid?
@@ -99,15 +191,8 @@ module PngConform
           # Use reporter to output result
           reporter.report(file_analysis)
 
-          # For text output (default), show additional analysis unless quiet
-          if (options[:format].nil? || options[:format] == "text") && !options[:quiet]
-            show_resolution_analysis(file_analysis)
-            show_optimization_suggestions(file_analysis)
-          end
-
-          # Explicit flags always show
-          show_metrics(file_analysis) if options[:metrics]
-          show_mobile_readiness(file_analysis) if options[:mobile_ready]
+          # Show additional analysis
+          show_additional_analysis(file_analysis) if should_show_analysis?
         end
       rescue StandardError => e
         puts "Error processing #{file_path}: #{e.message}"
@@ -119,7 +204,7 @@ module PngConform
       #
       # @return [Reporters::BaseReporter] Reporter instance
       def create_reporter
-        Reporters::ReporterFactory.create(
+        Container.reporter(
           format: options[:format] || "text",
           verbose: options[:verbose] || options[:very_verbose],
           quiet: options[:quiet],
@@ -136,13 +221,10 @@ module PngConform
         return unless analysis && analysis[:suggestions]
         return if analysis[:suggestions].empty?
 
-        puts "\n#{colorize('OPTIMIZATION SUGGESTIONS:', :bold)}"
+        puts "\n#{Utils::Colorizer.bold('OPTIMIZATION SUGGESTIONS:')}"
         analysis[:suggestions].each_with_index do |suggestion, index|
-          priority_color = priority_color(suggestion[:priority])
-          priority_label = suggestion[:priority].to_s.upcase
-
-          puts "  #{index + 1}. [#{colorize(priority_label,
-                                            priority_color)}] #{suggestion[:description]}"
+          puts "  #{index + 1}. #{Utils::Colorizer.priority(suggestion[:description],
+                                                            suggestion[:priority])}"
           if suggestion[:savings_bytes]&.positive?
             puts "     Savings: #{format_bytes(suggestion[:savings_bytes])}"
           end
@@ -150,7 +232,7 @@ module PngConform
 
         total_savings = analysis[:potential_savings_bytes]
         if total_savings.positive?
-          puts "\n  #{colorize('Total Potential Savings:', :bold)} " \
+          puts "\n  #{Utils::Colorizer.bold('Total Potential Savings:')} " \
                "#{format_bytes(total_savings)} (#{analysis[:potential_savings_percent]}%)"
         end
       end
@@ -169,7 +251,7 @@ module PngConform
           puts metrics.to_yaml
         else
           # Text format with colored output
-          puts "\n#{colorize('METRICS:', :bold)}"
+          puts "\n#{Utils::Colorizer.bold('METRICS:')}"
           puts "  File: #{metrics[:file][:filename]} (#{metrics[:file][:size_kb]} KB)"
           puts "  Image: #{metrics[:image][:dimensions]}, #{metrics[:image][:color_type_name]}, " \
                "#{metrics[:image][:bit_depth]}-bit"
@@ -184,7 +266,7 @@ module PngConform
         analysis = file_analysis.resolution_analysis
         return unless analysis
 
-        puts "\n#{colorize('RESOLUTION ANALYSIS:', :bold)}"
+        puts "\n#{Utils::Colorizer.bold('RESOLUTION ANALYSIS:')}"
 
         # Basic info
         res = analysis[:resolution]
@@ -192,7 +274,7 @@ module PngConform
         puts "  DPI: #{res[:dpi] || 'Not specified'}"
 
         # Retina analysis
-        puts "\n  #{colorize('Retina Analysis:', :bold)}"
+        puts "\n  #{Utils::Colorizer.bold('Retina Analysis:')}"
         retina = analysis[:retina]
         puts "    @1x: #{retina[:at_1x][:dimensions_pt]} (#{retina[:at_1x][:suitable_for].first})"
         puts "    @2x: #{retina[:at_2x][:dimensions_pt]} (#{retina[:at_2x][:suitable_for].first})"
@@ -211,7 +293,7 @@ module PngConform
         # Print analysis if DPI available
         if analysis[:print][:capable]
           print_info = analysis[:print]
-          puts "\n  #{colorize('Print Analysis:', :bold)}"
+          puts "\n  #{Utils::Colorizer.bold('Print Analysis:')}"
           puts "    Quality: #{print_info[:quality]} (#{print_info[:dpi]} DPI)"
           phys = print_info[:physical_size]
           puts "    Physical Size: #{phys[:width_inches]}\" x #{phys[:height_inches]}\" " \
@@ -221,11 +303,10 @@ module PngConform
         # Recommendations
         recommendations = analysis[:recommendations]
         if recommendations && !recommendations.empty?
-          puts "\n  #{colorize('Recommendations:', :bold)}"
+          puts "\n  #{Utils::Colorizer.bold('Recommendations:')}"
           recommendations.each do |rec|
-            priority_color = priority_color(rec[:priority])
-            puts "    [#{colorize(rec[:priority].to_s.upcase,
-                                  priority_color)}] #{rec[:message]}"
+            puts "    #{Utils::Colorizer.priority(rec[:message],
+                                                  rec[:priority])}"
           end
         end
       end
@@ -235,7 +316,7 @@ module PngConform
         analysis = file_analysis.resolution_analysis
         return unless analysis
 
-        puts "\n#{colorize('MOBILE & RETINA READINESS:', :bold)}"
+        puts "\n#{Utils::Colorizer.bold('MOBILE & RETINA READINESS:')}"
 
         retina = analysis[:retina]
         web = analysis[:web]
@@ -243,10 +324,9 @@ module PngConform
         # Overall readiness
         is_ready = retina[:is_retina_ready] && web[:mobile_friendly]
         status = if is_ready
-                   colorize("✓ READY",
-                            :green)
+                   Utils::Colorizer.success("✓ READY")
                  else
-                   colorize("✗ NOT READY", :red)
+                   Utils::Colorizer.error("✗ NOT READY")
                  end
         puts "  Status: #{status}"
 
@@ -276,7 +356,7 @@ module PngConform
       # Helper methods for formatting
 
       def format_check(passed)
-        passed ? colorize("✓", :green) : colorize("✗", :red)
+        passed ? Utils::Colorizer.success("✓") : Utils::Colorizer.error("✗")
       end
 
       def format_bytes(bytes)
@@ -296,21 +376,6 @@ module PngConform
         when :low then :blue
         else :default
         end
-      end
-
-      def colorize(text, color)
-        return text if options[:no_color]
-
-        codes = {
-          red: "\e[31m",
-          green: "\e[32m",
-          yellow: "\e[33m",
-          blue: "\e[34m",
-          bold: "\e[1m",
-          reset: "\e[0m",
-        }
-
-        "#{codes[color]}#{text}#{codes[:reset]}"
       end
 
       # Determine the exit code based on whether errors were found.

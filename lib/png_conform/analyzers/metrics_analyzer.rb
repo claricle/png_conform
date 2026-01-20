@@ -1,17 +1,14 @@
 # frozen_string_literal: true
 
+require_relative "../configuration"
+
 module PngConform
   module Analyzers
     # Generates comprehensive metrics for CI/CD and automation
     class MetricsAnalyzer
-      # Text chunk types
-      TEXT_CHUNKS = %w[tEXt zTXt iTXt].freeze
-
-      # Metadata chunk types including time
-      METADATA_CHUNKS = %w[tEXt zTXt iTXt tIME].freeze
-
-      def initialize(result)
+      def initialize(result, config: Configuration.instance)
         @result = result
+        @config = config
         ihdr = result.ihdr_chunk
         @width = ihdr ? get_width(ihdr) : 0
         @height = ihdr ? get_height(ihdr) : 0
@@ -149,10 +146,10 @@ module PngConform
           has_iccp: @result.has_chunk?("iCCP"),
           has_transparency: @result.has_chunk?("tRNS"),
           has_metadata: @result.chunks.any? do |c|
-            TEXT_CHUNKS.include?(c.type)
+            @config.text_chunks.include?(c.type)
           end,
           metadata_chunks_count: @result.chunks.count do |c|
-            METADATA_CHUNKS.include?(c.type)
+            @config.metadata_chunks.include?(c.type)
           end,
           bytes_per_pixel: calculate_bytes_per_pixel,
         }
