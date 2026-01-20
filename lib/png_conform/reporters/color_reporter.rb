@@ -1,23 +1,13 @@
 # frozen_string_literal: true
 
 require_relative "base_reporter"
+require_relative "../utils/colorizer"
 
 module PngConform
   module Reporters
     # Color reporter - wraps another reporter to add ANSI color support (-c flag)
     # Decorator pattern to add color to any reporter
     class ColorReporter < BaseReporter
-      # ANSI color codes
-      COLORS = {
-        red: "\e[31m",
-        green: "\e[32m",
-        yellow: "\e[33m",
-        blue: "\e[34m",
-        magenta: "\e[35m",
-        cyan: "\e[36m",
-        reset: "\e[0m",
-      }.freeze
-
       attr_reader :wrapped_reporter
 
       # @param wrapped_reporter [BaseReporter] The reporter to wrap with colors
@@ -41,12 +31,25 @@ module PngConform
 
       protected
 
-      # Override colorize to actually apply colors
+      # Override colorize to use Colorizer class
       def colorize(text, color)
         return text unless @colorize_enabled
-        return text unless COLORS.key?(color)
 
-        "#{COLORS[color]}#{text}#{COLORS[:reset]}"
+        case color
+        when :red
+          Utils::Colorizer.error(text, bold: false)
+        when :green
+          Utils::Colorizer.success(text, bold: false)
+        when :yellow
+          Utils::Colorizer.warning(text, bold: false)
+        when :blue
+          Utils::Colorizer.info(text, bold: false)
+        when :cyan, :magenta
+          # Use cyan as a neutral color for other cases
+          Utils::Colorizer.colorize(text, :cyan, bold: false)
+        else
+          text
+        end
       end
 
       # Determine color based on validation status

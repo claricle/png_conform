@@ -1,0 +1,105 @@
+# PNG Conform Validation Profiles
+#
+# This file defines validation profiles for PNG files. Each profile specifies
+# which chunks are required, optional, or prohibited.
+#
+# Profile structure:
+#   name: Display name
+#   description: Human-readable description
+#   required_chunks: List of chunk types that MUST be present
+#   optional_chunks: List of chunk types that MAY be present (use "*" for all)
+#   prohibited_chunks: List of chunk types that MUST NOT be present
+#
+
+minimal:
+  name: "Minimal validation"
+  description: "Only critical chunks required"
+  required_chunks:
+    - IHDR
+    - IDAT
+    - IEND
+  optional_chunks: "*"
+  prohibited_chunks: []
+
+web:
+  name: "Web-optimized"
+  description: "Recommended for web images"
+  required_chunks:
+    - IHDR
+    - IDAT
+    - IEND
+    - gAMA
+    - sRGB
+  optional_chunks:
+    - tRNS
+    - bKGD
+    - tEXt
+    - iTXt
+    - zTXt
+    - pHYs
+  prohibited_chunks: []
+
+print:
+  name: "Print-ready"
+  description: "For high-quality print output"
+  required_chunks:
+    - IHDR
+    - IDAT
+    - IEND
+    - pHYs
+  optional_chunks:
+    - gAMA
+    - cHRM
+    - sRGB
+    - iCCP
+    - tRNS
+    - bKGD
+  prohibited_chunks: []
+
+archive:
+  name: "Archive quality"
+  description: "For long-term image storage"
+  required_chunks:
+    - IHDR
+    - IDAT
+    - IEND
+  optional_chunks:
+    - gAMA
+    - cHRM
+    - sRGB
+    - iCCP
+    - tEXt
+    - iTXt
+    - zTXt
+    - tIME
+  prohibited_chunks: []
+
+strict:
+  name: "Strict PNG specification"
+  description: "Full compliance with PNG specification"
+  required_chunks:
+    - IHDR
+    - IDAT
+    - IEND
+  optional_chunks:
+    - PLTE
+    - gAMA
+    - cHRM
+    - sRGB
+    - iCCP
+    - tRNS
+    - bKGD
+    - hIST
+    - tEXt
+    - zTXt
+    - iTXt
+    - pHYs
+    - sPLT
+    - sBIT
+    - oFFs
+    - pCAL
+    - sCAL
+    - tIME
+    - cICP
+    - mDCv
+  prohibited_chunks: []

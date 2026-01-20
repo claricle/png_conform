@@ -39,5 +39,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "bindata", "~> 2.5"
   spec.add_dependency "lutaml-model", "~> 0.7"
+  spec.add_dependency "paint", "~> 2.3"
   spec.add_dependency "thor", "~> 1.4"
 end

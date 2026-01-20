@@ -27,15 +27,19 @@ module PngConform
         .pack("C*")
         .freeze
 
-      attr_reader :io, :signature
+      attr_reader :io, :signature, :total_bytes_read
 
       # Initialize a new streaming reader
       #
       # @param io [IO] IO object to read from (must be opened in binary mode)
-      def initialize(io)
+      # @param options [Hash] Options for reading behavior
+      # @option options [Boolean] :validate_crc (true) Calculate CRC during reading
+      def initialize(io, options = {})
         @io = io
         @signature = nil
         @chunks_read = 0
+        @total_bytes_read = 0
+        @validate_crc = options.fetch(:validate_crc, true)
       end
 
       # Read and validate the PNG signature
@@ -71,6 +75,15 @@ module PngConform
         return nil if @io.eof?
 
         chunk = BinData::ChunkStructure.read(@io)
+
+        # Track total bytes read (8 byte header + data + 4 byte CRC)
+        @total_bytes_read += (12 + chunk.data_length)
+
+        # Validate CRC during reading if enabled and cache result
+        if @validate_crc
+          chunk.instance_variable_set(:@_crc_valid, chunk.crc_valid?)
+        end
+
         @chunks_read += 1
         chunk
       rescue EOFError
@@ -135,6 +148,18 @@ module PngConform
         @io.rewind
         @signature = nil
         @chunks_read = 0
+        @total_bytes_read = 0
+      end
+
+      # Get file size from total bytes tracked during reading
+      #
+      # Returns the total file size including signature and all chunks.
+      # This is cached during reading to avoid O(n) recalculation.
+      #
+      # @return [Integer] File size in bytes (0 if no chunks read yet)
+      def file_size
+        # 8 bytes signature + total chunk bytes
+        8 + @total_bytes_read
       end
 
       # Get the current position in the file

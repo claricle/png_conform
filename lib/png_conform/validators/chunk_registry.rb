@@ -189,6 +189,18 @@ module PngConform
           validator_class.new(chunk, context)
         end
 
+        # Preload all validators for performance
+        #
+        # Loads all validator classes into cache at startup to improve
+        # validation performance by avoiding lazy loading overhead.
+        #
+        # @return [void]
+        def preload_validators!
+          VALIDATOR_PATHS.each_key do |chunk_type|
+            validator_for(chunk_type)
+          end
+        end
+
         private
 
         # Cache for loaded validator classes

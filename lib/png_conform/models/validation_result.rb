@@ -13,15 +13,26 @@ module PngConform
       attribute :compression_ratio, :float
       attribute :crc_errors_count, :integer, default: -> { 0 }
 
+      # Non-serialized hash map for fast chunk type lookup
+      attr_reader :chunks_by_type_map
+
       # File types
       FILE_TYPE_PNG = "PNG"
       FILE_TYPE_MNG = "MNG"
       FILE_TYPE_JNG = "JNG"
       FILE_TYPE_UNKNOWN = "UNKNOWN"
 
+      # Initialize with hash map for fast lookups
+      def initialize(*args)
+        super(*args)
+        @chunks_by_type_map = {}
+        rebuild_chunks_map
+      end
+
       # Add a chunk to the result
       def add_chunk(chunk)
         chunks << chunk
+        add_to_chunks_map(chunk)
       end
 
       # Add an error to the result
@@ -90,14 +101,14 @@ module PngConform
         chunks.count
       end
 
-      # Find chunks by type
+      # Find chunks by type (O(1) hash lookup)
       def chunks_by_type(type)
-        chunks.select { |chunk| chunk.type == type }
+        @chunks_by_type_map[type] || []
       end
 
-      # Check if file has specific chunk type
+      # Check if file has specific chunk type (O(1) hash lookup)
       def has_chunk?(type)
-        chunks.any? { |chunk| chunk.type == type }
+        @chunks_by_type_map.key?(type) && !@chunks_by_type_map[type].empty?
       end
 
       # Get IHDR chunk (PNG/JNG)
@@ -131,6 +142,21 @@ module PngConform
           parts << "  #{error.message}"
         end
         parts.join("\n")
+      end
+
+      private
+
+      # Add chunk to hash map for fast lookup
+      def add_to_chunks_map(chunk)
+        chunk_type = chunk.type
+        @chunks_by_type_map[chunk_type] ||= []
+        @chunks_by_type_map[chunk_type] << chunk
+      end
+
+      # Rebuild hash map from chunks (for deserialization or external modification)
+      def rebuild_chunks_map
+        @chunks_by_type_map.clear
+        chunks.each { |chunk| add_to_chunks_map(chunk) }
       end
     end
   end

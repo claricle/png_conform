@@ -1,18 +1,51 @@
 # frozen_string_literal: true
 
+require_relative "../configuration"
+require_relative "../services/file_signature"
+
 module PngConform
   module Analyzers
     # Compares two PNG files and reports differences
     class ComparisonAnalyzer
-      # Metadata chunk types
-      METADATA_CHUNKS = %w[tEXt zTXt iTXt tIME].freeze
-
-      def initialize(result1, result2)
+      def initialize(result1, result2, config: Configuration.instance)
         @result1 = result1
         @result2 = result2
+        @config = config
+
+        # Fast path: compute signatures for quick equality check
+        @sig1 = Services::FileSignature.from_result(result1).compute_signature
+        @sig2 = Services::FileSignature.from_result(result2).compute_signature
       end
 
       def analyze
+        # Fast return if signatures are identical
+        return identical_result if @sig1 == @sig2
+
+        # Full comparison for different files
+        full_comparison
+      end
+
+      private
+
+      # Return result for identical files
+      #
+      # @return [Hash] Analysis result for identical files
+      def identical_result
+        {
+          files: {
+            file1: @result1.filename,
+            file2: @result2.filename,
+            identical: true,
+            signature: @sig1.short_signature,
+          },
+          summary: ["Files are binary identical"],
+        }
+      end
+
+      # Full comparison for different files
+      #
+      # @return [Hash] Complete comparison analysis
+      def full_comparison
         {
           files: file_comparison,
           image: image_comparison,
@@ -22,8 +55,6 @@ module PngConform
           summary: generate_summary,
         }
       end
-
-      private
 
       def file_comparison
         size1 = @result1.file_size
@@ -166,7 +197,10 @@ module PngConform
       end
 
       def metadata_count(result)
-        result.chunks.count { |c| METADATA_CHUNKS.include?(c.type) }
+        # Use only text and time chunks from metadata (excluding pHYs which is physical)
+        result.chunks.count do |c|
+          @config.text_chunks.include?(c.type) || c.type == "tIME"
+        end
       end
 
       def format_size_change(diff, percent)

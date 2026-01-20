@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "../utils/colorizer"
+
 module PngConform
   module Reporters
     # Module providing visual elements (emojis and colors) for CLI output
@@ -20,27 +22,31 @@ module PngConform
         image: "🖼️",
       }.freeze
 
-      # ANSI color codes for terminal output
-      COLORS = {
-        green: "\e[32m",
-        red: "\e[31m",
-        yellow: "\e[33m",
-        blue: "\e[34m",
-        cyan: "\e[36m",
-        gray: "\e[90m",
-        reset: "\e[0m",
-        bold: "\e[1m",
-      }.freeze
-
-      # Colorize text with ANSI color codes
+      # Colorize text with Colorizer class
       # @param text [String] The text to colorize
-      # @param color [Symbol] The color name from COLORS
+      # @param color [Symbol] The color name
       # @return [String] Colorized text or original if colorization disabled
       def colorize(text, color)
         return text unless @colorize
-        return text unless COLORS.key?(color)
 
-        "#{COLORS[color]}#{text}#{COLORS[:reset]}"
+        case color
+        when :green
+          Utils::Colorizer.success(text, bold: false)
+        when :red
+          Utils::Colorizer.error(text, bold: false)
+        when :yellow
+          Utils::Colorizer.warning(text, bold: false)
+        when :blue
+          Utils::Colorizer.info(text, bold: false)
+        when :cyan
+          Utils::Colorizer.colorize(text, :cyan, bold: false)
+        when :gray
+          Utils::Colorizer.colorize(text, :gray, bold: false)
+        when :bold
+          Utils::Colorizer.bold(text)
+        else
+          text
+        end
       end
 
       # Get emoji for a given name

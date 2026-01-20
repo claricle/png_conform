@@ -5,7 +5,7 @@ source "https://rubygems.org"
 # Specify your gem's dependencies in png_conform.gemspec
 gemspec
 
-gem "openssl"
+gem "openssl", "~> 3.0"
 gem "rake"
 gem "rspec"
 gem "rubocop"
