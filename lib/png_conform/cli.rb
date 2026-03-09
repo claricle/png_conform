@@ -117,12 +117,5 @@ module PngConform
     def self.exit_on_failure?
       true
     end
-
-    # Provide helpful error message for unknown commands
-    def method_missing(method, *_args)
-      puts "Error: Unknown command '#{method}'"
-      puts "Run 'png_conform help' for usage information"
-      exit(1)
-    end
   end
 end

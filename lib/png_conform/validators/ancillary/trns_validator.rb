@@ -115,7 +115,7 @@ module PngConform
               return false
             end
 
-            return true if length >= 1 && length <= 256
+            return true if length.between?(1, 256)
 
             add_error("invalid tRNS length for indexed-color " \
                       "(#{length}, must be 1-256)")

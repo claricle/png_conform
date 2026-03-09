@@ -23,7 +23,7 @@ RSpec.describe PngConform::Commands::CheckCommand do
       it "displays error and exits" do
         command = described_class.new([], options)
         expect { command.run }.to output(/No files specified/).to_stdout
-          .and raise_error(SystemExit)
+          .and raise_error(PngConform::NoFilesSpecifiedError)
       end
     end
 
@@ -45,7 +45,7 @@ RSpec.describe PngConform::Commands::CheckCommand do
       it "displays error about unknown profile" do
         command = described_class.new([valid_png_path], options)
         expect { command.run }.to output(/Unknown profile/).to_stdout
-          .and raise_error(SystemExit)
+          .and raise_error(PngConform::UnknownProfileError)
       end
     end
 

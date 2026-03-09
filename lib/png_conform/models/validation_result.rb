@@ -24,7 +24,7 @@ module PngConform
 
       # Initialize with hash map for fast lookups
       def initialize(*args)
-        super(*args)
+        super
         @chunks_by_type_map = {}
         rebuild_chunks_map
       end

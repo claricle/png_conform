@@ -165,7 +165,7 @@ class BenchmarkRunner
     pct = (current.to_f / total * 100).round(1)
     bar_width = 40
     filled = (bar_width * current / total).to_i
-    bar = "=" * filled + " " * (bar_width - filled)
+    bar = ("=" * filled) + (" " * (bar_width - filled))
 
     print "\r  [#{bar}] #{pct}% (#{current}/#{total}) #{label}     "
     $stdout.flush

@@ -103,9 +103,9 @@ module PngConform
           chunk_count: @result.chunks.count,
           chunk_types: @result.chunks.map(&:type).sort,
           chunk_sizes: @result.chunks.map(&:length).sort,
-          crcs: @result.chunks.map do |c|
+          crcs: @result.chunks.filter_map do |c|
             c.crc_actual || c.crc_expected
-          end.compact,
+          end,
         }
       end
 

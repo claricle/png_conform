@@ -39,14 +39,15 @@ module PngConform
         if files.empty?
           puts "Error: No files specified"
           puts "Usage: png_conform check [OPTIONS] FILES"
-          exit(1)
+          raise PngConform::NoFilesSpecifiedError.new
         end
 
         # Check if profile exists (if specified)
         if options[:profile] && !Services::ProfileManager.profile_exists?(options[:profile])
           puts "Error: Unknown profile '#{options[:profile]}'"
           puts "Available profiles: #{Services::ProfileManager.available_profiles.join(', ')}"
-          exit(1)
+          raise PngConform::UnknownProfileError.new(options[:profile],
+                                                    Services::ProfileManager.available_profiles)
         end
 
         # Check for conflicting options

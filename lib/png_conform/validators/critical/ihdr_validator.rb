@@ -90,12 +90,12 @@ module PngConform
             valid = false
           end
 
-          if width > 2**31 - 1
+          if width > (2**31) - 1
             add_warning("image width (#{width}) exceeds maximum " \
                         "recommended value")
           end
 
-          if height > 2**31 - 1
+          if height > (2**31) - 1
             add_warning("image height (#{height}) exceeds maximum " \
                         "recommended value")
           end

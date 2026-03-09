@@ -88,7 +88,7 @@ module PngConform
       #
       # @return [Boolean] true if critical chunk
       def critical?
-        (chunk_type[0].ord & 0x20).zero?
+        chunk_type[0].ord.nobits?(0x20)
       end
 
       # Check if this is an ancillary chunk
