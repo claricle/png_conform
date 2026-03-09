@@ -57,7 +57,7 @@ module PngSuite
       end
 
       def interlaced?
-        return nil unless valid?
+        return false unless valid?
 
         output.include?("interlaced") && !output.include?("non-interlaced")
       end

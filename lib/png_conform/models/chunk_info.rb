@@ -22,7 +22,7 @@ module PngConform
       def initialize(attributes = {})
         @data = attributes.delete(:data)
         @crc = attributes.delete(:crc)
-        super(attributes)
+        super
       end
 
       # Format offset as hex for display

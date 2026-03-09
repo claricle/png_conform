@@ -19,6 +19,44 @@ module PngConform
 
   class ParseError < Error; end
 
+  # CLI argument errors - inherit from Thor::Error for Thor integration
+  class CliArgumentError < Thor::Error; end
+
+  class NoFilesSpecifiedError < CliArgumentError
+    def message
+      "No files specified. Usage: png_conform check [OPTIONS] FILES"
+    end
+  end
+
+  class UnknownProfileError < CliArgumentError
+    attr_reader :profile_name, :available_profiles
+
+    def initialize(profile_name, available_profiles)
+      @profile_name = profile_name
+      @available_profiles = available_profiles
+      super(build_message)
+    end
+
+    def message
+      "Unknown profile '#{profile_name}'. Available profiles: #{available_profiles.join(', ')}"
+    end
+
+    private
+
+    def build_message
+      "Unknown profile '#{profile_name}'. Available profiles: #{available_profiles.join(', ')}"
+    end
+  end
+
+  class UnknownCommandError < Thor::Error
+    attr_reader :command_name
+
+    def initialize(command_name)
+      @command_name = command_name
+      super("Unknown command '#{command_name}'. Run 'png_conform help' for usage information.")
+    end
+  end
+
   # Load BinData structures (Phase 2 - implemented)
   require_relative "png_conform/bindata/chunk_structure"
   require_relative "png_conform/bindata/png_file"

@@ -42,7 +42,7 @@ module PngConform
           priority: :medium,
           savings_bytes: savings,
           description: "Remove #{unnecessary.count} unnecessary chunks " \
-                      "(#{unnecessary.map(&:type).join(', ')})",
+                       "(#{unnecessary.map(&:type).join(', ')})",
           chunks: unnecessary.map(&:type),
         }
       end
@@ -65,7 +65,7 @@ module PngConform
             priority: :high,
             savings_bytes: estimated_savings,
             description: "Convert from 16-bit to 8-bit depth " \
-                        "(estimated ~#{@config.optimization_percentages[:bit_depth_reduction]}% file size reduction)",
+                         "(estimated ~#{@config.optimization_percentages[:bit_depth_reduction]}% file size reduction)",
             current: "16-bit",
             recommended: "8-bit",
           }
@@ -87,7 +87,7 @@ module PngConform
             @config.optimization_percentages[:palette_conversion] / 100.0
           ).to_i,
           description: "Consider converting to palette mode if using limited colors " \
-                      "(potential ~#{@config.optimization_percentages[:palette_conversion]}% reduction)",
+                       "(potential ~#{@config.optimization_percentages[:palette_conversion]}% reduction)",
           current: "RGB (Truecolor)",
           recommended: "Indexed (Palette)",
         }
@@ -109,7 +109,7 @@ module PngConform
           priority: :low,
           savings_bytes: savings,
           description: "Remove interlacing for smaller file size " \
-                      "(~#{@config.optimization_percentages[:interlace_removal]}% reduction, but slower initial display)",
+                       "(~#{@config.optimization_percentages[:interlace_removal]}% reduction, but slower initial display)",
           current: "Adam7 interlaced",
           recommended: "Non-interlaced",
         }
@@ -129,7 +129,7 @@ module PngConform
           priority: :low,
           savings_bytes: total_text_size,
           description: "#{text_chunks.count} text chunks using #{total_text_size} bytes " \
-                      "(consider removing non-essential metadata)",
+                       "(consider removing non-essential metadata)",
           chunks: text_chunks.map(&:type),
         }
       end
@@ -151,7 +151,7 @@ module PngConform
           priority: :medium,
           savings_bytes: total_metadata,
           description: "Metadata comprises #{(total_metadata.to_f / file_size * 100).round(1)}% " \
-                      "of file size (#{total_metadata} bytes)",
+                       "of file size (#{total_metadata} bytes)",
           recommendation: "Review if all metadata is necessary",
         }
       end

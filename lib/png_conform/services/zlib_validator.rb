@@ -148,7 +148,7 @@ module PngConform
                             end
 
         # Bytes per pixel (rounded up)
-        ((samples_per_pixel * bit_depth + 7) / 8.0).ceil
+        (((samples_per_pixel * bit_depth) + 7) / 8.0).ceil
       end
 
       # Calculate expected decompressed data size
@@ -158,7 +158,7 @@ module PngConform
 
         if interlace_method.zero?
           # Non-interlaced: (scanline_width + 1 filter byte) * height
-          scanline_width = ((width * bit_depth * samples_for_color_type(color_type) + 7) / 8.0).ceil
+          scanline_width = (((width * bit_depth * samples_for_color_type(color_type)) + 7) / 8.0).ceil
           (scanline_width + 1) * height
         else
           # Adam7 interlaced: calculate for all 7 passes

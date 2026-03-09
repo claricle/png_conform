@@ -82,7 +82,7 @@ module PngConform
       # @param name [String] Name of the value for error message
       # @return [Boolean] True if value is in range
       def check_range(value, min, max, name)
-        return true if value >= min && value <= max
+        return true if value.between?(min, max)
 
         add_error("invalid #{name} (#{value}, must be #{min}-#{max})")
         false

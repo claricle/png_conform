@@ -46,8 +46,8 @@ class MetricsCollector
     tool_runs = runs_for_tool(tool)
     return nil if tool_runs.empty?
 
-    execution_times = tool_runs.map { |r| r[:execution_time] }.compact
-    memory_values = tool_runs.map { |r| r[:peak_memory] }.compact
+    execution_times = tool_runs.filter_map { |r| r[:execution_time] }
+    memory_values = tool_runs.filter_map { |r| r[:peak_memory] }
 
     {
       tool: tool,
@@ -118,7 +118,7 @@ class MetricsCollector
       total_runs: @runs.size,
       tools: tools,
       files_tested: @runs.map { |r| r[:file] }.uniq.size,
-      tool_statistics: tools.map { |tool| calculate_statistics(tool) }.compact,
+      tool_statistics: tools.filter_map { |tool| calculate_statistics(tool) },
     }
   end
 

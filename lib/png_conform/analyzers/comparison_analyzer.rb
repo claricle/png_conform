@@ -175,19 +175,19 @@ module PngConform
       end
 
       def new_errors
-        errors1 = @result1.errors.map(&:message).to_set
-        errors2 = @result2.errors.map(&:message).to_set
+        errors1 = @result1.errors.to_set(&:message)
+        errors2 = @result2.errors.to_set(&:message)
         (errors2 - errors1).to_a
       end
 
       def resolved_errors
-        errors1 = @result1.errors.map(&:message).to_set
-        errors2 = @result2.errors.map(&:message).to_set
+        errors1 = @result1.errors.to_set(&:message)
+        errors2 = @result2.errors.to_set(&:message)
         (errors1 - errors2).to_a
       end
 
       def compression_improved?
-        return nil unless @result1.compression_ratio && @result2.compression_ratio
+        return false unless @result1.compression_ratio && @result2.compression_ratio
 
         @result2.compression_ratio > @result1.compression_ratio
       end

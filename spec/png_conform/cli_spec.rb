@@ -42,7 +42,7 @@ RSpec.describe PngConform::Cli do
         described_class.start(["unknown"])
       rescue SystemExit
         # Thor raises SystemExit on unknown commands
-      end.to output(/Unknown command/).to_stdout
+      end.to output(/Could not find command/).to_stderr
     end
   end
 end

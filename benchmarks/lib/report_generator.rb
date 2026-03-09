@@ -42,9 +42,9 @@ class ReportGenerator
     return "No benchmark data available.\n" if tools.empty?
 
     output = []
-    output << "=" * 80
+    output << ("=" * 80)
     output << "PNG Validation Tool Benchmark Comparison"
-    output << "=" * 80
+    output << ("=" * 80)
     output << ""
     output << "Configuration:"
     output << "  Files tested:     #{summary[:files_tested]} PNG files"
@@ -62,9 +62,9 @@ class ReportGenerator
     # Performance comparison (if we have 2 tools)
     if tools.size == 2
       comparison = metrics_collector.compare_tools(tools[0], tools[1])
-      output << "-" * 80
+      output << ("-" * 80)
       output << "PERFORMANCE SUMMARY"
-      output << "-" * 80
+      output << ("-" * 80)
       output << ""
       output << format_comparison_table(comparison)
       output << ""
@@ -73,9 +73,9 @@ class ReportGenerator
     end
 
     # Detailed statistics per tool
-    output << "-" * 80
+    output << ("-" * 80)
     output << "DETAILED STATISTICS"
-    output << "-" * 80
+    output << ("-" * 80)
     output << ""
 
     tools.each do |tool|
@@ -176,9 +176,8 @@ class ReportGenerator
   # Format comparison table for text output.
   def format_comparison_table(comparison)
     lines = []
-    lines << sprintf("%-15s %12s %12s %12s %8s",
-                     "Tool", "Avg Time", "Files/sec", "Peak Memory", "Winner")
-    lines << "-" * 80
+    lines << "Tool                Avg Time    Files/sec  Peak Memory   Winner"
+    lines << ("-" * 80)
 
     [comparison[:tool1], comparison[:tool2]].each do |tool|
       stats = comparison[:stats][tool]

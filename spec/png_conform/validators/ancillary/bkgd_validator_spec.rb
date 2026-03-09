@@ -21,8 +21,8 @@ RSpec.describe PngConform::Validators::Ancillary::BkgdValidator do
         described_class.new(chunk, context).validate
 
         if context.has_errors?
-          puts "\nDEBUG: Errors found:"
-          context.all_errors.each { |e| puts "  #{e[:message]}" }
+
+          context.all_errors.each { |e| }
         end
 
         expect(context.has_errors?).to be false

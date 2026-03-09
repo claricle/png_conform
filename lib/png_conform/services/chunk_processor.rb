@@ -172,7 +172,7 @@ module PngConform
         first_byte = chunk_type.bytes[0]
 
         # Bit 5 (0x20) of first byte indicates ancillary vs critical
-        if (first_byte & 0x20).zero?
+        if first_byte.nobits?(0x20)
           # Critical chunk - must be recognized
           @context.add_error(
             chunk_type: chunk_type,

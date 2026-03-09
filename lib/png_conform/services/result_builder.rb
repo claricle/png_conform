@@ -225,7 +225,7 @@ module PngConform
 
           # Calculate percentage: (compressed/original - 1) * 100
           # Negative means compression, positive means expansion
-          ((compressed_size.to_f / original_size - 1) * 100).round(1)
+          (((compressed_size.to_f / original_size) - 1) * 100).round(1)
         rescue StandardError
           # If decompression fails, we can't calculate ratio
           0.0
