@@ -2,6 +2,19 @@
 
 Planning baseline: `origin/main` at `653abae0d16d9533a37a5d5eca40896d3b307993`.
 
+Public requirements and related work: [`png_conform#9`](https://github.com/claricle/png_conform/issues/9), [`svg_conform#100`](https://github.com/claricle/svg_conform/issues/100), [`claricle/lens_core`](https://github.com/claricle/lens_core), and [`emf#37`](https://github.com/claricle/emf/issues/37).
+
+## Plan navigation
+
+- [01 — Adopt the shared contract behind a PNG adapter](01-shared-contract.md)
+- [02 — Catalog every rule and citation](02-requirement-catalog.md)
+- [03a — Convert PNG, APNG, and service emitters](03a-png-apng-emitters.md)
+- [03b — Convert MNG and JNG emitters](03b-mng-jng-emitters.md)
+- [03c — Make orchestration format-aware](03c-format-aware-orchestration.md)
+- [04 — Unify Ruby, JSON, YAML, and text reports](04-report-migration.md)
+- [05 — Pin corpus JSON and the release gate](05-corpus-goldens.md)
+- [Progress and handoff](90-progress.md)
+
 ## Problem
 
 `png_conform` currently carries diagnostics through several incompatible representations. Validators add hashes to `ValidationContext`; `ResultBuilder#add_context_messages` then forwards only each message into `ValidationResult`; and `FileAnalysis#to_h` emits a small legacy subset. That path loses chunk offsets and error types before JSON/YAML reporting, while human reporters format the reduced model independently.
@@ -81,5 +94,5 @@ The required PNG/APNG/MNG/JNG scope totals **10–17.5 engineer-days**. The tota
 - `ChunkRegistry::VALIDATOR_PATHS` has 47 registered format validators: 28 PNG/APNG and 19 MNG/JNG. `BaseValidator` is shared infrastructure outside that count; `StreamingIdatValidator` is not registered.
 - `lib/png_conform/services/profile_manager.rb` is loaded by the public library and directly exposes profile validation. `validate_chunk_against_profile` emits unknown-profile and prohibited-chunk errors plus undefined-chunk warnings; `validate_file_against_profile` emits prohibited-present and missing-required errors. Those existing semantics must enter the canonical model while their public result keys remain available during the compatibility transition.
 - `ValidationOrchestrator` currently accepts only the PNG signature and unconditionally requires `IHDR`, `IEND`, and `IDAT`. `StreamingReader` likewise recognizes only the PNG signature and stops only at `IEND`; format-specific BinData models establish MNG's `MHDR`/`MEND` envelope and JNG's `JHDR`/`JDAT`/`IEND` envelope.
-- The source tree has 317 candidate diagnostic-emission call sites before reachability filtering, 49 registered-validator spec files, 180 PNG fixtures, no MNG/JNG fixtures, and no diagnostic JSON goldens.
+- The source tree has 317 candidate diagnostic-emission call sites before reachability filtering, 47 validator specs plus base-validator and registry specs (49 files total), 180 PNG fixtures, no MNG/JNG fixtures, and no diagnostic JSON goldens.
 - `FileAnalysis#to_h` currently emits `severity` and `message` for each error plus optional `chunk_type`, `expected`, and `actual`; `chunk_offset` and `error_type` exist as Ruby readers but are not current JSON keys.

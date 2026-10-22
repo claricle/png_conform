@@ -5,7 +5,7 @@
 - Planning is complete against `origin/main` commit `653abae0d16d9533a37a5d5eca40896d3b307993`.
 - No implementation has started; cards 01–05 are `todo`.
 - `ChunkRegistry::VALIDATOR_PATHS` contains 47 registered validators: 28 PNG/APNG and 19 MNG/JNG. `BaseValidator` is shared infrastructure outside that count.
-- The source tree contains 317 candidate emission call sites before reachability filtering, 49 registered-validator specs, 180 PNG fixtures, no MNG/JNG fixtures, and no diagnostic JSON goldens.
+- The source tree contains 317 candidate emission call sites before reachability filtering, 47 validator specs plus base-validator and registry specs (49 files total), 180 PNG fixtures, no MNG/JNG fixtures, and no diagnostic JSON goldens.
 - Current source evidence shows no require/call path for `Services::ZlibValidator` or `Validators::StreamingIdatValidator`; the streaming validator is absent from the registry, and the legacy private `ValidationService` emitter helpers are unused. They are excluded unless card 02 documents and tests an existing direct-use public contract.
 - `lib/png_conform/services/profile_manager.rb` is loaded by the public library. `validate_chunk_against_profile` emits unknown-profile and prohibited-chunk errors plus undefined-chunk warnings; `validate_file_against_profile` emits prohibited-present and missing-required errors. Card 03a explicitly migrates and tests that existing split.
 - `ValidationOrchestrator` currently accepts only the PNG signature and always requires `IHDR`, `IEND`, and `IDAT`; `StreamingReader` also recognizes only PNG and stops only at `IEND`. Card 03c now owns exact PNG/MNG/JNG signature dispatch, format-specific outer sequence rules, reader termination, and full-file integration proofs.
