@@ -146,12 +146,12 @@ RSpec.describe "Structured diagnostic corpus" do
 
   describe "script/regenerate_diagnostic_goldens" do
     it "rejects an unknown option with status 2" do
-      _out, _err, status = Open3.capture3(script, "--bogus", chdir: repo_root)
+      _out, _err, status = Open3.capture3(RbConfig.ruby, script, "--bogus", chdir: repo_root)
       expect(status.exitstatus).to eq(2)
     end
 
     it "requires exactly one mode" do
-      _out, _err, status = Open3.capture3(script, "--check", "--write",
+      _out, _err, status = Open3.capture3(RbConfig.ruby, script, "--check", "--write",
                                           chdir: repo_root)
       expect(status.exitstatus).to eq(2)
     end
