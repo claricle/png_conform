@@ -76,4 +76,21 @@ RSpec.describe PngConform::Reporters::VerboseReporter do
   ensure
     $stdout = old_stdout
   end
+
+  describe "diagnostic rendering" do
+    it "prints location and citation lines from the shared renderer" do
+      error = PngConform::Diagnostics::Builder.build(
+        "png.signature.invalid", "Invalid PNG signature",
+        chunk_type: "SIGNATURE", offset: 0
+      )
+      analysis = result
+      analysis.validation_result.add_error(error)
+      output = capture_output { reporter.report(analysis) }
+
+      expect(output).to include("Invalid PNG signature")
+      expect(output).to include("  at byte offset 0")
+      expect(output).to include("see: ISO/IEC 15948")
+      expect(output.scan("Invalid PNG signature").size).to eq(1)
+    end
+  end
 end

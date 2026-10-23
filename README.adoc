@@ -328,6 +328,13 @@ $ png_conform check --format json image.png
 }
 ----
 ====
+.Structured diagnostics
+Every JSON and YAML report carries `schema_version` and a `diagnostics` array
+(identity, severity, kind, citation, location, message, context) from the shared
+`lens_core` contract. The legacy `errors` array is kept as a compatibility alias
+for one transition. See `docs/CLI_OPTIONS.adoc` (Structured diagnostics) for the
+full schema, a worked example and the migration notes.
+
 .YAML with errors
 [example]
 ====

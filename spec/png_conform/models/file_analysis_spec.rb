@@ -298,4 +298,62 @@ RSpec.describe PngConform::Models::FileAnalysis do
       expect(analysis.compression_info).to eq(compression_info)
     end
   end
+
+  describe "#to_h structured diagnostics" do
+    let(:finding) do
+      PngConform::Diagnostics::Builder.build(
+        "png.signature.invalid", "Invalid PNG signature",
+        chunk_type: "SIGNATURE", offset: 0, expected: "89504e47", actual: "00"
+      )
+    end
+    let(:analysis) do
+      result = PngConform::Models::ValidationResult.new(filename: "a.png")
+      result.add_error(finding)
+      result.warning("careful")
+      described_class.new(file_path: "a.png", file_type: "PNG",
+                          validation_result: result)
+    end
+    let(:hash) { analysis.to_h }
+
+    it "states the upstream schema version at the top level" do
+      expect(hash["schema_version"]).to eq(LensCore::SCHEMA_VERSION)
+    end
+
+    it "keeps the five-field legacy errors projection unchanged" do
+      expect(hash["errors"]).to eq(
+        [{ "severity" => "error", "message" => "Invalid PNG signature",
+           "chunk_type" => "SIGNATURE", "expected" => "89504e47",
+           "actual" => "00" },
+         { "severity" => "warning", "message" => "careful" }],
+      )
+    end
+
+    it "does not flatten chunk_offset or error_type into legacy errors" do
+      keys = hash["errors"].flat_map(&:keys)
+      expect(keys).not_to include("chunk_offset", "error_type")
+    end
+
+    it "adds canonical diagnostics in emission order with identity and location" do
+      expect(hash["diagnostics"].map { |d| d["severity"] }).to eq(%w[error warning])
+      first = hash["diagnostics"].first
+      expect(first).to include("requirement_id" => "png.signature.invalid",
+                               "kind" => "presence",
+                               "message" => "Invalid PNG signature")
+      expect(first["location"]).to include("type" => "binary", "byte_offset" => 0,
+                                           "record_type" => "SIGNATURE")
+      expect(first["citations"]).not_to be_empty
+    end
+
+    it "round-trips through JSON unchanged" do
+      expect(JSON.parse(JSON.generate(hash))).to eq(hash)
+    end
+
+    it "omits diagnostics when there are none" do
+      clean = described_class.new(
+        file_path: "a.png",
+        validation_result: PngConform::Models::ValidationResult.new,
+      )
+      expect(clean.to_h).not_to have_key("diagnostics")
+    end
+  end
 end

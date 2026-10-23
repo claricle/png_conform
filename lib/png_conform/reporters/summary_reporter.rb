@@ -55,7 +55,7 @@ module PngConform
           severity_emoji = emoji(error.severity.to_sym)
           severity_text = colorize(error.severity.upcase,
                                    color_for_severity(error.severity))
-          lines << "  #{severity_emoji} #{severity_text}: #{error.message}"
+          lines << "  #{severity_emoji} #{severity_text}: #{error.to_diagnostic.message}"
         end
 
         lines.join("\n")

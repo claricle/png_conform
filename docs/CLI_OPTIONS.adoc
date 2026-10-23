@@ -274,6 +274,132 @@ png_conform check --format yaml --format json image.png
 # Error: Only one format allowed
 ----
 
+[[structured-diagnostics]]
+== Structured diagnostics (schema version 1)
+
+Every finding is one `LensCore::Diagnostic` from the shared `lens_core`
+contract. The Ruby API, JSON and YAML all derive from that object, and the
+human renderers read the same value.
+
+The report carries the upstream schema version as the top-level
+`schema_version` member (currently `1`). Each entry of the top-level
+`diagnostics` array has:
+
+`severity`:: `error`, `warning` or `info`. Only `error` makes `valid` false.
+`kind`:: the requirement category (for example `integrity`, `ordering`, `policy`).
+`requirement_id`:: the stable ID from `config/diagnostics.yml`.
+`message`:: the rendered finding text.
+`citations`:: list of `{uri, label}` pointing at the specification section.
+`context`:: extra values such as `expected`, `actual` and `profile`.
+`location`:: a `binary` location with `byte_offset`, `record_index` (the chunk
+index), `record_type` (the chunk type) and an optional `field`. Absent when the
+finding has no byte position (profile policy findings carry the chunk type in
+`context` instead).
+
+Absent-field policy: missing optional values are omitted (`location`,
+`remediation`, `field`); `citations` and `context` are always present and may be
+empty. The report carries no timestamp, and diagnostics contain no host paths,
+so the same file always produces the same diagnostics, in emission order.
+
+The `filename` member is the path as given on the command line.
+
+.Structured JSON and YAML output
+[example]
+====
+[source,shell]
+----
+$ png_conform check --format json corrupted.png
+----
+// structured-json-example
+[source,json]
+----
+{
+  "schema_version": 1,
+  "filename": "corrupted.png",
+  "file_type": "PNG",
+  "file_size": 1024,
+  "compression_ratio": null,
+  "crc_errors_count": 1,
+  "valid": false,
+  "errors": [
+    {
+      "severity": "error",
+      "message": "CRC error in IDAT chunk",
+      "chunk_type": "IDAT",
+      "expected": "0x12345678",
+      "actual": "0x87654321"
+    },
+    {
+      "severity": "warning",
+      "message": "Missing recommended chunk gAMA"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "integrity",
+      "requirement_id": "png.IDAT.crc",
+      "message": "CRC error in IDAT chunk",
+      "citations": [
+        {
+          "uri": "https://www.w3.org/TR/2003/REC-PNG-20031110/",
+          "label": "ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 5.5: Cyclic Redundancy Code algorithm"
+        }
+      ],
+      "context": {
+        "actual": "0x87654321",
+        "expected": "0x12345678"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_index": 2,
+        "record_type": "IDAT",
+        "field": "crc"
+      }
+    },
+    {
+      "severity": "warning",
+      "kind": "policy",
+      "requirement_id": "png.policy",
+      "message": "Missing recommended chunk gAMA",
+      "citations": [],
+      "context": {}
+    }
+  ]
+}
+----
+====
+
+Human output uses the same objects. `--verbose` prints each finding's severity
+and message followed by the location, fix, citation and context lines produced
+by `LensCore::Renderers::Human`; the default and quiet reporters print the
+diagnostic message.
+
+==== Compatibility aliases
+
+For one documented transition (from this release until `lens_core` freezes
+v1 and a later release removes them) the legacy surface is kept alongside the
+diagnostics:
+
+* Ruby readers on `PngConform::Models::ValidationError`: `severity`,
+  `message`, `chunk_type`, `chunk_offset`, `error_type`, `expected`, `actual`,
+  plus the `[]` hash-style reader and `to_s`.
+* JSON/YAML `errors` array: `severity` and `message` always; `chunk_type`,
+  `expected`, `actual` when present. `chunk_offset` and `error_type` are not
+  JSON keys and are not added: read the position and kind from
+  `diagnostics[].location` and `diagnostics[].kind`.
+* `valid`, `crc_errors_count`, `chunks`, `image` and the other existing members
+  are unchanged.
+
+New consumers should read `diagnostics`; `errors` is removed at the end of the
+transition.
+
+Exit status is unchanged: a result with an error-severity diagnostic is
+invalid and `check` returns 1; warnings and info do not. A missing file or an
+unexpected process failure is an operational error (printed as `Error: ...`,
+exit 1), never a diagnostic.
+
 == Ruby API
 
 === General

@@ -126,6 +126,23 @@ module PngConform
         )
       end
 
+      # Human lines for this finding from the shared renderer: headline,
+      # location, message, fix, citation and context.
+      def human_lines
+        LensCore::Renderers::Human.entry(to_diagnostic)
+      end
+
+      # The renderer's lines minus the headline and message, for reporters
+      # that print their own severity-and-message line.
+      def detail_lines
+        human = LensCore::Renderers::Human
+        diagnostic = to_diagnostic
+        [*("  at #{human.place(diagnostic.location)}" if diagnostic.location),
+         *("  fix: #{diagnostic.remediation}" if diagnostic.remediation),
+         *diagnostic.citations.map { |c| human.citation_line(c) },
+         *human.context_line(diagnostic.context)]
+      end
+
       LEGACY_KEYS = { message: :message, chunk_type: :chunk_type,
                       offset: :chunk_offset }.freeze
 
