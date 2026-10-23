@@ -31,7 +31,7 @@ RSpec.describe "Structured diagnostic corpus" do
       end
     end
 
-    after { FileUtils.remove_entry(root) }
+    after { FileUtils.rm_rf(root) } # best effort: Windows may still hold input handles
 
     def golden(path)
       File.join(root, corpus.golden_path(path))
