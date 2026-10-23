@@ -45,6 +45,9 @@ module PngConform
 
         # Check IDAT position relative to other chunks
         def check_position
+          # JNG streams carry their own JHDR/JDAT ordering rules.
+          return true if context.detected_format&.key == :jng
+
           valid = true
 
           # IDAT must appear after IHDR

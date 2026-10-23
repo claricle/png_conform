@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../bindata/chunk_structure"
+require_relative "format_dispatch"
 
 module PngConform
   module Readers
@@ -27,7 +28,7 @@ module PngConform
         .pack("C*")
         .freeze
 
-      attr_reader :io, :signature, :total_bytes_read
+      attr_reader :io, :signature, :format, :total_bytes_read
 
       # Initialize a new streaming reader
       #
@@ -37,6 +38,7 @@ module PngConform
       def initialize(io, options = {})
         @io = io
         @signature = nil
+        @format = nil
         @chunks_read = 0
         @total_bytes_read = 0
         @validate_crc = options.fetch(:validate_crc, true)
@@ -49,14 +51,15 @@ module PngConform
       # @return [Boolean] true if signature is valid
       def read_signature
         @signature = @io.read(8)
+        @format = FormatDispatch.detect(@signature)
         valid_signature?
       end
 
       # Check if the signature is valid
       #
-      # @return [Boolean] true if signature matches PNG specification
+      # @return [Boolean] true if the signature is a PNG, MNG or JNG signature
       def valid_signature?
-        @signature == PNG_SIGNATURE
+        !@format.nil?
       end
 
       # Get signature as hex string for debugging
@@ -98,9 +101,13 @@ module PngConform
       def each_chunk
         return enum_for(:each_chunk) unless block_given?
 
+        # The outer terminator: MEND for MNG (an embedded IEND does not end
+        # the stream), IEND for PNG and JNG. An unrecognized signature keeps
+        # the historical IEND stop.
+        terminator = (@format || FormatDispatch::PNG).terminator
         while (chunk = read_chunk)
           yield chunk
-          break if chunk.type == "IEND"
+          break if chunk.type == terminator
         end
 
         @chunks_read
@@ -147,6 +154,7 @@ module PngConform
       def rewind
         @io.rewind
         @signature = nil
+        @format = nil
         @chunks_read = 0
         @total_bytes_read = 0
       end

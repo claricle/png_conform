@@ -40,6 +40,9 @@ module PngConform
 
         # Check IEND position relative to other chunks
         def check_position
+          # JNG streams carry their own JHDR/JDAT ordering rules.
+          return true if context.detected_format&.key == :jng
+
           valid = true
 
           # IEND must appear after IHDR

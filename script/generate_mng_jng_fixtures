@@ -37,7 +37,7 @@ end
 
 def jhdr(width: 8, height: 8, color: 10, depth: 8, comp: 8, alpha: 0)
   fields = [color, depth, comp, 0, alpha, alpha.zero? ? 0 : 8, 0, 0]
-  [width, height].pack("NN") + fields.pack("C8") + ("\0" * 4)
+  [width, height].pack("NN") + fields.pack("C8")
 end
 
 def png_ihdr

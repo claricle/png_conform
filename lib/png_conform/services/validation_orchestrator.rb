@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "../readers/format_dispatch"
 require_relative "chunk_processor"
 require_relative "result_builder"
 require_relative "analysis_manager"
@@ -8,17 +9,17 @@ module PngConform
   module Services
     # Main validation orchestration service
     #
-    # This service coordinates the validation of PNG files by:
-    # 1. Validating the PNG signature
+    # This service coordinates the validation of PNG, MNG and JNG files by:
+    # 1. Detecting the format from the file signature
     # 2. Processing chunks through ChunkProcessor
-    # 3. Validating chunk sequence requirements
+    # 3. Validating the detected format's chunk sequence requirements
     # 4. Building the complete FileAnalysis result
     #
     # The orchestrator follows a pipeline architecture:
     # File → Signature → Chunks → Sequence → Analysis → Result
     #
     class ValidationOrchestrator
-      attr_reader :reader, :filepath, :options, :context, :chunks
+      attr_reader :reader, :filepath, :options, :context, :chunks, :detected_format
 
       # Convenience method to validate a file by path
       #
@@ -28,7 +29,11 @@ module PngConform
       def self.validate_file(filepath, options = {})
         require_relative "../readers/full_load_reader"
         reader = Readers::FullLoadReader.new(filepath)
-        new(reader, filepath, options).validate
+        begin
+          new(reader, filepath, options).validate
+        ensure
+          reader.close
+        end
       end
 
       # Initialize validation orchestrator
@@ -42,6 +47,7 @@ module PngConform
         @options = options
         @context = Validators::ValidationContext.new
         @chunks = []
+        @detected_format = nil
       end
 
       # Validate the PNG file
@@ -80,22 +86,26 @@ module PngConform
 
       private
 
-      # Validate PNG signature
+      # Detect the file format from its signature
       #
-      # Checks that the file starts with the PNG signature:
-      # 137 80 78 71 13 10 26 10
+      # Dispatches the 8-byte signature through FormatDispatch (PNG, MNG or
+      # JNG) and records the detected format on the context. An unknown
+      # signature gets its own cataloged diagnostic and no format, so no
+      # format's required-chunk rules run against it.
       #
       # @return [void]
       def validate_signature
         sig = reader.signature
-        expected = [137, 80, 78, 71, 13, 10, 26, 10].pack("C*")
+        @detected_format = Readers::FormatDispatch.detect(sig)
+        @context.detected_format = @detected_format
+        @context.store(:signature_checked, true)
+        return if @detected_format
 
-        return if sig == expected
-
-        @context.add_error(
-          chunk_type: "SIGNATURE",
-          message: "Invalid PNG signature",
-          severity: :error,
+        @context.add_diagnostic(
+          "all.signature.unknown",
+          "Unrecognized file signature (not PNG, MNG or JNG)",
+          chunk_type: "SIGNATURE", offset: 0, field: "signature",
+          actual: sig.to_s.bytes.map { |b| format("%02x", b) }.join(" ")
         )
       end
 
@@ -114,57 +124,139 @@ module PngConform
         end
       end
 
-      # Validate chunk sequence requirements
+      # Validate the detected format's top-level sequence requirements
       #
-      # Checks high-level sequencing rules:
-      # - IHDR must be first chunk
-      # - IEND must be last chunk
-      # - At least one IDAT chunk required
+      # - PNG: IHDR first, IEND last, at least one IDAT
+      # - MNG: MHDR first, MEND last
+      # - JNG: JHDR first, IEND last, at least one JDAT
+      #
+      # An unrecognized signature has no sequence rules.
       #
       # @return [void]
       def validate_sequence
-        validate_ihdr_first
-        validate_iend_last
-        validate_idat_present
+        case @detected_format&.key
+        when :png then validate_png_sequence
+        when :mng then validate_mng_sequence
+        when :jng then validate_jng_sequence
+        end
       end
 
-      # Check that IHDR is the first chunk
-      #
-      # @return [void]
-      def validate_ihdr_first
-        return if @context.seen?("IHDR")
+      def validate_png_sequence
+        index = chunk_index("IHDR")
+        if index.nil?
+          @context.add_diagnostic(
+            "png.IHDR.missing", "Missing IHDR chunk (must be first)",
+            chunk_type: "IHDR"
+          )
+        elsif index.positive?
+          @context.add_diagnostic(
+            "png.IHDR.first-chunk", "IHDR must be the first chunk",
+            **located("IHDR", index)
+          )
+        end
 
-        @context.add_error(
-          chunk_type: "IHDR",
-          message: "Missing IHDR chunk (must be first)",
-          severity: :error,
+        index = chunk_index("IEND", last: true)
+        if index.nil?
+          @context.add_diagnostic(
+            "png.IEND.missing", "Missing IEND chunk (must be last)",
+            chunk_type: "IEND"
+          )
+        elsif index != @chunks.size - 1
+          @context.add_diagnostic(
+            "png.IEND.last-chunk", "IEND must be the last chunk",
+            **located("IEND", index)
+          )
+        end
+
+        return if chunk_index("IDAT")
+
+        @context.add_diagnostic(
+          "png.IDAT.missing", "Missing IDAT chunk (at least one required)",
+          chunk_type: "IDAT"
         )
       end
 
-      # Check that IEND is the last chunk
-      #
-      # @return [void]
-      def validate_iend_last
-        return if @context.seen?("IEND")
+      def validate_mng_sequence
+        index = chunk_index("MHDR")
+        if index.nil?
+          @context.add_diagnostic(
+            "mng.MHDR.missing", "Missing MHDR chunk (must be first)",
+            chunk_type: "MHDR"
+          )
+        elsif index.positive? && !reported?("mng.MHDR.first-chunk")
+          @context.add_diagnostic(
+            "mng.MHDR.first-chunk", "MHDR must be the first chunk in MNG file",
+            **located("MHDR", index)
+          )
+        end
 
-        @context.add_error(
-          chunk_type: "IEND",
-          message: "Missing IEND chunk (must be last)",
-          severity: :error,
+        index = chunk_index("MEND", last: true)
+        if index.nil?
+          @context.add_diagnostic(
+            "mng.MEND.missing", "Missing MEND chunk (must be last)",
+            chunk_type: "MEND"
+          )
+        elsif index != @chunks.size - 1
+          @context.add_diagnostic(
+            "mng.MEND.last-chunk", "MEND must be the last chunk",
+            **located("MEND", index)
+          )
+        end
+      end
+
+      def validate_jng_sequence
+        index = chunk_index("JHDR")
+        if index.nil?
+          @context.add_diagnostic(
+            "jng.JHDR.missing", "Missing JHDR chunk (must be first)",
+            chunk_type: "JHDR"
+          )
+        elsif index.positive? && !reported?("jng.JHDR.first-chunk")
+          @context.add_diagnostic(
+            "jng.JHDR.first-chunk",
+            "JHDR must be the first chunk in JNG datastream",
+            **located("JHDR", index),
+          )
+        end
+
+        index = chunk_index("IEND", last: true)
+        if index.nil?
+          @context.add_diagnostic(
+            "jng.IEND.missing", "Missing IEND chunk (must be last)",
+            chunk_type: "IEND"
+          )
+        elsif index != @chunks.size - 1
+          @context.add_diagnostic(
+            "jng.IEND.last-chunk", "IEND must be the last chunk",
+            **located("IEND", index)
+          )
+        end
+
+        return if chunk_index("JDAT")
+
+        @context.add_diagnostic(
+          "jng.JDAT.missing", "Missing JDAT chunk (at least one required)",
+          chunk_type: "JDAT"
         )
       end
 
-      # Check that at least one IDAT chunk exists
+      # Position of the first (or last) chunk of a type in file order
       #
-      # @return [void]
-      def validate_idat_present
-        return if @context.seen?("IDAT")
+      # @return [Integer, nil]
+      def chunk_index(type, last: false)
+        finder = last ? :rindex : :index
+        @chunks.public_send(finder) { |c| c.chunk_type.to_s == type }
+      end
 
-        @context.add_error(
-          chunk_type: "IDAT",
-          message: "Missing IDAT chunk (at least one required)",
-          severity: :error,
-        )
+      # Location detail for a chunk found at an unexpected position
+      def located(type, index)
+        { chunk_type: type, chunk_index: index,
+          offset: @chunks[index].abs_offset }
+      end
+
+      # Whether a chunk validator already reported this requirement
+      def reported?(id)
+        @context.errors.any? { |e| e.requirement_id == id }
       end
 
       # Build complete FileAnalysis with validation results and analyzer data

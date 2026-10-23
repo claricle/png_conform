@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "png_conform/reporters/summary_reporter"
 
 RSpec.describe "PNG Validation Integration" do
   let(:fixture_dir) { File.join(__dir__, "../fixtures/pngsuite") }
