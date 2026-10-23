@@ -80,7 +80,7 @@ RSpec.describe PngConform::Reporters::VerboseReporter do
   describe "diagnostic rendering" do
     it "prints location and citation lines from the shared renderer" do
       error = PngConform::Diagnostics::Builder.build(
-        "png.signature.invalid", "Invalid PNG signature",
+        "all.signature.unknown", "Invalid PNG signature",
         chunk_type: "SIGNATURE", offset: 0
       )
       analysis = result

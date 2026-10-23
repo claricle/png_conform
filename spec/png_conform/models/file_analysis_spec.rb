@@ -302,7 +302,7 @@ RSpec.describe PngConform::Models::FileAnalysis do
   describe "#to_h structured diagnostics" do
     let(:finding) do
       PngConform::Diagnostics::Builder.build(
-        "png.signature.invalid", "Invalid PNG signature",
+        "all.signature.unknown", "Invalid PNG signature",
         chunk_type: "SIGNATURE", offset: 0, expected: "89504e47", actual: "00"
       )
     end
@@ -336,7 +336,7 @@ RSpec.describe PngConform::Models::FileAnalysis do
     it "adds canonical diagnostics in emission order with identity and location" do
       expect(hash["diagnostics"].map { |d| d["severity"] }).to eq(%w[error warning])
       first = hash["diagnostics"].first
-      expect(first).to include("requirement_id" => "png.signature.invalid",
+      expect(first).to include("requirement_id" => "all.signature.unknown",
                                "kind" => "presence",
                                "message" => "Invalid PNG signature")
       expect(first["location"]).to include("type" => "binary", "byte_offset" => 0,
