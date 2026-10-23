@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "bindata"
+require "lens_core"
 require "lutaml/model"
 require "thor"
 
@@ -68,6 +69,7 @@ module PngConform
   require_relative "png_conform/readers/full_load_reader"
 
   # Load domain models (Phase 3 & 10 - implemented)
+  require_relative "png_conform/diagnostics/location"
   require_relative "png_conform/models/decoded_chunk_data"
   require_relative "png_conform/models/chunk"
   require_relative "png_conform/models/validation_error"
