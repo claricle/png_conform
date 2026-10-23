@@ -169,4 +169,27 @@ RSpec.describe PngConform::Validators::Mng::MhdrValidator do
       end
     end
   end
+
+  describe "structured diagnostics" do
+    let(:finding) { validation_context.errors.first }
+
+    it "identifies a length failure by rule, field, values and location" do
+      allow(chunk).to receive_messages(chunk_data: "\0".b * 24, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(
+        requirement_id: "mng.MHDR.length", chunk_type: "MHDR", chunk_offset: 8,
+        severity: "error", field: "length", expected: "28", actual: "24"
+      )
+    end
+
+    it "identifies a sequence failure without field values" do
+      validation_context.record_chunk("FRAM")
+      allow(chunk).to receive_messages(chunk_data: "\0".b * 28, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.MHDR.first-chunk",
+                                         severity: "error", chunk_offset: 8)
+    end
+  end
 end

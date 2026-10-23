@@ -30,5 +30,5 @@ bundle exec rspec spec/png_conform/diagnostics/emitter_coverage_spec.rb \
 
 ## Status
 
-State: todo
-PR: none
+State: done
+PR: https://github.com/claricle/png_conform/pull/16

@@ -22,12 +22,12 @@ module PngConform
         EXPECTED_LENGTH = 28
 
         def validate
-          return false unless check_crc
-          return false unless check_length(EXPECTED_LENGTH)
+          return false unless check_crc(id: "mng.MHDR.crc")
+          return false unless check_length(EXPECTED_LENGTH, id: "mng.MHDR.length")
 
           # MHDR must be first chunk
           unless context.chunks_seen.empty?
-            add_error("MHDR must be the first chunk in MNG file")
+            add_error("mng.MHDR.first-chunk", "MHDR must be the first chunk in MNG file")
             return false
           end
 
@@ -45,7 +45,7 @@ module PngConform
           # Validate dimensions
           valid = true
           if frame_width.zero? || frame_height.zero?
-            add_error("MHDR frame dimensions must be > 0")
+            add_error("mng.MHDR.frame-dimensions-zero", "MHDR frame dimensions must be > 0")
             valid = false
           end
 

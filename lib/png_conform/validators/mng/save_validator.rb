@@ -15,18 +15,18 @@ module PngConform
         EXPECTED_LENGTH = 0
 
         def validate
-          return false unless check_crc
-          return false unless check_length(EXPECTED_LENGTH)
+          return false unless check_crc(id: "mng.SAVE.crc")
+          return false unless check_length(EXPECTED_LENGTH, id: "mng.SAVE.length")
 
           # Must appear after MHDR
           unless context.retrieve(:mhdr_present)
-            add_error("SAVE must appear after MHDR")
+            add_error("mng.SAVE.after-mhdr", "SAVE must appear after MHDR")
             return false
           end
 
           # Must appear before MEND
           if context.seen?("MEND")
-            add_error("SAVE must appear before MEND")
+            add_error("mng.SAVE.before-mend", "SAVE must appear before MEND")
             return false
           end
 

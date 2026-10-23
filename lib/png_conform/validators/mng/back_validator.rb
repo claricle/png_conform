@@ -18,25 +18,23 @@ module PngConform
         VALID_LENGTHS = [6, 7, 10].freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.BACK.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("BACK must appear after MHDR")
+            add_error("mng.BACK.after-mhdr", "BACK must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("BACK must appear before MEND")
+            add_error("mng.BACK.before-mend", "BACK must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
 
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "BACK chunk must be 6, 7, or 10 bytes, " \
-              "got #{data.length}",
-            )
+            add_error("mng.BACK.length", "BACK chunk must be 6, 7, or 10 bytes, " \
+                                         "got #{data.length}", field: "length", expected: "6, 7, or 10", actual: data.length)
             return false
           end
 
@@ -51,9 +49,7 @@ module PngConform
             mandatory = data.getbyte(6)
 
             unless [0, 1].include?(mandatory)
-              add_error(
-                "BACK mandatory flag must be 0 or 1, got #{mandatory}",
-              )
+              add_error("mng.BACK.mandatory-flag", "BACK mandatory flag must be 0 or 1, got #{mandatory}", field: "mandatory_flag", expected: "0 or 1", actual: mandatory)
               return false
             end
 
@@ -68,9 +64,7 @@ module PngConform
             tile_mode = data.getbyte(9)
 
             unless (0..3).cover?(tile_mode)
-              add_error(
-                "BACK tile mode must be 0-3, got #{tile_mode}",
-              )
+              add_error("mng.BACK.tile-mode", "BACK tile mode must be 0-3, got #{tile_mode}", field: "tile_mode", expected: "0-3", actual: tile_mode)
               return false
             end
 

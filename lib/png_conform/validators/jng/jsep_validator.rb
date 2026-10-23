@@ -22,35 +22,35 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(0)
+          return false unless check_crc(id: "jng.JSEP.crc")
+          return false unless check_length(0, id: "jng.JSEP.length")
 
           valid = true
 
           # JSEP must appear after JHDR
           unless context.retrieve(:jhdr_present)
-            add_error("JSEP must appear after JHDR")
+            add_error("jng.JSEP.after-jhdr", "JSEP must appear after JHDR")
             valid = false
           end
 
           # JSEP must appear before IEND
           if context.seen?("IEND")
-            add_error("JSEP must appear before IEND")
+            add_error("jng.JSEP.before-iend", "JSEP must appear before IEND")
             valid = false
           end
 
           # JSEP is only valid with 12-bit sample depth
           sample_depth = context.retrieve(:jhdr_image_sample_depth)
           if sample_depth && sample_depth != 12
-            add_error("JSEP is only valid with 12-bit sample depth, " \
-                      "got #{sample_depth}-bit")
+            add_error("jng.JSEP.sample-depth", "JSEP is only valid with 12-bit sample depth, " \
+                                               "got #{sample_depth}-bit", field: "sample_depth", expected: 12, actual: sample_depth)
             valid = false
           end
 
           # JSEP should appear after at least one JDAT (8-bit data)
           # and before the 12-bit JDAT chunks
           unless context.retrieve(:jdat_count).to_i.positive?
-            add_warning("JSEP should appear after 8-bit JDAT chunks")
+            add_warning("jng.JSEP.after-jdat", "JSEP should appear after 8-bit JDAT chunks")
           end
 
           if valid
