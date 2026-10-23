@@ -32,8 +32,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(9)
+          return false unless check_crc(id: "png.pHYs.crc")
+          return false unless check_length(9, id: "png.pHYs.length")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_unit
@@ -48,7 +48,7 @@ module PngConform
         def check_position
           # pHYs should appear before IDAT
           if context.seen?("IDAT")
-            add_error("pHYs chunk after IDAT (must be before)")
+            add_error("png.pHYs.before-idat", "pHYs chunk after IDAT (must be before)")
             return false
           end
           true
@@ -57,7 +57,7 @@ module PngConform
         # Check that only one pHYs chunk is present
         def check_uniqueness
           if context.seen?("pHYs")
-            add_error("duplicate pHYs chunk")
+            add_error("png.pHYs.single-instance", "duplicate pHYs chunk")
             return false
           end
           true
@@ -68,7 +68,7 @@ module PngConform
           data = chunk.chunk_data
           unit = data[8].unpack1("C")
 
-          check_enum(unit, [UNIT_UNKNOWN, UNIT_METER], "unit specifier")
+          check_enum(unit, [UNIT_UNKNOWN, UNIT_METER], "unit specifier", id: "png.pHYs.unit-specifier")
         end
 
         # Store physical dimensions in context
@@ -88,8 +88,8 @@ module PngConform
             context.store(:pixel_aspect_ratio, aspect)
 
             if (aspect - 1.0).abs > 0.01
-              add_info("pHYs: non-square pixels " \
-                       "(aspect ratio #{format('%.3f', aspect)})")
+              add_info("info.png.pHYs.non-square-pixels", "pHYs: non-square pixels " \
+                                                          "(aspect ratio #{format('%.3f', aspect)})")
             end
           end
 
@@ -99,7 +99,7 @@ module PngConform
           end
 
           dpi = (pixels_per_unit_x * 0.0254).round
-          add_info("pHYs: #{dpi} DPI")
+          add_info("info.png.pHYs.dpi", "pHYs: #{dpi} DPI")
         end
       end
     end

@@ -46,8 +46,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(32)
+          return false unless check_crc(id: "png.cHRM.crc")
+          return false unless check_length(32, id: "png.cHRM.length")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_values
@@ -66,11 +66,11 @@ module PngConform
 
           # cHRM should appear before PLTE and IDAT
           if context.seen?("PLTE")
-            add_warning("cHRM chunk after PLTE (should be before)")
+            add_warning("png.cHRM.before-plte", "cHRM chunk after PLTE (should be before)")
           end
 
           if context.seen?("IDAT")
-            add_error("cHRM chunk after IDAT (must be before)")
+            add_error("png.cHRM.before-idat", "cHRM chunk after IDAT (must be before)")
             valid = false
           end
 
@@ -80,7 +80,7 @@ module PngConform
         # Check that only one cHRM chunk is present
         def check_uniqueness
           if context.seen?("cHRM")
-            add_error("duplicate cHRM chunk")
+            add_error("png.cHRM.single-instance", "duplicate cHRM chunk")
             return false
           end
           true
@@ -112,8 +112,8 @@ module PngConform
         def check_chromaticity(value, name)
           # Values are typically 0.0-0.8 (0-80000)
           if value > 100_000
-            add_warning("#{name} chromaticity (#{value / 100_000.0}) " \
-                        "exceeds typical range (0.0-1.0)")
+            add_warning("png.cHRM.chromaticity-range", "#{name} chromaticity (#{value / 100_000.0}) " \
+                                                       "exceeds typical range (0.0-1.0)")
           end
           true
         end
@@ -143,7 +143,7 @@ module PngConform
 
           return unless mismatches.any?
 
-          add_warning("cHRM values don't match sRGB: #{mismatches.join(', ')}")
+          add_warning("png.cHRM.srgb-consistency", "cHRM values don't match sRGB: #{mismatches.join(', ')}")
         end
 
         # Check if value is close to expected sRGB value
@@ -169,8 +169,8 @@ module PngConform
                           blue_y: blue_y / 100_000.0,
                         })
 
-          add_info("cHRM: white=(#{format('%.4f', white_x / 100_000.0)}, " \
-                   "#{format('%.4f', white_y / 100_000.0)})")
+          add_info("info.png.cHRM.white-point", "cHRM: white=(#{format('%.4f', white_x / 100_000.0)}, " \
+                                                "#{format('%.4f', white_y / 100_000.0)})")
         end
       end
     end

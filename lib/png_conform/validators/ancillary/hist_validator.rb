@@ -22,12 +22,12 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.hIST.crc")
           return false unless check_uniqueness
           return false unless check_color_type
           return false unless check_palette_exists
           return false unless check_position
-          return false unless check_length
+          return false unless check_chunk_length
 
           store_histogram_info
           true
@@ -38,7 +38,7 @@ module PngConform
         # Check that only one hIST chunk exists
         def check_uniqueness
           if context.retrieve(:has_histogram)
-            add_error("Multiple hIST chunks (only one allowed)")
+            add_error("png.hIST.single-instance", "Multiple hIST chunks (only one allowed)")
             return false
           end
 
@@ -50,13 +50,13 @@ module PngConform
           color_type = context.retrieve(:color_type)
 
           unless color_type
-            add_error("hIST chunk before IHDR")
+            add_error("png.hIST.after-ihdr", "hIST chunk before IHDR")
             return false
           end
 
           unless color_type == 3
-            add_error("hIST chunk invalid for color type #{color_type} " \
-                      "(only valid for indexed color)")
+            add_error("png.hIST.color-type-indexed", "hIST chunk invalid for color type #{color_type} " \
+                                                     "(only valid for indexed color)")
             return false
           end
 
@@ -68,7 +68,7 @@ module PngConform
           has_palette = context.retrieve(:has_palette)
 
           unless has_palette
-            add_error("hIST chunk without preceding PLTE chunk")
+            add_error("png.hIST.after-plte", "hIST chunk without preceding PLTE chunk")
             return false
           end
 
@@ -79,13 +79,13 @@ module PngConform
         def check_position
           # Must come after PLTE
           unless context.seen?("PLTE")
-            add_error("hIST chunk before PLTE chunk")
+            add_error("png.hIST.after-plte", "hIST chunk before PLTE chunk")
             return false
           end
 
           # Must come before IDAT
           if context.seen?("IDAT")
-            add_error("hIST chunk after IDAT chunk")
+            add_error("png.hIST.before-idat", "hIST chunk after IDAT chunk")
             return false
           end
 
@@ -93,15 +93,15 @@ module PngConform
         end
 
         # Check that length matches palette size
-        def check_length
+        def check_chunk_length
           palette_entries = context.retrieve(:palette_entries)
           expected_length = palette_entries * 2
           actual_length = chunk.chunk_data.length
 
           unless actual_length == expected_length
-            add_error("hIST chunk wrong length (#{actual_length} bytes, " \
-                      "expected #{expected_length} for #{palette_entries} " \
-                      "palette entries)")
+            add_error("png.hIST.length", "hIST chunk wrong length (#{actual_length} bytes, " \
+                                         "expected #{expected_length} for #{palette_entries} " \
+                                         "palette entries)")
             return false
           end
 
@@ -128,7 +128,7 @@ module PngConform
           # Add info about histogram
           total = frequencies.sum
           if total.zero?
-            add_info("hIST: #{palette_entries} entries (all zero)")
+            add_info("info.png.hIST.all-zero", "hIST: #{palette_entries} entries (all zero)")
           else
             # Find most and least used colors
             max_freq = frequencies.max
@@ -136,9 +136,9 @@ module PngConform
             min_freq = frequencies.reject(&:zero?).min || 0
             min_idx = frequencies.index(min_freq)
 
-            add_info("hIST: #{palette_entries} palette entries, " \
-                     "most used: index #{max_idx} (#{max_freq}), " \
-                     "least used: index #{min_idx} (#{min_freq})")
+            add_info("info.png.hIST.usage-summary", "hIST: #{palette_entries} palette entries, " \
+                                                    "most used: index #{max_idx} (#{max_freq}), " \
+                                                    "least used: index #{min_idx} (#{min_freq})")
           end
         end
       end

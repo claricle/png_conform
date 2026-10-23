@@ -19,7 +19,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.IEND.crc")
           return false unless check_empty
           return false unless check_position
 
@@ -33,8 +33,8 @@ module PngConform
         def check_empty
           return true if chunk.chunk_data.empty?
 
-          add_error("invalid IEND chunk length " \
-                    "(#{chunk.chunk_data.length}, should be 0)")
+          add_error("png.IEND.length", "invalid IEND chunk length " \
+                                       "(#{chunk.chunk_data.length}, should be 0)")
           false
         end
 
@@ -44,13 +44,13 @@ module PngConform
 
           # IEND must appear after IHDR
           unless context.seen?("IHDR")
-            add_error("IEND chunk before IHDR")
+            add_error("png.IEND.after-ihdr", "IEND chunk before IHDR")
             valid = false
           end
 
           # IEND must appear after at least one IDAT
           unless context.seen?("IDAT")
-            add_error("IEND chunk before IDAT")
+            add_error("png.IEND.after-idat", "IEND chunk before IDAT")
             valid = false
           end
 

@@ -23,8 +23,8 @@ module PngConform
         EXPECTED_LENGTH = 8
 
         def validate
-          return unless check_crc
-          return unless check_length(EXPECTED_LENGTH)
+          return unless check_crc(id: "apng.acTL.crc")
+          return unless check_length(EXPECTED_LENGTH, id: "apng.acTL.length")
 
           validate_structure
           validate_ordering
@@ -46,7 +46,7 @@ module PngConform
 
           # Validate num_frames
           if num_frames.zero?
-            add_error("acTL num_frames must be > 0")
+            add_error("apng.acTL.num-frames-zero", "acTL num_frames must be > 0")
             return false
           end
 
@@ -57,13 +57,13 @@ module PngConform
         def validate_ordering
           # acTL must appear before IDAT
           if context.seen?("IDAT")
-            add_error("acTL must appear before IDAT")
+            add_error("apng.acTL.before-idat", "acTL must appear before IDAT")
             return false
           end
 
           # acTL must appear before any fcTL
           if context.seen?("fcTL")
-            add_error("acTL must appear before first fcTL")
+            add_error("apng.acTL.before-fctl", "acTL must appear before first fcTL")
             return false
           end
 

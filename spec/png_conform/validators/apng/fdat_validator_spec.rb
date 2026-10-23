@@ -82,6 +82,9 @@ crc_valid: true)
 
         expect(context.errors.size).to eq(1)
         expect(context.errors.first[:message]).to include("CRC error")
+        expect(context.errors.first).to have_attributes(
+          requirement_id: "apng.fdAT.crc", severity: "error", chunk_offset: 200,
+        )
       end
     end
 

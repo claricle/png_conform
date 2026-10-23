@@ -25,7 +25,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.IDAT.crc")
           return false unless check_not_empty
           return false unless check_position
 
@@ -39,7 +39,7 @@ module PngConform
         def check_not_empty
           return true unless chunk.chunk_data.empty?
 
-          add_error("IDAT chunk is empty")
+          add_error("png.IDAT.empty", "IDAT chunk is empty")
           false
         end
 
@@ -49,14 +49,14 @@ module PngConform
 
           # IDAT must appear after IHDR
           unless context.seen?("IHDR")
-            add_error("IDAT chunk before IHDR")
+            add_error("png.IDAT.after-ihdr", "IDAT chunk before IHDR")
             valid = false
           end
 
           # For indexed-color, IDAT must appear after PLTE
           color_type = context.retrieve(:color_type)
           if color_type == 3 && !context.seen?("PLTE")
-            add_error("IDAT chunk before PLTE for indexed-color image")
+            add_error("png.IDAT.after-plte", "IDAT chunk before PLTE for indexed-color image")
             valid = false
           end
 

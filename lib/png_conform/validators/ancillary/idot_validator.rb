@@ -36,8 +36,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(EXPECTED_LENGTH)
+          return false unless check_crc(id: "png.iDOT.crc")
+          return false unless check_length(EXPECTED_LENGTH, id: "png.iDOT.length")
           return false unless check_uniqueness
           return false unless check_position
 
@@ -50,7 +50,7 @@ module PngConform
         # Check that only one iDOT chunk exists
         def check_uniqueness
           if context.seen?("iDOT")
-            add_error("duplicate iDOT chunk (only one allowed)")
+            add_error("png.iDOT.single-instance", "duplicate iDOT chunk (only one allowed)")
             return false
           end
 
@@ -60,7 +60,7 @@ module PngConform
         # Check that iDOT appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("iDOT chunk after IDAT (must be before)")
+            add_error("png.iDOT.before-idat", "iDOT chunk after IDAT (must be before)")
             return false
           end
 
@@ -78,7 +78,7 @@ module PngConform
           context.store(:idot_data, idot_data)
 
           # Add info message with decoded data
-          add_info("iDOT: Apple display optimization (#{idot_data.detailed_info})")
+          add_info("info.png.iDOT.apple-display-optimization", "iDOT: Apple display optimization (#{idot_data.detailed_info})")
         end
 
         # Create IdotData model from parsed values

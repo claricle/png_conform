@@ -43,7 +43,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.sPLT.crc")
           return false unless check_position
           return false unless check_structure
           return false unless check_palette_name
@@ -59,7 +59,7 @@ module PngConform
         # Check that sPLT appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("sPLT chunk after IDAT chunk")
+            add_error("png.sPLT.before-idat", "sPLT chunk after IDAT chunk")
             return false
           end
 
@@ -72,14 +72,14 @@ module PngConform
 
           # Must contain at least name + null + sample depth
           if data.length < 3
-            add_error("sPLT chunk too short (minimum 3 bytes)")
+            add_error("png.sPLT.min-length", "sPLT chunk too short (minimum 3 bytes)")
             return false
           end
 
           # Must contain null separator
           null_pos = data.index("\0")
           unless null_pos
-            add_error("sPLT chunk missing null separator")
+            add_error("png.sPLT.null-separator", "sPLT chunk missing null separator")
             return false
           end
 
@@ -94,13 +94,13 @@ module PngConform
 
           # Check palette name length
           if palette_name.empty?
-            add_error("sPLT chunk has empty palette name")
+            add_error("png.sPLT.name-empty", "sPLT chunk has empty palette name")
             return false
           end
 
           if palette_name.length > MAX_PALETTE_NAME_LENGTH
-            add_error("sPLT palette name too long (#{palette_name.length}, " \
-                      "max #{MAX_PALETTE_NAME_LENGTH})")
+            add_error("png.sPLT.name-too-long", "sPLT palette name too long (#{palette_name.length}, " \
+                                                "max #{MAX_PALETTE_NAME_LENGTH})")
             return false
           end
 
@@ -108,25 +108,25 @@ module PngConform
           palette_name.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("sPLT palette name contains non-printable " \
-                      "character (0x#{byte.to_s(16)})")
+            add_error("png.sPLT.name-printable", "sPLT palette name contains non-printable " \
+                                                 "character (0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if palette_name.start_with?(" ")
-            add_error("sPLT palette name has leading space")
+            add_error("png.sPLT.name-leading-space", "sPLT palette name has leading space")
             return false
           end
 
           if palette_name.end_with?(" ")
-            add_error("sPLT palette name has trailing space")
+            add_error("png.sPLT.name-trailing-space", "sPLT palette name has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if palette_name.include?("  ")
-            add_error("sPLT palette name has consecutive spaces")
+            add_error("png.sPLT.name-consecutive-spaces", "sPLT palette name has consecutive spaces")
             return false
           end
 
@@ -140,8 +140,8 @@ module PngConform
           sample_depth = data[null_pos + 1].ord
 
           unless VALID_SAMPLE_DEPTHS.include?(sample_depth)
-            add_error("sPLT invalid sample depth (#{sample_depth}, " \
-                      "must be 8 or 16)")
+            add_error("png.sPLT.sample-depth", "sPLT invalid sample depth (#{sample_depth}, " \
+                                               "must be 8 or 16)")
             return false
           end
 
@@ -160,15 +160,15 @@ module PngConform
 
           # Check that entries data is exact multiple of entry size
           if (entries_data.length % entry_size) != 0
-            add_error("sPLT entries data length (#{entries_data.length}) " \
-                      "not a multiple of entry size (#{entry_size})")
+            add_error("png.sPLT.entries-length", "sPLT entries data length (#{entries_data.length}) " \
+                                                 "not a multiple of entry size (#{entry_size})")
             return false
           end
 
           # Check minimum entries (at least 1)
           num_entries = entries_data.length / entry_size
           if num_entries.zero?
-            add_error("sPLT chunk has no palette entries")
+            add_error("png.sPLT.entries-none", "sPLT chunk has no palette entries")
             return false
           end
 
@@ -212,10 +212,10 @@ module PngConform
           min_freq = frequencies.min || 0
           total_freq = frequencies.sum
 
-          add_info("sPLT: \"#{palette_name}\" " \
-                   "(#{num_entries} entries, #{sample_depth}-bit, " \
-                   "frequency range #{min_freq}-#{max_freq}, " \
-                   "total #{total_freq})")
+          add_info("info.png.sPLT.palette-summary", "sPLT: \"#{palette_name}\" " \
+                                                    "(#{num_entries} entries, #{sample_depth}-bit, " \
+                                                    "frequency range #{min_freq}-#{max_freq}, " \
+                                                    "total #{total_freq})")
         end
       end
     end

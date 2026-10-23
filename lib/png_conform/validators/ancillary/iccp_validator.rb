@@ -40,7 +40,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.iCCP.crc")
           return false unless check_uniqueness
           return false unless check_position
           return false unless check_structure
@@ -59,7 +59,7 @@ module PngConform
         # Check that only one iCCP chunk exists
         def check_uniqueness
           if context.retrieve(:has_icc_profile)
-            add_error("Multiple iCCP chunks (only one allowed)")
+            add_error("png.iCCP.single-instance", "Multiple iCCP chunks (only one allowed)")
             return false
           end
 
@@ -70,13 +70,13 @@ module PngConform
         def check_position
           # Must come before PLTE
           if context.seen?("PLTE")
-            add_error("iCCP chunk after PLTE chunk")
+            add_error("png.iCCP.before-plte", "iCCP chunk after PLTE chunk")
             return false
           end
 
           # Must come before IDAT
           if context.seen?("IDAT")
-            add_error("iCCP chunk after IDAT chunk")
+            add_error("png.iCCP.before-idat", "iCCP chunk after IDAT chunk")
             return false
           end
 
@@ -89,14 +89,14 @@ module PngConform
 
           # Must contain at least name + null + compression method
           if data.length < 3
-            add_error("iCCP chunk too short (minimum 3 bytes)")
+            add_error("png.iCCP.min-length", "iCCP chunk too short (minimum 3 bytes)")
             return false
           end
 
           # Must contain null separator
           null_pos = data.index("\0")
           unless null_pos
-            add_error("iCCP chunk missing null separator")
+            add_error("png.iCCP.null-separator", "iCCP chunk missing null separator")
             return false
           end
 
@@ -111,13 +111,13 @@ module PngConform
 
           # Check profile name length
           if profile_name.empty?
-            add_error("iCCP chunk has empty profile name")
+            add_error("png.iCCP.name-empty", "iCCP chunk has empty profile name")
             return false
           end
 
           if profile_name.length > MAX_PROFILE_NAME_LENGTH
-            add_error("iCCP profile name too long (#{profile_name.length}, " \
-                      "max #{MAX_PROFILE_NAME_LENGTH})")
+            add_error("png.iCCP.name-too-long", "iCCP profile name too long (#{profile_name.length}, " \
+                                                "max #{MAX_PROFILE_NAME_LENGTH})")
             return false
           end
 
@@ -125,25 +125,25 @@ module PngConform
           profile_name.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("iCCP profile name contains non-printable " \
-                      "character (0x#{byte.to_s(16)})")
+            add_error("png.iCCP.name-printable", "iCCP profile name contains non-printable " \
+                                                 "character (0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if profile_name.start_with?(" ")
-            add_error("iCCP profile name has leading space")
+            add_error("png.iCCP.name-leading-space", "iCCP profile name has leading space")
             return false
           end
 
           if profile_name.end_with?(" ")
-            add_error("iCCP profile name has trailing space")
+            add_error("png.iCCP.name-trailing-space", "iCCP profile name has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if profile_name.include?("  ")
-            add_error("iCCP profile name has consecutive spaces")
+            add_error("png.iCCP.name-consecutive-spaces", "iCCP profile name has consecutive spaces")
             return false
           end
 
@@ -157,8 +157,8 @@ module PngConform
           compression_method = data[null_pos + 1].ord
 
           unless compression_method == COMPRESSION_DEFLATE
-            add_error("iCCP invalid compression method " \
-                      "(#{compression_method}, must be 0)")
+            add_error("png.iCCP.compression-method", "iCCP invalid compression method " \
+                                                     "(#{compression_method}, must be 0)")
             return false
           end
 
@@ -178,8 +178,8 @@ module PngConform
 
             # Check minimum ICC profile size (128 bytes header)
             if decompressed.length < 128
-              add_error("iCCP decompressed profile too short " \
-                        "(#{decompressed.length} bytes, minimum 128)")
+              add_error("png.iCCP.profile-min-length", "iCCP decompressed profile too short " \
+                                                       "(#{decompressed.length} bytes, minimum 128)")
               return false
             end
 
@@ -187,12 +187,12 @@ module PngConform
             if decompressed.length >= ICC_SIGNATURE_OFFSET + 4
               signature = decompressed[ICC_SIGNATURE_OFFSET, 4]
               unless signature == ICC_SIGNATURE
-                add_warning("iCCP profile signature mismatch " \
-                            "(expected 'acsp', got '#{signature}')")
+                add_warning("png.iCCP.profile-signature", "iCCP profile signature mismatch " \
+                                                          "(expected 'acsp', got '#{signature}')")
               end
             end
           rescue Zlib::Error => e
-            add_error("iCCP decompression failed: #{e.message}")
+            add_error("png.iCCP.decompress", "iCCP decompression failed: #{e.message}")
             return false
           end
 
@@ -202,8 +202,8 @@ module PngConform
         # Check for conflict with sRGB chunk
         def check_srgb_conflict
           if context.retrieve(:uses_srgb)
-            add_warning("iCCP chunk present with sRGB chunk " \
-                        "(iCCP takes precedence)")
+            add_warning("png.iCCP.coexist-srgb", "iCCP chunk present with sRGB chunk " \
+                                                 "(iCCP takes precedence)")
           end
 
           true
@@ -232,10 +232,10 @@ module PngConform
                                 0
                               end
 
-          add_info("iCCP: \"#{profile_name}\" " \
-                   "(#{decompressed.length} bytes, " \
-                   "compressed from #{compressed_data.length} bytes, " \
-                   "ratio #{compression_ratio}:1)")
+          add_info("info.png.iCCP.profile-summary", "iCCP: \"#{profile_name}\" " \
+                                                    "(#{decompressed.length} bytes, " \
+                                                    "compressed from #{compressed_data.length} bytes, " \
+                                                    "ratio #{compression_ratio}:1)")
         end
       end
     end

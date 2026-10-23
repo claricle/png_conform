@@ -34,10 +34,10 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.sTER.crc")
           return false unless check_uniqueness
           return false unless check_position
-          return false unless check_length
+          return false unless check_chunk_length
           return false unless check_mode
 
           store_stereo_info
@@ -49,7 +49,7 @@ module PngConform
         # Check that only one sTER chunk exists
         def check_uniqueness
           if context.retrieve(:has_stereo)
-            add_error("Multiple sTER chunks (only one allowed)")
+            add_error("png.sTER.single-instance", "Multiple sTER chunks (only one allowed)")
             return false
           end
 
@@ -59,7 +59,7 @@ module PngConform
         # Check that sTER appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("sTER chunk after IDAT chunk")
+            add_error("png.sTER.before-idat", "sTER chunk after IDAT chunk")
             return false
           end
 
@@ -67,12 +67,12 @@ module PngConform
         end
 
         # Check chunk length
-        def check_length
+        def check_chunk_length
           actual_length = chunk.chunk_data.length
 
           unless actual_length == EXPECTED_LENGTH
-            add_error("sTER chunk wrong length (#{actual_length} byte(s), " \
-                      "expected #{EXPECTED_LENGTH})")
+            add_error("png.sTER.length", "sTER chunk wrong length (#{actual_length} byte(s), " \
+                                         "expected #{EXPECTED_LENGTH})")
             return false
           end
 
@@ -85,7 +85,7 @@ module PngConform
           mode = data[0].ord
 
           unless VALID_MODES.include?(mode)
-            add_error("sTER invalid mode (#{mode}, must be 0 or 1)")
+            add_error("png.sTER.mode", "sTER invalid mode (#{mode}, must be 0 or 1)")
             return false
           end
 
@@ -103,7 +103,7 @@ module PngConform
           context.store(:stereo_mode, mode)
 
           # Add info about the stereo mode
-          add_info("sTER: #{mode_name} (mode #{mode})")
+          add_info("info.png.sTER.mode", "sTER: #{mode_name} (mode #{mode})")
         end
       end
     end

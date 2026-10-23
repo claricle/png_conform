@@ -40,34 +40,54 @@ RSpec.describe PngConform::Validators::BaseValidator do
   end
 
   describe "#add_error" do
-    it "adds error to context with default severity" do
-      validator.send(:add_error, "test error")
+    it "stores a cataloged diagnostic with identity, citation and location" do
+      validator.send(:add_error, "png.IHDR.width-zero", "test error",
+                     field: "width", expected: ">0", actual: 0)
+      diagnostic = context.errors.first
       expect(context.errors.size).to eq(1)
+      expect(diagnostic).to be_a(PngConform::Models::ValidationError)
+      expect(diagnostic).to have_attributes(
+        requirement_id: "png.IHDR.width-zero", message: "test error",
+        severity: "error", error_type: "value", chunk_type: "TEST",
+        chunk_offset: 100, field: "width", expected: ">0", actual: "0"
+      )
+      expect(diagnostic.citation_label).to include("ISO/IEC 15948")
+      expect(diagnostic.to_lens_h).to include(
+        "requirement_id" => "png.IHDR.width-zero",
+        "location" => include("byte_offset" => 100, "record_type" => "TEST"),
+      )
+    end
+
+    it "keeps the legacy hash readers" do
+      validator.send(:add_error, "png.IHDR.width-zero", "test error")
       expect(context.errors.first[:message]).to eq("test error")
       expect(context.errors.first[:severity]).to eq(:error)
       expect(context.errors.first[:chunk_type]).to eq("TEST")
       expect(context.errors.first[:offset]).to eq(100)
     end
 
-    it "adds error with custom severity" do
-      validator.send(:add_error, "test warning", severity: :warning)
-      expect(context.errors.first[:severity]).to eq(:warning)
+    it "rejects an ID that is not in the catalog" do
+      expect { validator.send(:add_error, "png.nope.nope", "x") }
+        .to raise_error(PngConform::Diagnostics::Catalog::UnknownIdError)
     end
   end
 
   describe "#add_warning" do
-    it "adds warning to context" do
-      validator.send(:add_warning, "test warning")
+    it "takes severity from the catalog entry" do
+      validator.send(:add_warning, "png.IHDR.width-recommended-max", "test")
       expect(context.errors.size).to eq(1)
       expect(context.errors.first[:severity]).to eq(:warning)
+      expect(context.errors.first.requirement_id)
+        .to eq("png.IHDR.width-recommended-max")
     end
   end
 
   describe "#add_info" do
-    it "adds info to context" do
-      validator.send(:add_info, "test info")
+    it "stores an informational finding without a citation" do
+      validator.send(:add_info, "info.png.PLTE.palette-present", "test info")
       expect(context.errors.size).to eq(1)
       expect(context.errors.first[:severity]).to eq(:info)
+      expect(context.errors.first.citation_uri).to be_nil
     end
   end
 
@@ -83,7 +103,7 @@ RSpec.describe PngConform::Validators::BaseValidator do
       )
       validator_with_correct = described_class.new(chunk_with_correct_length,
                                                    context)
-      expect(validator_with_correct.send(:check_length, 9)).to be true
+      expect(validator_with_correct.send(:check_length, 9, id: "png.IHDR.length")).to be true
       expect(context.errors).to be_empty
     end
 
@@ -98,8 +118,13 @@ RSpec.describe PngConform::Validators::BaseValidator do
       )
       validator_with_wrong = described_class.new(chunk_with_wrong_length,
                                                  context)
-      expect(validator_with_wrong.send(:check_length, 9)).to be false
+      expect(validator_with_wrong.send(:check_length, 9,
+                                       id: "png.IHDR.length")).to be false
       expect(context.errors.size).to eq(1)
+      expect(context.errors.first).to have_attributes(
+        requirement_id: "png.IHDR.length", expected: "9", actual: "5",
+        field: "length", chunk_offset: 100
+      )
       expect(context.errors.first[:message]).to include(
         "invalid TEST length (5, should be 9)",
       )
@@ -108,27 +133,29 @@ RSpec.describe PngConform::Validators::BaseValidator do
 
   describe "#check_range" do
     it "returns true when value is in range" do
-      expect(validator.send(:check_range, 5, 1, 10, "test value")).to be true
+      expect(validator.send(:check_range, 5, 1, 10, "test value", id: "png.IHDR.color-type")).to be true
       expect(context.errors).to be_empty
     end
 
     it "returns true when value equals min" do
-      expect(validator.send(:check_range, 1, 1, 10, "test value")).to be true
+      expect(validator.send(:check_range, 1, 1, 10, "test value", id: "png.IHDR.color-type")).to be true
     end
 
     it "returns true when value equals max" do
-      expect(validator.send(:check_range, 10, 1, 10, "test value")).to be true
+      expect(validator.send(:check_range, 10, 1, 10, "test value", id: "png.IHDR.color-type")).to be true
     end
 
     it "returns false when value is below min" do
-      expect(validator.send(:check_range, 0, 1, 10, "test value")).to be false
+      expect(validator.send(:check_range, 0, 1, 10, "test value",
+                            id: "png.IHDR.color-type")).to be false
       expect(context.errors.first[:message]).to include(
         "invalid test value (0, must be 1-10)",
       )
     end
 
     it "returns false when value is above max" do
-      expect(validator.send(:check_range, 11, 1, 10, "test value")).to be false
+      expect(validator.send(:check_range, 11, 1, 10, "test value",
+                            id: "png.IHDR.color-type")).to be false
       expect(context.errors.first[:message]).to include(
         "invalid test value (11, must be 1-10)",
       )
@@ -137,37 +164,46 @@ RSpec.describe PngConform::Validators::BaseValidator do
 
   describe "#check_enum" do
     it "returns true when value is in valid list" do
-      expect(validator.send(:check_enum, 2, [1, 2, 3], "color type")).to be true
+      expect(validator.send(:check_enum, 2, [1, 2, 3], "color type",
+                            id: "png.IHDR.color-type")).to be true
       expect(context.errors).to be_empty
     end
 
     it "returns false when value is not in valid list" do
-      expect(validator.send(:check_enum, 5, [1, 2, 3],
-                            "color type")).to be false
+      expect(validator.send(:check_enum, 5, [1, 2, 3], "color type",
+                            id: "png.IHDR.color-type")).to be false
+      expect(context.errors.first).to have_attributes(
+        requirement_id: "png.IHDR.color-type", field: "color type",
+        expected: "1, 2, 3", actual: "5"
+      )
       expect(context.errors.first[:message]).to include(
         "invalid color type (5, must be one of 1, 2, 3)",
       )
     end
 
     it "works with string values" do
-      expect(validator.send(:check_enum, "RGB", %w[RGB RGBA],
-                            "mode")).to be true
+      expect(validator.send(:check_enum, "RGB", %w[RGB RGBA], "mode",
+                            id: "png.IHDR.color-type")).to be true
     end
   end
 
   describe "#check_crc" do
     it "returns true when CRC is valid" do
       allow(chunk).to receive(:crc_valid?).and_return(true)
-      expect(validator.send(:check_crc)).to be true
+      expect(validator.send(:check_crc, id: "png.IHDR.crc")).to be true
       expect(context.errors).to be_empty
     end
 
     it "returns false and adds error when CRC is invalid" do
       allow(chunk).to receive(:crc_valid?).and_return(false)
-      expect(validator.send(:check_crc)).to be false
+      expect(validator.send(:check_crc, id: "png.IHDR.crc")).to be false
       expect(context.errors.size).to eq(1)
       expect(context.errors.first[:message]).to include(
         "CRC error in TEST chunk",
+      )
+      expect(context.errors.first).to have_attributes(
+        requirement_id: "png.IHDR.crc", error_type: "integrity",
+        chunk_offset: 100
       )
     end
   end
@@ -190,7 +226,22 @@ RSpec.describe PngConform::Validators::ValidationContext do
     end
   end
 
-  describe "#add_error" do
+  describe "#add_diagnostic" do
+    it "stores the built diagnostic and returns it" do
+      diagnostic = context.add_diagnostic(
+        "png.chunk.unknown-critical", "Unknown critical chunk type: XXXX",
+        chunk_type: "XXXX", offset: 33, chunk_index: 2
+      )
+      expect(context.errors).to eq([diagnostic])
+      expect(diagnostic.to_lens_h).to include(
+        "severity" => "error", "requirement_id" => "png.chunk.unknown-critical",
+        "location" => include("byte_offset" => 33, "record_index" => 2,
+                              "record_type" => "XXXX")
+      )
+    end
+  end
+
+  describe "#add_error (uncataloged compatibility path)" do
     it "adds error with all attributes" do
       context.add_error(
         chunk_type: "IHDR",

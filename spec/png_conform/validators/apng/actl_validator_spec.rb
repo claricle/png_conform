@@ -61,6 +61,9 @@ RSpec.describe PngConform::Validators::Apng::ActlValidator do
 
         expect(context.errors.size).to eq(1)
         expect(context.errors.first[:message]).to include("CRC error")
+        expect(context.errors.first).to have_attributes(
+          requirement_id: "apng.acTL.crc", severity: "error", chunk_offset: 8,
+        )
       end
     end
 
@@ -109,6 +112,9 @@ RSpec.describe PngConform::Validators::Apng::ActlValidator do
 
         expect(context.errors.size).to eq(1)
         expect(context.errors.first[:message]).to include("num_frames must be > 0")
+        expect(context.errors.first).to have_attributes(
+          requirement_id: "apng.acTL.num-frames-zero", severity: "error", chunk_offset: 8, error_type: "value",
+        )
       end
     end
 

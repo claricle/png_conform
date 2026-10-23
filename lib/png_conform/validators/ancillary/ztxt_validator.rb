@@ -36,7 +36,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.zTXt.crc")
           return false unless check_structure
           return false unless check_keyword
           return false unless check_compression_method
@@ -54,14 +54,14 @@ module PngConform
 
           # Must contain at least keyword + null + compression method
           if data.length < 3
-            add_error("zTXt chunk too short (minimum 3 bytes)")
+            add_error("png.zTXt.min-length", "zTXt chunk too short (minimum 3 bytes)")
             return false
           end
 
           # Must contain null separator
           null_pos = data.index("\0")
           unless null_pos
-            add_error("zTXt chunk missing null separator")
+            add_error("png.zTXt.null-separator", "zTXt chunk missing null separator")
             return false
           end
 
@@ -76,13 +76,13 @@ module PngConform
 
           # Check keyword length
           if keyword.empty?
-            add_error("zTXt chunk has empty keyword")
+            add_error("png.zTXt.name-empty", "zTXt chunk has empty keyword")
             return false
           end
 
           if keyword.length > MAX_KEYWORD_LENGTH
-            add_error("zTXt keyword too long (#{keyword.length}, " \
-                      "max #{MAX_KEYWORD_LENGTH})")
+            add_error("png.zTXt.name-too-long", "zTXt keyword too long (#{keyword.length}, " \
+                                                "max #{MAX_KEYWORD_LENGTH})")
             return false
           end
 
@@ -90,25 +90,25 @@ module PngConform
           keyword.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("zTXt keyword contains non-printable character " \
-                      "(0x#{byte.to_s(16)})")
+            add_error("png.zTXt.name-printable", "zTXt keyword contains non-printable character " \
+                                                 "(0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if keyword.start_with?(" ")
-            add_error("zTXt keyword has leading space")
+            add_error("png.zTXt.name-leading-space", "zTXt keyword has leading space")
             return false
           end
 
           if keyword.end_with?(" ")
-            add_error("zTXt keyword has trailing space")
+            add_error("png.zTXt.name-trailing-space", "zTXt keyword has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if keyword.include?("  ")
-            add_error("zTXt keyword has consecutive spaces")
+            add_error("png.zTXt.name-consecutive-spaces", "zTXt keyword has consecutive spaces")
             return false
           end
 
@@ -122,8 +122,8 @@ module PngConform
           compression_method = data[null_pos + 1].ord
 
           unless compression_method == COMPRESSION_DEFLATE
-            add_error("zTXt invalid compression method " \
-                      "(#{compression_method}, must be 0)")
+            add_error("png.zTXt.compression-method", "zTXt invalid compression method " \
+                                                     "(#{compression_method}, must be 0)")
             return false
           end
 
@@ -140,7 +140,7 @@ module PngConform
           begin
             Zlib::Inflate.inflate(compressed_data)
           rescue Zlib::Error => e
-            add_error("zTXt decompression failed: #{e.message}")
+            add_error("png.zTXt.decompress", "zTXt decompression failed: #{e.message}")
             return false
           end
 
@@ -164,8 +164,8 @@ module PngConform
 
           # Add info about the text chunk
           text_preview = text.length > 40 ? "#{text[0, 40]}..." : text
-          add_info("zTXt: #{keyword} = \"#{text_preview}\" " \
-                   "(compressed from #{compressed_data.length} bytes)")
+          add_info("info.png.zTXt.text-content", "zTXt: #{keyword} = \"#{text_preview}\" " \
+                                                 "(compressed from #{compressed_data.length} bytes)")
         end
       end
     end

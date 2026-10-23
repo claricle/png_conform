@@ -38,8 +38,8 @@ module PngConform
         BLEND_OP_OVER = 1
 
         def validate
-          return unless check_crc
-          return unless check_length(EXPECTED_LENGTH)
+          return unless check_crc(id: "apng.fcTL.crc")
+          return unless check_length(EXPECTED_LENGTH, id: "apng.fcTL.length")
 
           validate_structure
           validate_frame_dimensions
@@ -68,19 +68,21 @@ module PngConform
 
           # Validate frame dimensions
           if width.zero? || height.zero?
-            add_error("fcTL width and height must be > 0")
+            add_error("apng.fcTL.dimensions-zero", "fcTL width and height must be > 0")
             return false
           end
 
           # Validate dispose_op
           unless check_enum(dispose_op, [DISPOSE_OP_NONE, DISPOSE_OP_BACKGROUND,
-                                         DISPOSE_OP_PREVIOUS], "dispose_op")
+                                         DISPOSE_OP_PREVIOUS], "dispose_op",
+                            id: "apng.fcTL.dispose-op")
             return false
           end
 
           # Validate blend_op
           unless check_enum(blend_op, [BLEND_OP_SOURCE, BLEND_OP_OVER],
-                            "blend_op")
+                            "blend_op",
+                            id: "apng.fcTL.blend-op")
             return false
           end
 
@@ -109,18 +111,18 @@ module PngConform
 
           # Frame must fit within IHDR dimensions
           if width > ihdr_width || height > ihdr_height
-            add_error("fcTL frame dimensions exceed IHDR dimensions")
+            add_error("apng.fcTL.exceeds-ihdr", "fcTL frame dimensions exceed IHDR dimensions")
             return false
           end
 
           # Frame position + size must fit within IHDR
           if x_offset + width > ihdr_width
-            add_error("fcTL frame extends beyond IHDR width")
+            add_error("apng.fcTL.extends-ihdr-width", "fcTL frame extends beyond IHDR width")
             return false
           end
 
           if y_offset + height > ihdr_height
-            add_error("fcTL frame extends beyond IHDR height")
+            add_error("apng.fcTL.extends-ihdr-height", "fcTL frame extends beyond IHDR height")
             return false
           end
 
@@ -130,7 +132,7 @@ module PngConform
         def validate_sequence_number
           # Check if acTL exists
           unless context.retrieve(:actl_num_frames)
-            add_error("fcTL requires acTL chunk")
+            add_error("apng.fcTL.requires-actl", "fcTL requires acTL chunk")
             return false
           end
 
@@ -139,8 +141,8 @@ module PngConform
           expected_sequence = context.retrieve(:expected_apng_sequence) || 0
 
           if sequence_number != expected_sequence
-            add_error("fcTL sequence number mismatch " \
-                      "(expected #{expected_sequence}, got #{sequence_number})")
+            add_error("apng.fcTL.sequence-number", "fcTL sequence number mismatch " \
+                                                   "(expected #{expected_sequence}, got #{sequence_number})")
             return false
           end
 

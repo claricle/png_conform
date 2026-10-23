@@ -31,6 +31,19 @@ RSpec.describe PngConform::Validators::Ancillary::ItxtValidator do
         expect(context.has_errors?).to be true
       end
     end
+
+    context "with an undecompressible payload" do
+      it "reports png.iTXt.decompress with its citation and location" do
+        chunk = create_chunk("iTXt", "Author\0\1\0\0\0garbage")
+        described_class.new(chunk, context).validate
+
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.iTXt.decompress", severity: "error", error_type: "encoding",
+          chunk_type: "iTXt", chunk_offset: 0,
+          citation_label: a_string_including("ISO/IEC 15948")
+        )
+      end
+    end
   end
 
   def create_chunk(type, data)

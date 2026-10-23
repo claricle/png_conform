@@ -133,19 +133,10 @@ module PngConform
       # @param result [ValidationResult] Result to add messages to
       # @return [void]
       def add_context_messages(result)
-        # Add errors from context
-        @context.all_errors.each do |e|
-          result.error(e[:message])
-        end
-
-        # Add warnings from context
-        @context.all_warnings.each do |w|
-          result.warning(w[:message])
-        end
-
-        # Add info from context
-        @context.all_info.each do |i|
-          result.info(i[:message])
+        # Each diagnostic is appended intact, grouped errors, warnings, info
+        [@context.all_errors, @context.all_warnings,
+         @context.all_info].each do |group|
+          group.each { |diagnostic| result.add_error(diagnostic) }
         end
       end
 

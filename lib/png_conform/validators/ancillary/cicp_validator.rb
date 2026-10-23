@@ -91,23 +91,23 @@ module PngConform
         private
 
         def check_chunk_length
-          return if check_length(4)
+          return if check_length(4, id: "png.cICP.length")
 
-          add_error("invalid chunk length: #{chunk.chunk_data.bytesize} bytes")
+          add_error("png.cICP.length", "invalid chunk length: #{chunk.chunk_data.bytesize} bytes")
         end
 
         def check_uniqueness
           return unless context.seen?(CHUNK_TYPE)
 
-          add_error("multiple cICP chunks not allowed")
+          add_error("png.cICP.single-instance", "multiple cICP chunks not allowed")
         end
 
         def check_position
-          add_error("cICP must appear before PLTE") if context.seen?("PLTE")
+          add_error("png.cICP.before-plte", "cICP must appear before PLTE") if context.seen?("PLTE")
 
           return unless context.seen?("IDAT")
 
-          add_error("cICP must appear before IDAT")
+          add_error("png.cICP.before-idat", "cICP must appear before IDAT")
         end
 
         def validate_fields
@@ -122,6 +122,7 @@ module PngConform
         def validate_color_primaries(value)
           unless VALID_COLOR_PRIMARIES.include?(value)
             add_error(
+              "png.cICP.color-primaries",
               "invalid color primaries: #{value} " \
               "(valid: #{VALID_COLOR_PRIMARIES.join(', ')})",
             )
@@ -129,12 +130,13 @@ module PngConform
 
           return unless value.zero?
 
-          add_warning("color primaries = 0 (reserved)")
+          add_warning("png.cICP.color-primaries-reserved", "color primaries = 0 (reserved)")
         end
 
         def validate_transfer_function(value)
           unless VALID_TRANSFER_FUNCTIONS.include?(value)
             add_error(
+              "png.cICP.transfer-function",
               "invalid transfer function: #{value} " \
               "(valid: #{VALID_TRANSFER_FUNCTIONS.join(', ')})",
             )
@@ -142,12 +144,13 @@ module PngConform
 
           return unless value.zero?
 
-          add_warning("transfer function = 0 (reserved)")
+          add_warning("png.cICP.transfer-function-reserved", "transfer function = 0 (reserved)")
         end
 
         def validate_matrix_coefficients(value)
           unless VALID_MATRIX_COEFFICIENTS.include?(value)
             add_error(
+              "png.cICP.matrix-coefficients",
               "invalid matrix coefficients: #{value} " \
               "(valid: #{VALID_MATRIX_COEFFICIENTS.join(', ')})",
             )
@@ -156,14 +159,15 @@ module PngConform
           return unless value.zero? && rgb_color?
 
           add_info(
+            "info.png.cICP.matrix-coefficients-rgb-recommendation",
             "matrix coefficients = 0 (identity) is recommended for RGB",
           )
         end
 
         def validate_video_full_range_flag(value)
-          return if check_enum(value, [0, 1], "video full range flag")
+          return if check_enum(value, [0, 1], "video full range flag", id: "png.cICP.full-range-flag")
 
-          add_error("invalid video full range flag: #{value} (must be 0 or 1)")
+          add_error("png.cICP.full-range-flag", "invalid video full range flag: #{value} (must be 0 or 1)")
         end
 
         def check_conflicts
@@ -175,6 +179,7 @@ module PngConform
           return unless context.seen?("iCCP")
 
           add_warning(
+            "png.cICP.coexist-iccp",
             "cICP should not coexist with iCCP " \
             "(both specify color space information)",
           )
@@ -184,6 +189,7 @@ module PngConform
           return unless context.seen?("sRGB")
 
           add_warning(
+            "png.cICP.coexist-srgb",
             "cICP should not coexist with sRGB " \
             "(both specify color space information)",
           )

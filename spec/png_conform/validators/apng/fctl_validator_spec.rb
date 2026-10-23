@@ -97,6 +97,9 @@ RSpec.describe PngConform::Validators::Apng::FctlValidator do
 
         expect(context.errors.size).to eq(1)
         expect(context.errors.first[:message]).to include("CRC error")
+        expect(context.errors.first).to have_attributes(
+          requirement_id: "apng.fcTL.crc", severity: "error", chunk_offset: 100,
+        )
       end
     end
 
@@ -116,6 +119,9 @@ RSpec.describe PngConform::Validators::Apng::FctlValidator do
 
         expect(context.errors.size).to eq(1)
         expect(context.errors.first[:message]).to include("invalid fcTL length")
+        expect(context.errors.first).to have_attributes(
+          requirement_id: "apng.fcTL.length", severity: "error", chunk_offset: 100,
+        )
       end
     end
 

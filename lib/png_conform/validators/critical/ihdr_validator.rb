@@ -46,8 +46,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(13)
+          return false unless check_crc(id: "png.IHDR.crc")
+          return false unless check_length(13, id: "png.IHDR.length")
 
           data = chunk.chunk_data
           width = data[0, 4].unpack1("N")
@@ -81,23 +81,23 @@ module PngConform
           valid = true
 
           if width.zero?
-            add_error("invalid image width (0)")
+            add_error("png.IHDR.width-zero", "invalid image width (0)")
             valid = false
           end
 
           if height.zero?
-            add_error("invalid image height (0)")
+            add_error("png.IHDR.height-zero", "invalid image height (0)")
             valid = false
           end
 
           if width > (2**31) - 1
-            add_warning("image width (#{width}) exceeds maximum " \
-                        "recommended value")
+            add_warning("png.IHDR.width-recommended-max", "image width (#{width}) exceeds maximum " \
+                                                          "recommended value")
           end
 
           if height > (2**31) - 1
-            add_warning("image height (#{height}) exceeds maximum " \
-                        "recommended value")
+            add_warning("png.IHDR.height-recommended-max", "image height (#{height}) exceeds maximum " \
+                                                           "recommended value")
           end
 
           valid
@@ -105,7 +105,7 @@ module PngConform
 
         # Check color type is valid
         def check_color_type(color_type)
-          check_enum(color_type, COLOR_TYPES.keys, "color type")
+          check_enum(color_type, COLOR_TYPES.keys, "color type", id: "png.IHDR.color-type")
         end
 
         # Check bit depth is valid for color type
@@ -115,17 +115,17 @@ module PngConform
           valid_depths = VALID_BIT_DEPTHS[color_type]
           return true if valid_depths.include?(bit_depth)
 
-          add_error("invalid bit depth (#{bit_depth}) for " \
-                    "#{COLOR_TYPES[color_type]} (must be one of " \
-                    "#{valid_depths.join(', ')})")
+          add_error("png.IHDR.bit-depth", "invalid bit depth (#{bit_depth}) for " \
+                                          "#{COLOR_TYPES[color_type]} (must be one of " \
+                                          "#{valid_depths.join(', ')})")
           false
         end
 
         # Check compression method
         def check_compression(compression)
           if compression != 0
-            add_error("invalid compression method (#{compression}, " \
-                      "must be 0)")
+            add_error("png.IHDR.compression-method", "invalid compression method (#{compression}, " \
+                                                     "must be 0)")
             return false
           end
           true
@@ -134,7 +134,7 @@ module PngConform
         # Check filter method
         def check_filter(filter)
           if filter != 0
-            add_error("invalid filter method (#{filter}, must be 0)")
+            add_error("png.IHDR.filter-method", "invalid filter method (#{filter}, must be 0)")
             return false
           end
           true
@@ -142,7 +142,7 @@ module PngConform
 
         # Check interlace method
         def check_interlace(interlace)
-          check_enum(interlace, [0, 1], "interlace method")
+          check_enum(interlace, [0, 1], "interlace method", id: "png.IHDR.interlace-method")
         end
 
         # Store IHDR information in context for use by other validators

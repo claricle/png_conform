@@ -36,10 +36,10 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.oFFs.crc")
           return false unless check_uniqueness
           return false unless check_position
-          return false unless check_length
+          return false unless check_chunk_length
           return false unless check_unit
 
           store_offset_info
@@ -51,7 +51,7 @@ module PngConform
         # Check that only one oFFs chunk exists
         def check_uniqueness
           if context.retrieve(:has_offset)
-            add_error("Multiple oFFs chunks (only one allowed)")
+            add_error("png.oFFs.single-instance", "Multiple oFFs chunks (only one allowed)")
             return false
           end
 
@@ -61,7 +61,7 @@ module PngConform
         # Check that oFFs appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("oFFs chunk after IDAT chunk")
+            add_error("png.oFFs.before-idat", "oFFs chunk after IDAT chunk")
             return false
           end
 
@@ -69,12 +69,12 @@ module PngConform
         end
 
         # Check chunk length
-        def check_length
+        def check_chunk_length
           actual_length = chunk.chunk_data.length
 
           unless actual_length == EXPECTED_LENGTH
-            add_error("oFFs chunk wrong length (#{actual_length} bytes, " \
-                      "expected #{EXPECTED_LENGTH})")
+            add_error("png.oFFs.length", "oFFs chunk wrong length (#{actual_length} bytes, " \
+                                         "expected #{EXPECTED_LENGTH})")
             return false
           end
 
@@ -87,8 +87,8 @@ module PngConform
           unit = data[8].ord
 
           unless VALID_UNITS.include?(unit)
-            add_error("oFFs invalid unit specifier (#{unit}, " \
-                      "must be 0 or 1)")
+            add_error("png.oFFs.unit", "oFFs invalid unit specifier (#{unit}, " \
+                                       "must be 0 or 1)")
             return false
           end
 
@@ -124,7 +124,7 @@ module PngConform
           context.store(:offset_unit, unit)
 
           # Add info about the offset
-          add_info("oFFs: position (#{x_pos}, #{y_pos}) #{unit_name}")
+          add_info("info.png.oFFs.position", "oFFs: position (#{x_pos}, #{y_pos}) #{unit_name}")
         end
       end
     end

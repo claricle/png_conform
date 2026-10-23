@@ -37,7 +37,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.sCAL.crc")
           return false unless check_uniqueness
           return false unless check_position
           return false unless check_structure
@@ -53,7 +53,7 @@ module PngConform
         # Check that only one sCAL chunk exists
         def check_uniqueness
           if context.seen?("sCAL") || context.retrieve(:has_scale)
-            add_error("duplicate sCAL chunk (only one allowed)")
+            add_error("png.sCAL.single-instance", "duplicate sCAL chunk (only one allowed)")
             return false
           end
 
@@ -63,7 +63,7 @@ module PngConform
         # Check that sCAL appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("sCAL chunk after IDAT chunk")
+            add_error("png.sCAL.before-idat", "sCAL chunk after IDAT chunk")
             return false
           end
 
@@ -76,15 +76,15 @@ module PngConform
 
           # Must contain at least unit + width + null + height + null
           if data.length < 5
-            add_error("sCAL chunk too short (minimum 5 bytes)")
+            add_error("png.sCAL.min-length", "sCAL chunk too short (minimum 5 bytes)")
             return false
           end
 
           # Must contain two null separators
           nulls = data.bytes.each_index.select { |i| data[i] == "\0" }
           if nulls.length < 2
-            add_error("sCAL chunk missing null separators " \
-                      "(found #{nulls.length}, need 2)")
+            add_error("png.sCAL.null-separators", "sCAL chunk missing null separators " \
+                                                  "(found #{nulls.length}, need 2)")
             return false
           end
 
@@ -97,8 +97,8 @@ module PngConform
           unit = data[0].ord
 
           unless VALID_UNITS.include?(unit)
-            add_error("sCAL invalid unit specifier (#{unit}, " \
-                      "must be 1 or 2)")
+            add_error("png.sCAL.unit", "sCAL invalid unit specifier (#{unit}, " \
+                                       "must be 1 or 2)")
             return false
           end
 
@@ -116,25 +116,25 @@ module PngConform
 
           # Check width
           unless valid_float_string?(width_str)
-            add_error("sCAL invalid width format: '#{width_str}'")
+            add_error("png.sCAL.width-format", "sCAL invalid width format: '#{width_str}'")
             return false
           end
 
           width = width_str.to_f
           unless width.positive?
-            add_error("sCAL width must be positive (got #{width})")
+            add_error("png.sCAL.width-positive", "sCAL width must be positive (got #{width})")
             return false
           end
 
           # Check height
           unless valid_float_string?(height_str)
-            add_error("sCAL invalid height format: '#{height_str}'")
+            add_error("png.sCAL.height-format", "sCAL invalid height format: '#{height_str}'")
             return false
           end
 
           height = height_str.to_f
           unless height.positive?
-            add_error("sCAL height must be positive (got #{height})")
+            add_error("png.sCAL.height-positive", "sCAL height must be positive (got #{height})")
             return false
           end
 
@@ -172,7 +172,7 @@ module PngConform
           context.store(:scale_unit, unit)
 
           # Add info about the scale
-          add_info("sCAL: #{width} x #{height} #{unit_name}s per pixel")
+          add_info("info.png.sCAL.scale", "sCAL: #{width} x #{height} #{unit_name}s per pixel")
         end
       end
     end

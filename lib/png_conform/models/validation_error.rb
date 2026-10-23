@@ -17,6 +17,7 @@ module PngConform
       attribute :remediation, :string
       attribute :citation_uri, :string
       attribute :citation_label, :string
+      attribute :profile, :string
 
       # Severity levels
       SEVERITY_ERROR = "error"
@@ -34,7 +35,7 @@ module PngConform
       ERROR_TYPE_PROFILE = "profile"
 
       EXTRA_OPTIONS = %i[requirement_id chunk_index field remediation
-                         citation_uri citation_label expected actual].freeze
+                         citation_uri citation_label expected actual profile].freeze
 
       # Create error-level validation error
       def self.error(message, options = {})
@@ -125,6 +126,18 @@ module PngConform
         )
       end
 
+      LEGACY_KEYS = { message: :message, chunk_type: :chunk_type,
+                      offset: :chunk_offset }.freeze
+
+      # Hash-style reader kept as a compatibility alias for the context
+      # entries that used to be plain hashes (:severity, :message,
+      # :chunk_type, :offset).
+      def [](key)
+        return severity&.to_sym if key == :severity
+
+        public_send(LEGACY_KEYS.fetch(key, key))
+      end
+
       # Format for display (legacy, kept as a compatibility alias)
       def to_s
         parts = []
@@ -143,8 +156,11 @@ module PngConform
         [LensCore::Citation.new(uri: citation_uri, label: citation_label)]
       end
 
+      # Profile policy findings have no byte position, so the profile and
+      # chunk type travel as context instead of a location.
       def lens_context
-        { "expected" => expected, "actual" => actual }.compact
+        { "expected" => expected, "actual" => actual, "profile" => profile,
+          "chunk_type" => (chunk_type if location.nil?) }.compact
       end
     end
   end

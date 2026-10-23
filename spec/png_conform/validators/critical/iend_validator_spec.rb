@@ -53,6 +53,9 @@ RSpec.describe PngConform::Validators::Critical::IendValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("CRC error")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IEND.crc", severity: "error", chunk_offset: 100,
+        )
       end
     end
 
@@ -69,6 +72,9 @@ RSpec.describe PngConform::Validators::Critical::IendValidator do
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("invalid IEND chunk length")
         expect(context.all_errors.first[:message]).to include("should be 0")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IEND.length", severity: "error", chunk_offset: 100,
+        )
       end
     end
 
@@ -84,6 +90,9 @@ RSpec.describe PngConform::Validators::Critical::IendValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("IEND chunk before IHDR")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IEND.after-ihdr", severity: "error", chunk_offset: 100,
+        )
       end
 
       it "rejects IEND before IDAT" do
