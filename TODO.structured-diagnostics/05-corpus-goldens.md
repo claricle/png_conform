@@ -38,5 +38,5 @@ bundle exec rubocop
 
 ## Status
 
-State: todo
-PR: none
+State: in progress
+PR: https://github.com/claricle/png_conform/pull/12
