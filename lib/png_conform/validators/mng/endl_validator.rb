@@ -17,21 +17,21 @@ module PngConform
         EXPECTED_LENGTH = 1
 
         def validate
-          return false unless check_crc
-          return false unless check_length(EXPECTED_LENGTH)
+          return false unless check_crc(id: "mng.ENDL.crc")
+          return false unless check_length(EXPECTED_LENGTH, id: "mng.ENDL.length")
 
           unless context.retrieve(:mhdr_present)
-            add_error("ENDL must appear after MHDR")
+            add_error("mng.ENDL.after-mhdr", "ENDL must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("ENDL must appear before MEND")
+            add_error("mng.ENDL.before-mend", "ENDL must appear before MEND")
             return false
           end
 
           unless context.retrieve(:loop_present)
-            add_error("ENDL must appear after LOOP")
+            add_error("mng.ENDL.after-loop", "ENDL must appear after LOOP")
             return false
           end
 
@@ -42,13 +42,11 @@ module PngConform
           loop_stack = context.retrieve(:loop_stack) || []
 
           if loop_stack.empty?
-            add_error("ENDL without corresponding LOOP")
+            add_error("mng.ENDL.requires-loop", "ENDL without corresponding LOOP")
             return false
           elsif loop_stack.last != nesting_level
-            add_error(
-              "ENDL nesting level (#{nesting_level}) does not match " \
-              "LOOP nesting level (#{loop_stack.last})",
-            )
+            add_error("mng.ENDL.nesting-level", "ENDL nesting level (#{nesting_level}) does not match " \
+                                                "LOOP nesting level (#{loop_stack.last})", field: "nesting_level", expected: loop_stack.last, actual: nesting_level)
             return false
           else
             loop_stack.pop

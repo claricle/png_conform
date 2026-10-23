@@ -235,686 +235,686 @@ requirements:
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"JDAT must appear after JHDR\")"}
+      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"jng.JDAT.after-jhdr\", \"JDAT must appear after JHDR\")"}
   jng.JDAT.before-iend:
     format: jng
     kind: ordering
     severity: error
     citation: {specification: jng, section: "1.1.6", title: "IEND End of JNG datastream"}
     emitters:
-      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"JDAT must appear before IEND\")"}
+      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"jng.JDAT.before-iend\", \"JDAT must appear before IEND\")"}
   jng.JDAT.crc:
     format: jng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/jng/jdat_validator.rb", call: "check_crc"}
+      - {file: "validators/jng/jdat_validator.rb", call: "check_crc(id: \"jng.JDAT.crc\")"}
   jng.JDAT.min-length:
     format: jng
     kind: length
     severity: error
     citation: {specification: jng, section: "1.1.2", title: "JDAT JNG image data"}
     emitters:
-      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"JDAT chunk too short (#{data.length} bytes, minimum 1)\")"}
+      - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"jng.JDAT.min-length\", \"JDAT chunk too short (#{data.length} bytes, minimum 1)\", field: \"length\", expected: \">= 1\", actual: data.length)"}
   jng.JHDR.color-type:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "check_enum(color_type, VALID_COLOR_TYPES, \"color type\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "check_enum(color_type, VALID_COLOR_TYPES, \"color type\", id: \"jng.JHDR.color-type\")"}
   jng.JHDR.crc:
     format: jng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "check_crc"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "check_crc(id: \"jng.JHDR.crc\")"}
   jng.JHDR.first-chunk:
     format: jng
     kind: ordering
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"JHDR must be the first chunk in JNG datastream\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.first-chunk\", \"JHDR must be the first chunk in JNG datastream\")"}
   jng.JHDR.height-zero:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"invalid image height (0)\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.height-zero\", \"invalid image height (0)\", field: \"height\", expected: \">0\", actual: 0)"}
   jng.JHDR.image-compression-method:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"invalid image compression method (#{image_compression}, must be 8)\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.image-compression-method\", \"invalid image compression method (#{image_compression}, must be 8)\", field: \"image_compression_method\", expected: 8, actual: image_compression)"}
   jng.JHDR.image-sample-depth:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "check_enum(image_sample_depth, VALID_SAMPLE_DEPTHS, \"image sample depth\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "check_enum(image_sample_depth, VALID_SAMPLE_DEPTHS, \"image sample depth\", id: \"jng.JHDR.image-sample-depth\")"}
   jng.JHDR.interlace-method:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"invalid interlace method (#{interlace}, must be 0)\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.interlace-method\", \"invalid interlace method (#{interlace}, must be 0)\", field: \"interlace_method\", expected: 0, actual: interlace)"}
   jng.JHDR.length:
     format: jng
     kind: length
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "check_length(16)"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "check_length(16, id: \"jng.JHDR.length\")"}
   jng.JHDR.width-zero:
     format: jng
     kind: value
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"invalid image width (0)\")"}
+      - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.width-zero\", \"invalid image width (0)\", field: \"width\", expected: \">0\", actual: 0)"}
   jng.JSEP.after-jdat:
     format: jng
     kind: ordering
     severity: warning
     citation: {specification: jng, section: "1.1.5", title: "JSEP 8-bit/12-bit image separator"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "add_warning(\"JSEP should appear after 8-bit JDAT chunks\")"}
+      - {file: "validators/jng/jsep_validator.rb", call: "add_warning(\"jng.JSEP.after-jdat\", \"JSEP should appear after 8-bit JDAT chunks\")"}
   jng.JSEP.after-jhdr:
     format: jng
     kind: ordering
     severity: error
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"JSEP must appear after JHDR\")"}
+      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"jng.JSEP.after-jhdr\", \"JSEP must appear after JHDR\")"}
   jng.JSEP.before-iend:
     format: jng
     kind: ordering
     severity: error
     citation: {specification: jng, section: "1.1.6", title: "IEND End of JNG datastream"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"JSEP must appear before IEND\")"}
+      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"jng.JSEP.before-iend\", \"JSEP must appear before IEND\")"}
   jng.JSEP.crc:
     format: jng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "check_crc"}
+      - {file: "validators/jng/jsep_validator.rb", call: "check_crc(id: \"jng.JSEP.crc\")"}
   jng.JSEP.length:
     format: jng
     kind: length
     severity: error
     citation: {specification: jng, section: "1.1.5", title: "JSEP 8-bit/12-bit image separator"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "check_length(0)"}
+      - {file: "validators/jng/jsep_validator.rb", call: "check_length(0, id: \"jng.JSEP.length\")"}
   jng.JSEP.sample-depth:
     format: jng
     kind: consistency
     severity: error
     citation: {specification: jng, section: "1.1.5", title: "JSEP 8-bit/12-bit image separator"}
     emitters:
-      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"JSEP is only valid with 12-bit sample depth, got #{sample_depth}-bit\")"}
+      - {file: "validators/jng/jsep_validator.rb", call: "add_error(\"jng.JSEP.sample-depth\", \"JSEP is only valid with 12-bit sample depth, got #{sample_depth}-bit\", field: \"sample_depth\", expected: 12, actual: sample_depth)"}
   mng.BACK.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "add_error(\"BACK must appear after MHDR\")"}
+      - {file: "validators/mng/back_validator.rb", call: "add_error(\"mng.BACK.after-mhdr\", \"BACK must appear after MHDR\")"}
   mng.BACK.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "add_error(\"BACK must appear before MEND\")"}
+      - {file: "validators/mng/back_validator.rb", call: "add_error(\"mng.BACK.before-mend\", \"BACK must appear before MEND\")"}
   mng.BACK.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/back_validator.rb", call: "check_crc(id: \"mng.BACK.crc\")"}
   mng.BACK.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.3.1", title: "BACK Background"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "add_error(\"BACK chunk must be 6, 7, or 10 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/back_validator.rb", call: "add_error(\"mng.BACK.length\", \"BACK chunk must be 6, 7, or 10 bytes, got #{data.length}\", field: \"length\", expected: \"6, 7, or 10\", actual: data.length)"}
   mng.BACK.mandatory-flag:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.3.1", title: "BACK Background"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "add_error(\"BACK mandatory flag must be 0 or 1, got #{mandatory}\")"}
+      - {file: "validators/mng/back_validator.rb", call: "add_error(\"mng.BACK.mandatory-flag\", \"BACK mandatory flag must be 0 or 1, got #{mandatory}\", field: \"mandatory_flag\", expected: \"0 or 1\", actual: mandatory)"}
   mng.BACK.tile-mode:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.3.1", title: "BACK Background"}
     emitters:
-      - {file: "validators/mng/back_validator.rb", call: "add_error(\"BACK tile mode must be 0-3, got #{tile_mode}\")"}
+      - {file: "validators/mng/back_validator.rb", call: "add_error(\"mng.BACK.tile-mode\", \"BACK tile mode must be 0-3, got #{tile_mode}\", field: \"tile_mode\", expected: \"0-3\", actual: tile_mode)"}
   mng.CLIP.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"CLIP must appear after MHDR\")"}
+      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"mng.CLIP.after-mhdr\", \"CLIP must appear after MHDR\")"}
   mng.CLIP.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"CLIP must appear before MEND\")"}
+      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"mng.CLIP.before-mend\", \"CLIP must appear before MEND\")"}
   mng.CLIP.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/clip_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/clip_validator.rb", call: "check_crc(id: \"mng.CLIP.crc\")"}
   mng.CLIP.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.3.4", title: "CLIP Object clipping boundaries"}
     emitters:
-      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"CLIP chunk must be #{EXPECTED_LENGTH} bytes, got #{data.length}\")"}
+      - {file: "validators/mng/clip_validator.rb", call: "add_error(\"mng.CLIP.length\", \"CLIP chunk must be #{EXPECTED_LENGTH} bytes, got #{data.length}\", field: \"length\", expected: EXPECTED_LENGTH, actual: data.length)"}
   mng.CLON.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"CLON must appear after MHDR\")"}
+      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"mng.CLON.after-mhdr\", \"CLON must appear after MHDR\")"}
   mng.CLON.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"CLON must appear before MEND\")"}
+      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"mng.CLON.before-mend\", \"CLON must appear before MEND\")"}
   mng.CLON.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/clon_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/clon_validator.rb", call: "check_crc(id: \"mng.CLON.crc\")"}
   mng.CLON.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.2.6", title: "CLON Clone an object"}
     emitters:
-      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"CLON chunk must be 4 or 16 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/clon_validator.rb", call: "add_error(\"mng.CLON.length\", \"CLON chunk must be 4 or 16 bytes, got #{data.length}\", field: \"length\", expected: \"4 or 16\", actual: data.length)"}
   mng.DEFI.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"DEFI must appear after MHDR\")"}
+      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"mng.DEFI.after-mhdr\", \"DEFI must appear after MHDR\")"}
   mng.DEFI.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"DEFI must appear before MEND\")"}
+      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"mng.DEFI.before-mend\", \"DEFI must appear before MEND\")"}
   mng.DEFI.clip-horizontal-order:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.1", title: "DEFI Define an object"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"DEFI left clipping (#{left}) must not exceed right clipping (#{right})\")"}
+      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"mng.DEFI.clip-horizontal-order\", \"DEFI left clipping (#{left}) must not exceed right clipping (#{right})\", field: \"left_clipping\", expected: \"<= #{right}\", actual: left)"}
   mng.DEFI.clip-vertical-order:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.1", title: "DEFI Define an object"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"DEFI top clipping (#{top}) must not exceed bottom clipping (#{bottom})\")"}
+      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"mng.DEFI.clip-vertical-order\", \"DEFI top clipping (#{top}) must not exceed bottom clipping (#{bottom})\", field: \"top_clipping\", expected: \"<= #{bottom}\", actual: top)"}
   mng.DEFI.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/defi_validator.rb", call: "check_crc(id: \"mng.DEFI.crc\")"}
   mng.DEFI.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.2.1", title: "DEFI Define an object"}
     emitters:
-      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"DEFI chunk must be 2, 3, 4, 12, or 28 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/defi_validator.rb", call: "add_error(\"mng.DEFI.length\", \"DEFI chunk must be 2, 3, 4, 12, or 28 bytes, got #{data.length}\", field: \"length\", expected: \"2, 3, 4, 12, or 28\", actual: data.length)"}
   mng.DHDR.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"DHDR must appear after MHDR\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.after-mhdr\", \"DHDR must appear after MHDR\")"}
   mng.DHDR.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"DHDR must appear before MEND\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.before-mend\", \"DHDR must appear before MEND\")"}
   mng.DHDR.block-height-zero:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.7", title: "DHDR, Delta-PNG chunks, IEND"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"DHDR block height must be greater than 0\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.block-height-zero\", \"DHDR block height must be greater than 0\", field: \"block_height\", expected: \">0\", actual: 0)"}
   mng.DHDR.block-width-zero:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.7", title: "DHDR, Delta-PNG chunks, IEND"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"DHDR block width must be greater than 0\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.block-width-zero\", \"DHDR block width must be greater than 0\", field: \"block_width\", expected: \">0\", actual: 0)"}
   mng.DHDR.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "check_crc(id: \"mng.DHDR.crc\")"}
   mng.DHDR.delta-type:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.7", title: "DHDR, Delta-PNG chunks, IEND"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"Invalid DHDR delta type: #{delta_type} (must be 0-7)\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.delta-type\", \"Invalid DHDR delta type: #{delta_type} (must be 0-7)\", field: \"delta_type\", expected: \"0-7\", actual: delta_type)"}
   mng.DHDR.image-type:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.7", title: "DHDR, Delta-PNG chunks, IEND"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"Invalid DHDR image type: #{image_type} (must be 0, 2, or 4)\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.image-type\", \"Invalid DHDR image type: #{image_type} (must be 0, 2, or 4)\", field: \"image_type\", expected: \"0, 2, or 4\", actual: image_type)"}
   mng.DHDR.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.2.7", title: "DHDR, Delta-PNG chunks, IEND"}
     emitters:
-      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"DHDR chunk must be 4, 12, or 20 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/dhdr_validator.rb", call: "add_error(\"mng.DHDR.length\", \"DHDR chunk must be 4, 12, or 20 bytes, got #{data.length}\", field: \"length\", expected: \"4, 12, or 20\", actual: data.length)"}
   mng.DISC.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"DISC must appear after MHDR\")"}
+      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"mng.DISC.after-mhdr\", \"DISC must appear after MHDR\")"}
   mng.DISC.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"DISC must appear before MEND\")"}
+      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"mng.DISC.before-mend\", \"DISC must appear before MEND\")"}
   mng.DISC.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/disc_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/disc_validator.rb", call: "check_crc(id: \"mng.DISC.crc\")"}
   mng.DISC.length-multiple-of-2:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.2.10", title: "DISC Discard objects"}
     emitters:
-      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"DISC chunk length must be a multiple of 2, got #{data.length}\")"}
+      - {file: "validators/mng/disc_validator.rb", call: "add_error(\"mng.DISC.length-multiple-of-2\", \"DISC chunk length must be a multiple of 2, got #{data.length}\", field: \"length\", expected: \"multiple of 2\", actual: data.length)"}
   mng.ENDL.after-loop:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"ENDL must appear after LOOP\")"}
+      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"mng.ENDL.after-loop\", \"ENDL must appear after LOOP\")"}
   mng.ENDL.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"ENDL must appear after MHDR\")"}
+      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"mng.ENDL.after-mhdr\", \"ENDL must appear after MHDR\")"}
   mng.ENDL.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"ENDL must appear before MEND\")"}
+      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"mng.ENDL.before-mend\", \"ENDL must appear before MEND\")"}
   mng.ENDL.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/endl_validator.rb", call: "check_crc(id: \"mng.ENDL.crc\")"}
   mng.ENDL.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/mng/endl_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.ENDL.length\")"}
   mng.ENDL.nesting-level:
     format: mng
     kind: consistency
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"ENDL nesting level (#{nesting_level}) does not match LOOP nesting level (#{loop_stack.last})\")"}
+      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"mng.ENDL.nesting-level\", \"ENDL nesting level (#{nesting_level}) does not match LOOP nesting level (#{loop_stack.last})\", field: \"nesting_level\", expected: loop_stack.last, actual: nesting_level)"}
   mng.ENDL.requires-loop:
     format: mng
     kind: presence
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"ENDL without corresponding LOOP\")"}
+      - {file: "validators/mng/endl_validator.rb", call: "add_error(\"mng.ENDL.requires-loop\", \"ENDL without corresponding LOOP\")"}
   mng.FRAM.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"FRAM must appear after MHDR\")"}
+      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"mng.FRAM.after-mhdr\", \"FRAM must appear after MHDR\")"}
   mng.FRAM.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"FRAM must appear before MEND\")"}
+      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"mng.FRAM.before-mend\", \"FRAM must appear before MEND\")"}
   mng.FRAM.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/fram_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/fram_validator.rb", call: "check_crc(id: \"mng.FRAM.crc\")"}
   mng.FRAM.framing-mode:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.3.2", title: "FRAM Frame definitions"}
     emitters:
-      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"Invalid FRAM framing mode: #{framing_mode} (must be 0-4)\")"}
+      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"mng.FRAM.framing-mode\", \"Invalid FRAM framing mode: #{framing_mode} (must be 0-4)\", field: \"framing_mode\", expected: \"0-4\", actual: framing_mode)"}
   mng.FRAM.subframe-name-length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.3.2", title: "FRAM Frame definitions"}
     emitters:
-      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"FRAM subframe name extends beyond chunk\")"}
+      - {file: "validators/mng/fram_validator.rb", call: "add_error(\"mng.FRAM.subframe-name-length\", \"FRAM subframe name extends beyond chunk\")"}
   mng.LOOP.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"LOOP must appear after MHDR\")"}
+      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"mng.LOOP.after-mhdr\", \"LOOP must appear after MHDR\")"}
   mng.LOOP.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"LOOP must appear before MEND\")"}
+      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"mng.LOOP.before-mend\", \"LOOP must appear before MEND\")"}
   mng.LOOP.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/loop_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/loop_validator.rb", call: "check_crc(id: \"mng.LOOP.crc\")"}
   mng.LOOP.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"LOOP chunk must be 5 or 6 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"mng.LOOP.length\", \"LOOP chunk must be 5 or 6 bytes, got #{data.length}\", field: \"length\", expected: \"5 or 6\", actual: data.length)"}
   mng.LOOP.termination-condition:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.1.3", title: "LOOP, ENDL Define a loop"}
     emitters:
-      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"LOOP termination condition must be 0-3, got #{termination}\")"}
+      - {file: "validators/mng/loop_validator.rb", call: "add_error(\"mng.LOOP.termination-condition\", \"LOOP termination condition must be 0-3, got #{termination}\", field: \"termination_condition\", expected: \"0-3\", actual: termination)"}
   mng.MEND.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/mend_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/mend_validator.rb", call: "check_crc(id: \"mng.MEND.crc\")"}
   mng.MEND.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/mend_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/mng/mend_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.MEND.length\")"}
   mng.MEND.requires-mhdr:
     format: mng
     kind: presence
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/mend_validator.rb", call: "add_error(\"MEND requires MHDR chunk\")"}
+      - {file: "validators/mng/mend_validator.rb", call: "add_error(\"mng.MEND.requires-mhdr\", \"MEND requires MHDR chunk\")"}
   mng.MHDR.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/mhdr_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/mhdr_validator.rb", call: "check_crc(id: \"mng.MHDR.crc\")"}
   mng.MHDR.first-chunk:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/mhdr_validator.rb", call: "add_error(\"MHDR must be the first chunk in MNG file\")"}
+      - {file: "validators/mng/mhdr_validator.rb", call: "add_error(\"mng.MHDR.first-chunk\", \"MHDR must be the first chunk in MNG file\")"}
   mng.MHDR.frame-dimensions-zero:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/mhdr_validator.rb", call: "add_error(\"MHDR frame dimensions must be > 0\")"}
+      - {file: "validators/mng/mhdr_validator.rb", call: "add_error(\"mng.MHDR.frame-dimensions-zero\", \"MHDR frame dimensions must be > 0\")"}
   mng.MHDR.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/mhdr_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/mng/mhdr_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.MHDR.length\")"}
   mng.MOVE.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/move_validator.rb", call: "add_error(\"MOVE must appear after MHDR\")"}
+      - {file: "validators/mng/move_validator.rb", call: "add_error(\"mng.MOVE.after-mhdr\", \"MOVE must appear after MHDR\")"}
   mng.MOVE.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/move_validator.rb", call: "add_error(\"MOVE must appear before MEND\")"}
+      - {file: "validators/mng/move_validator.rb", call: "add_error(\"mng.MOVE.before-mend\", \"MOVE must appear before MEND\")"}
   mng.MOVE.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/move_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/move_validator.rb", call: "check_crc(id: \"mng.MOVE.crc\")"}
   mng.MOVE.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.3.3", title: "MOVE New image location"}
     emitters:
-      - {file: "validators/mng/move_validator.rb", call: "add_error(\"MOVE chunk must be #{EXPECTED_LENGTH} bytes, got #{data.length}\")"}
+      - {file: "validators/mng/move_validator.rb", call: "add_error(\"mng.MOVE.length\", \"MOVE chunk must be #{EXPECTED_LENGTH} bytes, got #{data.length}\", field: \"length\", expected: EXPECTED_LENGTH, actual: data.length)"}
   mng.SAVE.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/save_validator.rb", call: "add_error(\"SAVE must appear after MHDR\")"}
+      - {file: "validators/mng/save_validator.rb", call: "add_error(\"mng.SAVE.after-mhdr\", \"SAVE must appear after MHDR\")"}
   mng.SAVE.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/save_validator.rb", call: "add_error(\"SAVE must appear before MEND\")"}
+      - {file: "validators/mng/save_validator.rb", call: "add_error(\"mng.SAVE.before-mend\", \"SAVE must appear before MEND\")"}
   mng.SAVE.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/save_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/save_validator.rb", call: "check_crc(id: \"mng.SAVE.crc\")"}
   mng.SAVE.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.4.1", title: "SAVE Save information"}
     emitters:
-      - {file: "validators/mng/save_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/mng/save_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.SAVE.length\")"}
   mng.SEEK.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/seek_validator.rb", call: "add_error(\"SEEK must appear after MHDR\")"}
+      - {file: "validators/mng/seek_validator.rb", call: "add_error(\"mng.SEEK.after-mhdr\", \"SEEK must appear after MHDR\")"}
   mng.SEEK.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/seek_validator.rb", call: "add_error(\"SEEK must appear before MEND\")"}
+      - {file: "validators/mng/seek_validator.rb", call: "add_error(\"mng.SEEK.before-mend\", \"SEEK must appear before MEND\")"}
   mng.SEEK.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/seek_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/seek_validator.rb", call: "check_crc(id: \"mng.SEEK.crc\")"}
   mng.SEEK.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.4.2", title: "SEEK Seek point"}
     emitters:
-      - {file: "validators/mng/seek_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/mng/seek_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.SEEK.length\")"}
   mng.SEEK.requires-save:
     format: mng
     kind: presence
     severity: warning
     citation: {specification: mng, section: "4.4.2", title: "SEEK Seek point"}
     emitters:
-      - {file: "validators/mng/seek_validator.rb", call: "add_warning(\"SEEK without corresponding SAVE\")"}
+      - {file: "validators/mng/seek_validator.rb", call: "add_warning(\"mng.SEEK.requires-save\", \"SEEK without corresponding SAVE\")"}
   mng.SHOW.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/show_validator.rb", call: "add_error(\"SHOW must appear after MHDR\")"}
+      - {file: "validators/mng/show_validator.rb", call: "add_error(\"mng.SHOW.after-mhdr\", \"SHOW must appear after MHDR\")"}
   mng.SHOW.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/show_validator.rb", call: "add_error(\"SHOW must appear before MEND\")"}
+      - {file: "validators/mng/show_validator.rb", call: "add_error(\"mng.SHOW.before-mend\", \"SHOW must appear before MEND\")"}
   mng.SHOW.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/show_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/show_validator.rb", call: "check_crc(id: \"mng.SHOW.crc\")"}
   mng.SHOW.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.3.5", title: "SHOW Show images"}
     emitters:
-      - {file: "validators/mng/show_validator.rb", call: "add_error(\"SHOW chunk must be 0 or 2 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/show_validator.rb", call: "add_error(\"mng.SHOW.length\", \"SHOW chunk must be 0 or 2 bytes, got #{data.length}\", field: \"length\", expected: \"0 or 2\", actual: data.length)"}
   mng.TERM.action-after-iterations:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.11", title: "TERM Termination action"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "add_error(\"Invalid TERM action after iterations: #{after_iterations} (must be 0-2)\")"}
+      - {file: "validators/mng/term_validator.rb", call: "add_error(\"mng.TERM.action-after-iterations\", \"Invalid TERM action after iterations: #{after_iterations} (must be 0-2)\", field: \"action_after_iterations\", expected: \"0-2\", actual: after_iterations)"}
   mng.TERM.after-mhdr:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "add_error(\"TERM must appear after MHDR\")"}
+      - {file: "validators/mng/term_validator.rb", call: "add_error(\"mng.TERM.after-mhdr\", \"TERM must appear after MHDR\")"}
   mng.TERM.before-mend:
     format: mng
     kind: ordering
     severity: error
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "add_error(\"TERM must appear before MEND\")"}
+      - {file: "validators/mng/term_validator.rb", call: "add_error(\"mng.TERM.before-mend\", \"TERM must appear before MEND\")"}
   mng.TERM.crc:
     format: mng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "check_crc"}
+      - {file: "validators/mng/term_validator.rb", call: "check_crc(id: \"mng.TERM.crc\")"}
   mng.TERM.length:
     format: mng
     kind: length
     severity: error
     citation: {specification: mng, section: "4.2.11", title: "TERM Termination action"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "add_error(\"TERM chunk must be 1 or 10 bytes, got #{data.length}\")"}
+      - {file: "validators/mng/term_validator.rb", call: "add_error(\"mng.TERM.length\", \"TERM chunk must be 1 or 10 bytes, got #{data.length}\", field: \"length\", expected: \"1 or 10\", actual: data.length)"}
   mng.TERM.termination-action:
     format: mng
     kind: value
     severity: error
     citation: {specification: mng, section: "4.2.11", title: "TERM Termination action"}
     emitters:
-      - {file: "validators/mng/term_validator.rb", call: "add_error(\"Invalid TERM termination action: #{termination_action} (must be 0-3)\")"}
+      - {file: "validators/mng/term_validator.rb", call: "add_error(\"mng.TERM.termination-action\", \"Invalid TERM termination action: #{termination_action} (must be 0-3)\", field: \"termination_action\", expected: \"0-3\", actual: termination_action)"}
   png.IDAT.after-ihdr:
     format: png
     kind: ordering

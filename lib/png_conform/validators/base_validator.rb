@@ -121,18 +121,9 @@ module PngConform
 
       private
 
-      def report(severity, id, message, **detail)
-        # TRANSITIONAL (card 03b removes): MNG/JNG validators still call the
-        # message-only form until they are converted.
-        return report_message_only(severity, message || id) if id.nil? || message.nil?
-
+      def report(_severity, id, message, **detail)
         context.add_diagnostic(id, message, chunk_type: chunk.chunk_type,
                                             offset: chunk.abs_offset, **detail)
-      end
-
-      def report_message_only(severity, message)
-        context.add_error(chunk_type: chunk.chunk_type, message: message,
-                          severity: severity, offset: chunk.abs_offset)
       end
     end
 

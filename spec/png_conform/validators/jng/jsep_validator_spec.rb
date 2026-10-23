@@ -154,4 +154,18 @@ RSpec.describe PngConform::Validators::Jng::JsepValidator do
       end
     end
   end
+
+  describe "structured diagnostics" do
+    it "identifies a sample-depth failure with expected and actual depth" do
+      validation_context.store(:jhdr_present, true)
+      validation_context.store(:jhdr_image_sample_depth, 8)
+      allow(chunk).to receive_messages(chunk_data: "".b, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(validation_context.errors.first).to have_attributes(
+        requirement_id: "jng.JSEP.sample-depth", field: "sample_depth",
+        expected: "12", actual: "8", chunk_offset: 200
+      )
+    end
+  end
 end

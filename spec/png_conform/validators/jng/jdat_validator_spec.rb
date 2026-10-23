@@ -145,4 +145,25 @@ RSpec.describe PngConform::Validators::Jng::JdatValidator do
       end
     end
   end
+
+  describe "structured diagnostics" do
+    it "identifies JDAT before JHDR and a too-short JDAT" do
+      allow(chunk).to receive_messages(chunk_data: "".b, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(validation_context.errors.map(&:requirement_id))
+        .to include("jng.JDAT.after-jhdr")
+    end
+
+    it "identifies a minimum-length failure with values" do
+      validation_context.store(:jhdr_present, true)
+      allow(chunk).to receive_messages(chunk_data: "".b, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(validation_context.errors.first).to have_attributes(
+        requirement_id: "jng.JDAT.min-length", field: "length",
+        expected: ">= 1", actual: "0"
+      )
+    end
+  end
 end

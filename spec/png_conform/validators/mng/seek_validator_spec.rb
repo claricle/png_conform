@@ -86,4 +86,18 @@ RSpec.describe PngConform::Validators::Mng::SeekValidator do
       expect(validation_context.all_errors.first[:message]).to include("must appear before MEND")
     end
   end
+
+  describe "structured diagnostics" do
+    it "reports SEEK without SAVE as a warning with its own rule ID" do
+      allow(chunk).to receive_messages(chunk_data: "", length: 0,
+                                       crc_valid?: true)
+      validation_context.store(:mhdr_present, true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(validation_context.errors).to contain_exactly(
+        have_attributes(requirement_id: "mng.SEEK.requires-save",
+                        severity: "warning", chunk_type: "SEEK", chunk_offset: 600),
+      )
+    end
+  end
 end

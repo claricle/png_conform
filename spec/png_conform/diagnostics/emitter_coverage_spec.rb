@@ -10,11 +10,7 @@ RSpec.describe "Diagnostic emitter coverage" do
   let(:inventory) { PngConform::Spec::EmitterInventory }
   let(:catalog) { PngConform::Diagnostics::Catalog.default }
   let(:validator_files) { inventory.registered_validator_files }
-  # Card 03b converts these; it empties this list when it lands.
-  let(:pending_files) { inventory.mng_jng_validator_files }
-  let(:converted_files) do
-    validator_files - pending_files + inventory::SERVICE_FILES
-  end
+  let(:converted_files) { validator_files + inventory::SERVICE_FILES }
   let(:sites) do
     converted_files.flat_map do |file|
       inventory.scan(file, **inventory.sources.fetch(file))
@@ -39,10 +35,11 @@ RSpec.describe "Diagnostic emitter coverage" do
     expect(validator_files.uniq).to eq(validator_files)
   end
 
-  it "scans a site in every converted PNG/APNG validator" do
+  it "scans a site in every PNG/APNG and MNG/JNG validator" do
     scanned = sites.map(&:file).uniq
     expect(inventory.png_apng_validator_files - scanned).to be_empty
-    expect(sites.size).to be > 250
+    expect(inventory.mng_jng_validator_files - scanned).to be_empty
+    expect(sites.size).to be > 350
   end
 
   it "passes a known catalog ID at every converted emitter" do
@@ -77,9 +74,7 @@ RSpec.describe "Diagnostic emitter coverage" do
     expect(offenders).to be_empty
   end
 
-  it "removes the transitional message-only path once card 03b converts MNG/JNG" do
-    skip "MNG/JNG validators are still pending card 03b" unless pending_files.empty?
-
+  it "has no message-only path left on BaseValidator" do
     expect(PngConform::Validators::BaseValidator.private_instance_methods)
       .not_to include(:report_message_only)
   end

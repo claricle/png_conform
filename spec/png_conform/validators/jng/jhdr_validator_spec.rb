@@ -315,4 +315,48 @@ RSpec.describe PngConform::Validators::Jng::JhdrValidator do
       end
     end
   end
+
+  describe "structured diagnostics" do
+    let(:finding) { validation_context.errors.first }
+
+    def header(color_type: 8, depth: 8)
+      [0, 0, 2, 128, 0, 0, 1, 224, color_type, depth, 8, 0, 0, 0, 0, 0]
+        .pack("C*")
+    end
+
+    it "identifies a length failure" do
+      allow(chunk).to receive_messages(chunk_data: "\0".b * 15,
+                                       crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "jng.JHDR.length",
+                                         chunk_type: "JHDR", chunk_offset: 8, field: "length",
+                                         expected: "16", actual: "15")
+    end
+
+    it "identifies a field-value failure from the shared enum helper" do
+      allow(chunk).to receive_messages(chunk_data: header(color_type: 9),
+                                       crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "jng.JHDR.color-type",
+                                         field: "color type", expected: "8, 10, 12, 14",
+                                         actual: "9")
+    end
+
+    it "identifies a sequence failure" do
+      validation_context.record_chunk("JDAT")
+      allow(chunk).to receive_messages(chunk_data: header, crc_valid?: true)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "jng.JHDR.first-chunk")
+    end
+
+    it "reports a CRC failure under the JHDR integrity rule" do
+      allow(chunk).to receive_messages(chunk_data: header, crc_valid?: false)
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "jng.JHDR.crc")
+    end
+  end
 end

@@ -109,4 +109,39 @@ RSpec.describe PngConform::Validators::Mng::EndlValidator do
       expect(validation_context.has_errors?).to be true
     end
   end
+
+  describe "structured diagnostics" do
+    let(:finding) { validation_context.errors.first }
+
+    before do
+      allow(chunk).to receive_messages(chunk_data: [1].pack("C"), length: 1,
+                                       crc_valid?: true)
+      validation_context.store(:mhdr_present, true)
+    end
+
+    it "identifies an ENDL that follows no LOOP" do
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.ENDL.after-loop",
+                                         chunk_type: "ENDL", chunk_offset: 500)
+    end
+
+    it "identifies an ENDL with no open LOOP to close" do
+      validation_context.store(:loop_present, true)
+      validation_context.store(:loop_stack, [])
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.ENDL.requires-loop")
+    end
+
+    it "identifies a nesting mismatch with expected and actual levels" do
+      validation_context.store(:loop_present, true)
+      validation_context.store(:loop_stack, [0])
+      described_class.new(chunk, validation_context).validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.ENDL.nesting-level",
+                                         field: "nesting_level", expected: "0",
+                                         actual: "1")
+    end
+  end
 end

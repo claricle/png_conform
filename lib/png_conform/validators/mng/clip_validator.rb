@@ -16,25 +16,23 @@ module PngConform
         EXPECTED_LENGTH = 21
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.CLIP.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("CLIP must appear after MHDR")
+            add_error("mng.CLIP.after-mhdr", "CLIP must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("CLIP must appear before MEND")
+            add_error("mng.CLIP.before-mend", "CLIP must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
 
           unless data.length == EXPECTED_LENGTH
-            add_error(
-              "CLIP chunk must be #{EXPECTED_LENGTH} bytes, " \
-              "got #{data.length}",
-            )
+            add_error("mng.CLIP.length", "CLIP chunk must be #{EXPECTED_LENGTH} bytes, " \
+                                         "got #{data.length}", field: "length", expected: EXPECTED_LENGTH, actual: data.length)
             return false
           end
 

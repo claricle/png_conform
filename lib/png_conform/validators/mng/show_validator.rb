@@ -16,24 +16,22 @@ module PngConform
         VALID_LENGTHS = [0, 2].freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.SHOW.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("SHOW must appear after MHDR")
+            add_error("mng.SHOW.after-mhdr", "SHOW must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("SHOW must appear before MEND")
+            add_error("mng.SHOW.before-mend", "SHOW must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
 
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "SHOW chunk must be 0 or 2 bytes, got #{data.length}",
-            )
+            add_error("mng.SHOW.length", "SHOW chunk must be 0 or 2 bytes, got #{data.length}", field: "length", expected: "0 or 2", actual: data.length)
             return false
           end
 

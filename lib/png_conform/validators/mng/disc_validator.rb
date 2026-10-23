@@ -13,25 +13,23 @@ module PngConform
       # - Must appear before MEND
       class DiscValidator < BaseValidator
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.DISC.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("DISC must appear after MHDR")
+            add_error("mng.DISC.after-mhdr", "DISC must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("DISC must appear before MEND")
+            add_error("mng.DISC.before-mend", "DISC must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
 
           if data.length.odd?
-            add_error(
-              "DISC chunk length must be a multiple of 2, " \
-              "got #{data.length}",
-            )
+            add_error("mng.DISC.length-multiple-of-2", "DISC chunk length must be a multiple of 2, " \
+                                                       "got #{data.length}", field: "length", expected: "multiple of 2", actual: data.length)
             return false
           end
 

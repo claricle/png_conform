@@ -19,15 +19,15 @@ module PngConform
         VALID_FRAMING_MODES = (0..4).to_a.freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.FRAM.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("FRAM must appear after MHDR")
+            add_error("mng.FRAM.after-mhdr", "FRAM must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("FRAM must appear before MEND")
+            add_error("mng.FRAM.before-mend", "FRAM must appear before MEND")
             return false
           end
 
@@ -47,9 +47,7 @@ module PngConform
             pos += 1
 
             unless VALID_FRAMING_MODES.include?(framing_mode)
-              add_error(
-                "Invalid FRAM framing mode: #{framing_mode} (must be 0-4)",
-              )
+              add_error("mng.FRAM.framing-mode", "Invalid FRAM framing mode: #{framing_mode} (must be 0-4)", field: "framing_mode", expected: "0-4", actual: framing_mode)
               return false
             end
 
@@ -63,7 +61,7 @@ module PngConform
             pos += 1
 
             if pos + name_length > data.length
-              add_error("FRAM subframe name extends beyond chunk")
+              add_error("mng.FRAM.subframe-name-length", "FRAM subframe name extends beyond chunk")
               return false
             end
 

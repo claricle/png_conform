@@ -19,23 +19,21 @@ module PngConform
         VALID_AFTER_ITERATIONS = (0..2).to_a.freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.TERM.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("TERM must appear after MHDR")
+            add_error("mng.TERM.after-mhdr", "TERM must appear after MHDR")
             return false
           end
 
           data = chunk.chunk_data
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "TERM chunk must be 1 or 10 bytes, got #{data.length}",
-            )
+            add_error("mng.TERM.length", "TERM chunk must be 1 or 10 bytes, got #{data.length}", field: "length", expected: "1 or 10", actual: data.length)
             return false
           end
 
           if context.seen?("MEND")
-            add_error("TERM must appear before MEND")
+            add_error("mng.TERM.before-mend", "TERM must appear before MEND")
             return false
           end
 
@@ -43,10 +41,8 @@ module PngConform
           termination_action = data.getbyte(0)
 
           unless VALID_TERMINATION_ACTIONS.include?(termination_action)
-            add_error(
-              "Invalid TERM termination action: #{termination_action} " \
-              "(must be 0-3)",
-            )
+            add_error("mng.TERM.termination-action", "Invalid TERM termination action: #{termination_action} " \
+                                                     "(must be 0-3)", field: "termination_action", expected: "0-3", actual: termination_action)
             return false
           end
 
@@ -57,10 +53,8 @@ module PngConform
             after_iterations = data.getbyte(1)
 
             unless VALID_AFTER_ITERATIONS.include?(after_iterations)
-              add_error(
-                "Invalid TERM action after iterations: #{after_iterations} " \
-                "(must be 0-2)",
-              )
+              add_error("mng.TERM.action-after-iterations", "Invalid TERM action after iterations: #{after_iterations} " \
+                                                            "(must be 0-2)", field: "action_after_iterations", expected: "0-2", actual: after_iterations)
               return false
             end
 

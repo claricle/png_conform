@@ -18,24 +18,22 @@ module PngConform
         VALID_LENGTHS = [2, 3, 4, 12, 28].freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.DEFI.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("DEFI must appear after MHDR")
+            add_error("mng.DEFI.after-mhdr", "DEFI must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("DEFI must appear before MEND")
+            add_error("mng.DEFI.before-mend", "DEFI must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "DEFI chunk must be 2, 3, 4, 12, or 28 bytes, " \
-              "got #{data.length}",
-            )
+            add_error("mng.DEFI.length", "DEFI chunk must be 2, 3, 4, 12, or 28 bytes, " \
+                                         "got #{data.length}", field: "length", expected: "2, 3, 4, 12, or 28", actual: data.length)
             return false
           end
 
@@ -74,18 +72,14 @@ module PngConform
 
             # Validate clipping boundaries
             if left > right
-              add_error(
-                "DEFI left clipping (#{left}) must not exceed " \
-                "right clipping (#{right})",
-              )
+              add_error("mng.DEFI.clip-horizontal-order", "DEFI left clipping (#{left}) must not exceed " \
+                                                          "right clipping (#{right})", field: "left_clipping", expected: "<= #{right}", actual: left)
               return false
             end
 
             if top > bottom
-              add_error(
-                "DEFI top clipping (#{top}) must not exceed " \
-                "bottom clipping (#{bottom})",
-              )
+              add_error("mng.DEFI.clip-vertical-order", "DEFI top clipping (#{top}) must not exceed " \
+                                                        "bottom clipping (#{bottom})", field: "top_clipping", expected: "<= #{bottom}", actual: top)
               return false
             end
 

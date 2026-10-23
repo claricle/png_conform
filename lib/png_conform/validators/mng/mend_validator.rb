@@ -13,12 +13,12 @@ module PngConform
         EXPECTED_LENGTH = 0
 
         def validate
-          return false unless check_crc
-          return false unless check_length(EXPECTED_LENGTH)
+          return false unless check_crc(id: "mng.MEND.crc")
+          return false unless check_length(EXPECTED_LENGTH, id: "mng.MEND.length")
 
           # MEND must have MHDR before it
           unless context.seen?("MHDR")
-            add_error("MEND requires MHDR chunk")
+            add_error("mng.MEND.requires-mhdr", "MEND requires MHDR chunk")
             return false
           end
 

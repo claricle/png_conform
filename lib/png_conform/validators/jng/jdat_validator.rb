@@ -21,27 +21,27 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "jng.JDAT.crc")
 
           valid = true
 
           # JDAT must appear after JHDR
           unless context.retrieve(:jhdr_present)
-            add_error("JDAT must appear after JHDR")
+            add_error("jng.JDAT.after-jhdr", "JDAT must appear after JHDR")
             valid = false
           end
 
           # JDAT must appear before IEND
           if context.seen?("IEND")
-            add_error("JDAT must appear before IEND")
+            add_error("jng.JDAT.before-iend", "JDAT must appear before IEND")
             valid = false
           end
 
           # Check minimum length (at least 1 byte of JPEG data)
           data = chunk.chunk_data
           if data.empty?
-            add_error("JDAT chunk too short (#{data.length} bytes, " \
-                      "minimum 1)")
+            add_error("jng.JDAT.min-length", "JDAT chunk too short (#{data.length} bytes, " \
+                                             "minimum 1)", field: "length", expected: ">= 1", actual: data.length)
             valid = false
           end
 

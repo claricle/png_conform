@@ -155,4 +155,36 @@ RSpec.describe PngConform::Validators::Mng::BackValidator do
       end
     end
   end
+
+  describe "structured diagnostics" do
+    let(:finding) { validation_context.errors.first }
+
+    it "identifies a sequence failure (BACK before MHDR)" do
+      allow(chunk).to receive(:chunk_data).and_return("\0".b * 6)
+      validator.validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.BACK.after-mhdr",
+                                         chunk_type: "BACK", severity: "error")
+    end
+
+    it "identifies a length failure with expected and actual values" do
+      validation_context.store(:mhdr_present, true)
+      allow(chunk).to receive(:chunk_data).and_return("\0".b * 8)
+      validator.validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.BACK.length",
+                                         field: "length", expected: "6, 7, or 10",
+                                         actual: "8")
+    end
+
+    it "identifies a field-value failure" do
+      validation_context.store(:mhdr_present, true)
+      allow(chunk).to receive(:chunk_data).and_return(("\0".b * 6) + "\x05".b)
+      validator.validate
+
+      expect(finding).to have_attributes(requirement_id: "mng.BACK.mandatory-flag",
+                                         field: "mandatory_flag", expected: "0 or 1",
+                                         actual: "5")
+    end
+  end
 end

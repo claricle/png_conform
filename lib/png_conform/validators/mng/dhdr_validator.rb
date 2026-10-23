@@ -22,24 +22,22 @@ module PngConform
         VALID_DELTA_TYPES = (0..7).to_a.freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.DHDR.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("DHDR must appear after MHDR")
+            add_error("mng.DHDR.after-mhdr", "DHDR must appear after MHDR")
             return false
           end
 
           if context.seen?("MEND")
-            add_error("DHDR must appear before MEND")
+            add_error("mng.DHDR.before-mend", "DHDR must appear before MEND")
             return false
           end
 
           data = chunk.chunk_data
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "DHDR chunk must be 4, 12, or 20 bytes, " \
-              "got #{data.length}",
-            )
+            add_error("mng.DHDR.length", "DHDR chunk must be 4, 12, or 20 bytes, " \
+                                         "got #{data.length}", field: "length", expected: "4, 12, or 20", actual: data.length)
             return false
           end
 
@@ -55,18 +53,14 @@ module PngConform
             delta_type = values[2]
 
             unless VALID_IMAGE_TYPES.include?(image_type)
-              add_error(
-                "Invalid DHDR image type: #{image_type} " \
-                "(must be 0, 2, or 4)",
-              )
+              add_error("mng.DHDR.image-type", "Invalid DHDR image type: #{image_type} " \
+                                               "(must be 0, 2, or 4)", field: "image_type", expected: "0, 2, or 4", actual: image_type)
               return false
             end
 
             unless VALID_DELTA_TYPES.include?(delta_type)
-              add_error(
-                "Invalid DHDR delta type: #{delta_type} " \
-                "(must be 0-7)",
-              )
+              add_error("mng.DHDR.delta-type", "Invalid DHDR delta type: #{delta_type} " \
+                                               "(must be 0-7)", field: "delta_type", expected: "0-7", actual: delta_type)
               return false
             end
 
@@ -80,12 +74,12 @@ module PngConform
             block_height = values[4]
 
             if block_width.zero?
-              add_error("DHDR block width must be greater than 0")
+              add_error("mng.DHDR.block-width-zero", "DHDR block width must be greater than 0", field: "block_width", expected: ">0", actual: 0)
               return false
             end
 
             if block_height.zero?
-              add_error("DHDR block height must be greater than 0")
+              add_error("mng.DHDR.block-height-zero", "DHDR block height must be greater than 0", field: "block_height", expected: ">0", actual: 0)
               return false
             end
 

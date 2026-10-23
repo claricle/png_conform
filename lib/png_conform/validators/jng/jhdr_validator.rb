@@ -31,12 +31,12 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(16)
+          return false unless check_crc(id: "jng.JHDR.crc")
+          return false unless check_length(16, id: "jng.JHDR.length")
 
           # JHDR must be first chunk in JNG
           unless context.chunks_seen.empty?
-            add_error("JHDR must be the first chunk in JNG datastream")
+            add_error("jng.JHDR.first-chunk", "JHDR must be the first chunk in JNG datastream")
             return false
           end
 
@@ -56,22 +56,22 @@ module PngConform
           valid &= check_dimensions(width, height)
 
           # Validate color type
-          valid &= check_enum(color_type, VALID_COLOR_TYPES, "color type")
+          valid &= check_enum(color_type, VALID_COLOR_TYPES, "color type", id: "jng.JHDR.color-type")
 
           # Validate sample depth
           valid &= check_enum(image_sample_depth, VALID_SAMPLE_DEPTHS,
-                              "image sample depth")
+                              "image sample depth", id: "jng.JHDR.image-sample-depth")
 
           # Validate compression method (must be 8 for baseline JPEG)
           if image_compression != 8
-            add_error("invalid image compression method (#{image_compression}, " \
-                      "must be 8)")
+            add_error("jng.JHDR.image-compression-method", "invalid image compression method (#{image_compression}, " \
+                                                           "must be 8)", field: "image_compression_method", expected: 8, actual: image_compression)
             valid = false
           end
 
           # Validate interlace method (must be 0)
           if interlace != 0
-            add_error("invalid interlace method (#{interlace}, must be 0)")
+            add_error("jng.JHDR.interlace-method", "invalid interlace method (#{interlace}, must be 0)", field: "interlace_method", expected: 0, actual: interlace)
             valid = false
           end
 
@@ -90,12 +90,12 @@ module PngConform
           valid = true
 
           if width.zero?
-            add_error("invalid image width (0)")
+            add_error("jng.JHDR.width-zero", "invalid image width (0)", field: "width", expected: ">0", actual: 0)
             valid = false
           end
 
           if height.zero?
-            add_error("invalid image height (0)")
+            add_error("jng.JHDR.height-zero", "invalid image height (0)", field: "height", expected: ">0", actual: 0)
             valid = false
           end
 

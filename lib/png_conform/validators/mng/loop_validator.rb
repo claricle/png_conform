@@ -18,23 +18,21 @@ module PngConform
         VALID_LENGTHS = [5, 6].freeze
 
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "mng.LOOP.crc")
 
           unless context.retrieve(:mhdr_present)
-            add_error("LOOP must appear after MHDR")
+            add_error("mng.LOOP.after-mhdr", "LOOP must appear after MHDR")
             return false
           end
 
           data = chunk.chunk_data
           unless VALID_LENGTHS.include?(data.length)
-            add_error(
-              "LOOP chunk must be 5 or 6 bytes, got #{data.length}",
-            )
+            add_error("mng.LOOP.length", "LOOP chunk must be 5 or 6 bytes, got #{data.length}", field: "length", expected: "5 or 6", actual: data.length)
             return false
           end
 
           if context.seen?("MEND")
-            add_error("LOOP must appear before MEND")
+            add_error("mng.LOOP.before-mend", "LOOP must appear before MEND")
             return false
           end
 
@@ -52,9 +50,7 @@ module PngConform
             termination = data.getbyte(5)
 
             unless (0..3).cover?(termination)
-              add_error(
-                "LOOP termination condition must be 0-3, got #{termination}",
-              )
+              add_error("mng.LOOP.termination-condition", "LOOP termination condition must be 0-3, got #{termination}", field: "termination_condition", expected: "0-3", actual: termination)
               return false
             end
 
