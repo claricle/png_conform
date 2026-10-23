@@ -178,22 +178,12 @@ RSpec.describe PngConform::Diagnostics::Catalog do
         req.emitters.filter_map do |e|
           method = e.call[/\A\w+/]
           want = expected[method]
-          next if want.nil? || e.call.include?("severity: :") || e.call.start_with?("add_error(chunk_type")
+          next if want.nil? || e.call.include?("severity: :")
 
           [req.id, e.call] unless want == req.severity
         end
       end
       expect(mismatches).to be_empty
-    end
-
-    it "assigns each direct context finding the severity it is added with" do
-      direct = catalog.flat_map do |req|
-        req.emitters.select { |e| e.call.include?("severity: :") }.map { |e| [req.id, e.call] }
-      end
-      expect(direct.size).to be >= 4
-      direct.each do |id, call|
-        expect(call).to include("severity: :#{catalog.fetch(id).severity}")
-      end
     end
   end
 
@@ -356,7 +346,12 @@ RSpec.describe PngConform::Diagnostics::Catalog do
 
     it "catalogs the active orchestrator and chunk processor findings the facade delegates to" do
       ids = catalog.select { |r| r.emitters.any? { |e| e.file == "services/validation_orchestrator.rb" } }.map(&:id)
-      expect(ids).to contain_exactly("png.signature.invalid", "png.IHDR.missing", "png.IEND.missing", "png.IDAT.missing")
+      expect(ids).to contain_exactly(
+        "all.signature.unknown",
+        "png.IHDR.missing", "png.IHDR.first-chunk", "png.IEND.missing", "png.IEND.last-chunk", "png.IDAT.missing",
+        "mng.MHDR.missing", "mng.MHDR.first-chunk", "mng.MEND.missing", "mng.MEND.last-chunk",
+        "jng.JHDR.missing", "jng.JHDR.first-chunk", "jng.IEND.missing", "jng.IEND.last-chunk", "jng.JDAT.missing"
+      )
       processor = catalog.select { |r| r.emitters.any? { |e| e.file == "services/chunk_processor.rb" } }.map(&:id)
       expect(processor).to contain_exactly("png.chunk.unknown-critical", "info.png.chunk.unknown-ancillary")
     end

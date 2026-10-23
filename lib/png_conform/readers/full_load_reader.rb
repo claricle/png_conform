@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../bindata/png_file"
+require_relative "format_dispatch"
 
 module PngConform
   module Readers
@@ -65,6 +66,13 @@ module PngConform
       def signature
         read unless @png
         @png.signature.to_s
+      end
+
+      # Detected format of the file signature
+      #
+      # @return [FormatDispatch::Format, nil] nil for an unknown signature
+      def format
+        FormatDispatch.detect(signature)
       end
 
       # Iterate over each chunk

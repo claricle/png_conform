@@ -160,6 +160,10 @@ module PngConform
       #
       # @return [String] File type (PNG, MNG, JNG, or UNKNOWN)
       def determine_file_type
+        detected = @context.detected_format
+        return detected.name if detected
+        return Models::ValidationResult::FILE_TYPE_UNKNOWN if @context.retrieve(:signature_checked)
+
         return Models::ValidationResult::FILE_TYPE_MNG if @context.seen?("MHDR")
         return Models::ValidationResult::FILE_TYPE_JNG if @context.seen?("JHDR")
         return Models::ValidationResult::FILE_TYPE_PNG if @context.seen?("IHDR")

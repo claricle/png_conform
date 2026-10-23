@@ -65,6 +65,7 @@ module PngConform
   require_relative "png_conform/bindata/jng_file"
 
   # Load readers (Phase 2 - implemented)
+  require_relative "png_conform/readers/format_dispatch"
   require_relative "png_conform/readers/streaming_reader"
   require_relative "png_conform/readers/full_load_reader"
 

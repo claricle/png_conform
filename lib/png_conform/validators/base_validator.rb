@@ -131,6 +131,10 @@ module PngConform
     class ValidationContext
       attr_reader :errors, :chunks_seen, :file_info
 
+      # Format detected from the file signature (Readers::FormatDispatch::Format
+      # or nil when the signature is unknown or not yet checked)
+      attr_accessor :detected_format
+
       def initialize
         @errors = []
         @chunks_seen = {}
@@ -139,8 +143,7 @@ module PngConform
 
       # Add an uncataloged error/warning/info to the context
       #
-      # Compatibility path for ValidationOrchestrator only, until card 03c
-      # converts its findings to #add_diagnostic. Not for validators.
+      # Compatibility path for uncataloged findings. Not for validators.
       #
       # @param chunk_type [String] The chunk type
       # @param message [String] The error message

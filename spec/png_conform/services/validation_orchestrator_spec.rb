@@ -143,14 +143,117 @@ RSpec.describe PngConform::Services::ValidationOrchestrator do
     end
   end
 
+  describe "format-aware dispatch" do
+    let(:png_sig) { [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A].pack("C*") }
+    let(:mng_sig) { [0x8A, 0x4D, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A].pack("C*") }
+    let(:jng_sig) { [0x8B, 0x4A, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A].pack("C*") }
+
+    # Validate a mock stream of [type, length] pairs under the given signature.
+    def run(signature, types)
+      offset = 8
+      chunks = types.map do |type|
+        chunk = create_bindata_chunk(type, offset, type == "IDAT" ? 4 : 0)
+        offset += 12 + chunk.length
+        chunk
+      end
+      reader = create_mock_reader(chunks, signature)
+      orchestrator = described_class.new(reader, "x")
+      [orchestrator.validate.validation_result, orchestrator]
+    end
+
+    def ids(result) = result.errors.map(&:requirement_id)
+
+    def structural(result)
+      result.errors.map(&:requirement_id).grep(/\A(png|mng|jng|all)\.(IHDR|IEND|IDAT|MHDR|MEND|JHDR|JDAT|signature)\./)
+    end
+
+    # The mock IHDR/MHDR/JHDR chunks have placeholder bodies, so only the
+    # top-level sequence IDs are compared.
+    def sequence_ids(result)
+      structural(result).grep(/\.(missing|first-chunk|last-chunk|unknown)\z/)
+    end
+
+    it "selects each exact signature and records the detected format" do
+      { png_sig => ["PNG", %w[IHDR IDAT IEND]], mng_sig => ["MNG", %w[MHDR MEND]],
+        jng_sig => ["JNG", %w[JHDR JDAT IEND]] }.each do |sig, (name, types)|
+        result, orchestrator = run(sig, types)
+        expect(orchestrator.detected_format.name).to eq(name)
+        expect(result.file_type).to eq(name)
+        expect(sequence_ids(result)).to be_empty
+      end
+    end
+
+    it "gives an unknown signature its own diagnostic and no required-chunk findings" do
+      result, orchestrator = run("GIF89a\x00\x00".b, %w[IEND])
+      expect(orchestrator.detected_format).to be_nil
+      expect(result.file_type).to eq("UNKNOWN")
+      expect(sequence_ids(result)).to eq(["all.signature.unknown"])
+      finding = result.errors.find { |e| e.requirement_id == "all.signature.unknown" }
+      expect(finding).to have_attributes(severity: "error", chunk_type: "SIGNATURE",
+                                         chunk_offset: 0, actual: "47 49 46 38 39 61 00 00")
+      expect(finding.citation_label).to include("section 5.2")
+    end
+
+    {
+      "PNG" => [
+        [%w[IDAT IEND], "png.IHDR.missing"],
+        [%w[IDAT IHDR IEND], "png.IHDR.first-chunk"],
+        [%w[IHDR IDAT], "png.IEND.missing"],
+        [%w[IHDR IEND IDAT], "png.IEND.last-chunk"],
+        [%w[IHDR IEND], "png.IDAT.missing"],
+      ],
+      "MNG" => [
+        [%w[MEND], "mng.MHDR.missing"],
+        [%w[TERM MHDR MEND], "mng.MHDR.first-chunk"],
+        [%w[MHDR], "mng.MEND.missing"],
+        [%w[MHDR MEND TERM], "mng.MEND.last-chunk"],
+      ],
+      "JNG" => [
+        [%w[JDAT IEND], "jng.JHDR.missing"],
+        [%w[JDAT JHDR IEND], "jng.JHDR.first-chunk"],
+        [%w[JHDR JDAT], "jng.IEND.missing"],
+        [%w[JHDR IEND JDAT], "jng.IEND.last-chunk"],
+        [%w[JHDR IEND], "jng.JDAT.missing"],
+      ],
+    }.each do |name, cases|
+      cases.each do |types, id|
+        it "reports #{id} for #{name} #{types.join(' ')} and nothing cross-format" do
+          sig = { "PNG" => png_sig, "MNG" => mng_sig, "JNG" => jng_sig }.fetch(name)
+          result, = run(sig, types)
+          own = sequence_ids(result).select { |i| i.start_with?("#{name.downcase}.") }
+          expect(own).to include(id)
+          expect(sequence_ids(result) - own).to be_empty
+        end
+      end
+    end
+
+    it "does not demand PNG chunks of a valid MNG or JNG stream" do
+      [[mng_sig, %w[MHDR MEND]], [jng_sig, %w[JHDR JDAT IEND]]].each do |sig, types|
+        result, = run(sig, types)
+        expect(ids(result).grep(/\Apng\.(IHDR|IEND|IDAT)\./)).to be_empty
+      end
+    end
+
+    it "locates a misplaced terminator at the chunk and a missing one by type only" do
+      result, = run(png_sig, %w[IHDR IEND IDAT])
+      moved = result.errors.find { |e| e.requirement_id == "png.IEND.last-chunk" }
+      expect(moved).to have_attributes(chunk_type: "IEND", chunk_index: 1, severity: "error")
+      expect(moved.chunk_offset).to eq(8 + 12 + 0)
+      expect(moved.citation_label).to include("5.6")
+
+      result, = run(png_sig, %w[IHDR IDAT])
+      missing = result.errors.find { |e| e.requirement_id == "png.IEND.missing" }
+      expect(missing).to have_attributes(chunk_type: "IEND", chunk_offset: nil)
+    end
+  end
+
   # Helper to create a mock reader
-  def create_mock_reader(chunks)
+  def create_mock_reader(chunks, signature = [137, 80, 78, 71, 13, 10, 26, 10].pack("C*"))
     reader = double("Reader")
     allow(reader).to receive(:each_chunk) do |&block|
       chunks.each(&block)
     end
-    allow(reader).to receive_messages(signature: [137, 80, 78, 71, 13, 10,
-                                                  26, 10].pack("C*"), file_size: 1000)
+    allow(reader).to receive_messages(signature: signature, file_size: 1000)
     reader
   end
 

@@ -75,6 +75,13 @@ requirements:
     abstract: true
     emitters:
       - {file: "validators/base_validator.rb", call: "add_error(id, \"invalid #{name} (#{value}, must be #{min}-#{max})\", field: name, expected: \"#{min}-#{max}\", actual: value)"}
+  all.signature.unknown:
+    format: all
+    kind: presence
+    severity: error
+    citation: {specification: iso15948, section: "5.2", title: "PNG signature"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"all.signature.unknown\", \"Unrecognized file signature (not PNG, MNG or JNG)\", chunk_type: \"SIGNATURE\", offset: 0, field: \"signature\", actual: sig.to_s.bytes.map { |b| format(\"%02x\", b) }.join(\" \") )"}
   apng.acTL.before-fctl:
     format: apng
     kind: ordering
@@ -229,6 +236,20 @@ requirements:
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
       - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.sequence-number\", \"fdAT sequence number mismatch (expected #{expected_sequence}, got #{sequence_number})\")"}
+  jng.IEND.last-chunk:
+    format: jng
+    kind: ordering
+    severity: error
+    citation: {specification: jng, section: "1.1.6", title: "IEND End of JNG datastream"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"jng.IEND.last-chunk\", \"IEND must be the last chunk\", **located(\"IEND\", index) )"}
+  jng.IEND.missing:
+    format: jng
+    kind: presence
+    severity: error
+    citation: {specification: jng, section: "1.1.6", title: "IEND End of JNG datastream"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"jng.IEND.missing\", \"Missing IEND chunk (must be last)\", chunk_type: \"IEND\" )"}
   jng.JDAT.after-jhdr:
     format: jng
     kind: ordering
@@ -257,6 +278,13 @@ requirements:
     citation: {specification: jng, section: "1.1.2", title: "JDAT JNG image data"}
     emitters:
       - {file: "validators/jng/jdat_validator.rb", call: "add_error(\"jng.JDAT.min-length\", \"JDAT chunk too short (#{data.length} bytes, minimum 1)\", field: \"length\", expected: \">= 1\", actual: data.length)"}
+  jng.JDAT.missing:
+    format: jng
+    kind: presence
+    severity: error
+    citation: {specification: jng, section: "1.1.2", title: "JDAT JNG image data"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"jng.JDAT.missing\", \"Missing JDAT chunk (at least one required)\", chunk_type: \"JDAT\" )"}
   jng.JHDR.color-type:
     format: jng
     kind: value
@@ -278,6 +306,7 @@ requirements:
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
       - {file: "validators/jng/jhdr_validator.rb", call: "add_error(\"jng.JHDR.first-chunk\", \"JHDR must be the first chunk in JNG datastream\")"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"jng.JHDR.first-chunk\", \"JHDR must be the first chunk in JNG datastream\", **located(\"JHDR\", index))"}
   jng.JHDR.height-zero:
     format: jng
     kind: value
@@ -313,6 +342,13 @@ requirements:
     citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
     emitters:
       - {file: "validators/jng/jhdr_validator.rb", call: "check_length(16, id: \"jng.JHDR.length\")"}
+  jng.JHDR.missing:
+    format: jng
+    kind: presence
+    severity: error
+    citation: {specification: jng, section: "1.1.1", title: "JHDR JNG header"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"jng.JHDR.missing\", \"Missing JHDR chunk (must be first)\", chunk_type: \"JHDR\" )"}
   jng.JHDR.width-zero:
     format: jng
     kind: value
@@ -712,6 +748,13 @@ requirements:
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
       - {file: "validators/mng/mend_validator.rb", call: "check_crc(id: \"mng.MEND.crc\")"}
+  mng.MEND.last-chunk:
+    format: mng
+    kind: ordering
+    severity: error
+    citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"mng.MEND.last-chunk\", \"MEND must be the last chunk\", **located(\"MEND\", index) )"}
   mng.MEND.length:
     format: mng
     kind: length
@@ -719,6 +762,13 @@ requirements:
     citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
     emitters:
       - {file: "validators/mng/mend_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.MEND.length\")"}
+  mng.MEND.missing:
+    format: mng
+    kind: presence
+    severity: error
+    citation: {specification: mng, section: "4.1.2", title: "MEND End of MNG datastream"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"mng.MEND.missing\", \"Missing MEND chunk (must be last)\", chunk_type: \"MEND\" )"}
   mng.MEND.requires-mhdr:
     format: mng
     kind: presence
@@ -740,6 +790,7 @@ requirements:
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
       - {file: "validators/mng/mhdr_validator.rb", call: "add_error(\"mng.MHDR.first-chunk\", \"MHDR must be the first chunk in MNG file\")"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"mng.MHDR.first-chunk\", \"MHDR must be the first chunk in MNG file\", **located(\"MHDR\", index) )"}
   mng.MHDR.frame-dimensions-zero:
     format: mng
     kind: value
@@ -754,6 +805,13 @@ requirements:
     citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
     emitters:
       - {file: "validators/mng/mhdr_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"mng.MHDR.length\")"}
+  mng.MHDR.missing:
+    format: mng
+    kind: presence
+    severity: error
+    citation: {specification: mng, section: "4.1.1", title: "MHDR MNG datastream header"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"mng.MHDR.missing\", \"Missing MHDR chunk (must be first)\", chunk_type: \"MHDR\" )"}
   mng.MOVE.after-mhdr:
     format: mng
     kind: ordering
@@ -949,7 +1007,7 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "11.2.1", title: "General"}
     emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_error(chunk_type: \"IDAT\", message: \"Missing IDAT chunk (at least one required)\", severity: :error)"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"png.IDAT.missing\", \"Missing IDAT chunk (at least one required)\", chunk_type: \"IDAT\" )"}
   png.IEND.after-idat:
     format: png
     kind: ordering
@@ -971,6 +1029,13 @@ requirements:
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
       - {file: "validators/critical/iend_validator.rb", call: "check_crc(id: \"png.IEND.crc\")"}
+  png.IEND.last-chunk:
+    format: png
+    kind: ordering
+    severity: error
+    citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"png.IEND.last-chunk\", \"IEND must be the last chunk\", **located(\"IEND\", index) )"}
   png.IEND.length:
     format: png
     kind: length
@@ -984,7 +1049,7 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "11.2.1", title: "General"}
     emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_error(chunk_type: \"IEND\", message: \"Missing IEND chunk (must be last)\", severity: :error)"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"png.IEND.missing\", \"Missing IEND chunk (must be last)\", chunk_type: \"IEND\" )"}
   png.IHDR.bit-depth:
     format: png
     kind: value
@@ -1020,6 +1085,13 @@ requirements:
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
       - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.filter-method\", \"invalid filter method (#{filter}, must be 0)\")"}
+  png.IHDR.first-chunk:
+    format: png
+    kind: ordering
+    severity: error
+    citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
+    emitters:
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"png.IHDR.first-chunk\", \"IHDR must be the first chunk\", **located(\"IHDR\", index) )"}
   png.IHDR.height-recommended-max:
     format: png
     kind: value
@@ -1054,7 +1126,7 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "11.2.1", title: "General"}
     emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_error(chunk_type: \"IHDR\", message: \"Missing IHDR chunk (must be first)\", severity: :error)"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"png.IHDR.missing\", \"Missing IHDR chunk (must be first)\", chunk_type: \"IHDR\" )"}
   png.IHDR.width-recommended-max:
     format: png
     kind: value
@@ -2217,13 +2289,6 @@ requirements:
     citation: {specification: pngext, section: "3.6", title: "sTER Indicator of Stereo Image"}
     emitters:
       - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"png.sTER.single-instance\", \"Multiple sTER chunks (only one allowed)\")"}
-  png.signature.invalid:
-    format: png
-    kind: presence
-    severity: error
-    citation: {specification: iso15948, section: "5.2", title: "PNG signature"}
-    emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_error(chunk_type: \"SIGNATURE\", message: \"Invalid PNG signature\", severity: :error)"}
   png.tEXt.crc:
     format: png
     kind: integrity
@@ -2762,7 +2827,7 @@ excluded_sources:
       Nothing requires lib/png_conform/pipelines/ and no documented public
       contract names it. Its sequence and signature stages repeat messages
       the active ValidationOrchestrator already emits, which are cataloged as
-      png.signature.invalid, png.IHDR.missing, png.IEND.missing and
+      all.signature.unknown, png.IHDR.missing, png.IEND.missing and
       png.IDAT.missing. Wiring or cataloging the stages would duplicate those
       IDs for unreachable code.
     evidence:

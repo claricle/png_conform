@@ -58,7 +58,7 @@ module PngConform
           "validators/base_validator.rb" =>
             { methods: VALIDATOR_METHODS, dotted: false },
           "services/validation_orchestrator.rb" =>
-            { methods: %w[add_error], dotted: true },
+            { methods: %w[add_diagnostic], dotted: true },
           "services/chunk_processor.rb" =>
             { methods: %w[add_diagnostic], dotted: true },
           "services/profile_manager.rb" =>
