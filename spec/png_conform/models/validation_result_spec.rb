@@ -377,4 +377,43 @@ RSpec.describe PngConform::Models::ValidationResult do
       expect(result.crc_errors_count).to eq(3)
     end
   end
+
+  describe "canonical diagnostics" do
+    let(:result) do
+      described_class.new(filename: "a.png").tap do |r|
+        r.error("bad", chunk_type: "IHDR", chunk_offset: 8,
+                       error_type: "value")
+        r.warning("meh")
+      end
+    end
+
+    it "projects each error to a LensCore diagnostic in order" do
+      expect(result.diagnostics.map(&:message)).to eq(%w[bad meh])
+      expect(result.diagnostics).to all(be_a(LensCore::Diagnostic))
+    end
+
+    it "builds an invalid report when an error is present" do
+      report = result.to_lens_report
+      expect(report.valid).to be(false)
+      expect(report.summary).to eq("errors" => 1, "warnings" => 1, "infos" => 0)
+    end
+
+    it "builds a valid report when only warnings are present" do
+      warn_only = described_class.new
+      warn_only.warning("meh")
+      expect(warn_only.to_lens_report.valid).to be(true)
+      expect(warn_only).to be_valid
+    end
+
+    it "does not stamp a timestamp, keeping reports reproducible" do
+      expect(result.to_lens_report.to_h["timestamp"]).to be_nil
+    end
+
+    it "keeps the legacy readers on the errors" do
+      error = result.errors.first
+      expect([error.severity, error.message, error.chunk_type,
+              error.chunk_offset, error.error_type])
+        .to eq(["error", "bad", "IHDR", 8, "value"])
+    end
+  end
 end

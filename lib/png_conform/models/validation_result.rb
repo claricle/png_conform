@@ -126,6 +126,23 @@ module PngConform
         chunks_by_type("JHDR").first
       end
 
+      # Canonical diagnostics in emission order (the order is the stable
+      # ordering of the report; it is never re-sorted).
+      def diagnostics
+        errors.map(&:to_diagnostic)
+      end
+
+      # Complete shared-contract report. No timestamp is stamped, so the
+      # same file always yields the same report.
+      def to_lens_report(profile_id: "png")
+        LensCore::Report.new(
+          producer: LensCore::Producer.new(name: "png_conform",
+                                           version: VERSION),
+          profile: LensCore::Profile.new(id: profile_id),
+          diagnostics: diagnostics, valid: valid? && error_count.zero?
+        )
+      end
+
       # Summary for display
       def summary
         status = valid? ? "OK" : "ERRORS"
@@ -139,7 +156,7 @@ module PngConform
         parts = []
         parts << "ERROR: #{filename}"
         errors.each do |error|
-          parts << "  #{error.message}"
+          parts << "  #{error.to_diagnostic.message}"
         end
         parts.join("\n")
       end

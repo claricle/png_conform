@@ -63,4 +63,21 @@ RSpec.describe PngConform::Reporters::JsonReporter do
       expect(json_output.lines.count).to be > 1
     end
   end
+
+  describe "structured diagnostics" do
+    it "serializes the same diagnostics as the Ruby model" do
+      validation_result.error("bad", chunk_type: "IHDR", chunk_offset: 8,
+                                     error_type: "value")
+      reporter.report(file_analysis)
+      output.rewind
+      parsed = JSON.parse(output.read)
+
+      expect(parsed["schema_version"]).to eq(LensCore::SCHEMA_VERSION)
+      expect(parsed["diagnostics"])
+        .to eq(validation_result.diagnostics.map(&:to_h))
+      expect(parsed["errors"]).to eq(
+        [{ "severity" => "error", "message" => "bad", "chunk_type" => "IHDR" }],
+      )
+    end
+  end
 end

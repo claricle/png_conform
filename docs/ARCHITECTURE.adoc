@@ -277,11 +277,20 @@ end
 
 *Attributes*:
 
-* `severity`: Symbol (:error, :warning, :info)
-* `chunk_type`: String (related chunk)
+* `severity`: String ("error", "warning", "info")
 * `message`: String (human-readable description)
-* `position`: Integer (file offset)
-* `code`: Symbol (error code for programmatic use)
+* `chunk_type`, `chunk_offset`, `chunk_index`, `field`: PNG-native location
+* `error_type`: String (the diagnostic kind)
+* `requirement_id`, `citation_uri`, `citation_label`, `remediation`,
+  `expected`, `actual`, `profile`
+
+*Canonical projection*: `#to_diagnostic` returns the immutable
+`LensCore::Diagnostic`. `ValidationResult#diagnostics` and `#to_lens_report`
+collect them in emission order, `FileAnalysis#to_h` serializes them under
+`diagnostics` with a top-level `schema_version`, and the reporters render
+from that object (`#detail_lines`, `#human_lines`). The legacy readers and
+the five-field `errors` JSON entries are compatibility aliases for one
+transition; see `docs/CLI_OPTIONS.adoc`.
 
 ==== `PngConform::Models::Profile`
 

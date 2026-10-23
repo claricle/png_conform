@@ -108,6 +108,7 @@ module PngConform
       # This provides a single source of truth for all output formats
       def to_h
         hash = {
+          "schema_version" => LensCore::SCHEMA_VERSION,
           "filename" => file_path,
           "file_type" => file_type,
           "file_size" => file_size,
@@ -139,6 +140,7 @@ module PngConform
             error_hash["actual"] = error.actual if error.actual
             error_hash
           end
+          hash["diagnostics"] = validation_result.diagnostics.map(&:to_h)
         end
 
         # Add resolution analysis if available

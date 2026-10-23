@@ -36,5 +36,5 @@ bundle exec rspec spec/png_conform/models/validation_error_spec.rb \
 
 ## Status
 
-State: todo
-PR: none
+State: done
+PR: https://github.com/claricle/png_conform/pull/19

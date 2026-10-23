@@ -56,4 +56,18 @@ RSpec.describe PngConform::Reporters::YamlReporter do
       end.not_to raise_error
     end
   end
+
+  describe "structured diagnostics" do
+    it "serializes the same diagnostics and version as JSON" do
+      validation_result.error("bad", chunk_type: "IHDR", chunk_offset: 8,
+                                     error_type: "value")
+      reporter.report(file_analysis)
+      output.rewind
+      parsed = YAML.safe_load(output.read)
+
+      expect(parsed["schema_version"]).to eq(LensCore::SCHEMA_VERSION)
+      expect(parsed["diagnostics"])
+        .to eq(JSON.parse(JSON.generate(file_analysis.to_h))["diagnostics"])
+    end
+  end
 end
