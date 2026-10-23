@@ -2,6 +2,8 @@
 
 require_relative "../bindata/png_file"
 require_relative "format_dispatch"
+require_relative "chunk_framing"
+require "stringio"
 
 module PngConform
   module Readers
@@ -42,6 +44,7 @@ module PngConform
         end
         @png = nil
         @total_bytes_read = 0
+        @framing_error = nil
         @validate_crc = options.fetch(:validate_crc, true)
       end
 
@@ -52,12 +55,22 @@ module PngConform
         return @png if @png
 
         @io.rewind
-        @png = BinData::PngFile.read(@io)
+        @png = BinData::PngFile.read(bounded_source)
 
         # Calculate total bytes from chunks
         @total_bytes_read = @png.chunks.sum { |c| 12 + c.data_length }
 
         @png
+      end
+
+      # The first chunk whose declared length exceeds the format limit or the
+      # remaining bytes. Chunks before it are still read; nothing is
+      # allocated for it.
+      #
+      # @return [ChunkFraming::Violation, nil]
+      def framing_error
+        read unless @png
+        @framing_error
       end
 
       # Get PNG signature
@@ -124,6 +137,35 @@ module PngConform
           png = new(f).read
           yield png
         end
+      end
+
+      private
+
+      # Walk the chunk framing and stop at the first invalid declared length,
+      # so BinData only ever sees the well-framed prefix.
+      #
+      # @return [IO, StringIO] the IO itself, or the valid prefix
+      def bounded_source
+        total = ChunkFraming.size_of(@io)
+        pos = 8
+        index = 0
+        loop do
+          @io.seek(pos)
+          length = ChunkFraming.peek_length(@io)
+          break unless length
+
+          @framing_error = ChunkFraming.violation(
+            length, offset: pos, chunk_index: index, total: total
+          )
+          break if @framing_error
+
+          pos += ChunkFraming::HEADER_BYTES + length + ChunkFraming::CRC_BYTES
+          index += 1
+        end
+        @io.rewind
+        return @io unless @framing_error
+
+        StringIO.new(@io.read(@framing_error.offset))
       end
     end
   end
