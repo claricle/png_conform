@@ -24,7 +24,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.sBIT.crc")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_length_for_color_type
@@ -42,11 +42,11 @@ module PngConform
 
           # sBIT should appear before PLTE and IDAT
           if context.seen?("PLTE")
-            add_warning("sBIT chunk after PLTE (should be before)")
+            add_warning("png.sBIT.before-plte", "sBIT chunk after PLTE (should be before)")
           end
 
           if context.seen?("IDAT")
-            add_error("sBIT chunk after IDAT (must be before)")
+            add_error("png.sBIT.before-idat", "sBIT chunk after IDAT (must be before)")
             valid = false
           end
 
@@ -56,7 +56,7 @@ module PngConform
         # Check that only one sBIT chunk is present
         def check_uniqueness
           if context.seen?("sBIT")
-            add_error("duplicate sBIT chunk")
+            add_error("png.sBIT.single-instance", "duplicate sBIT chunk")
             return false
           end
           true
@@ -77,7 +77,7 @@ module PngConform
                               return true
                             end
 
-          check_length(expected_length)
+          check_length(expected_length, id: "png.sBIT.length")
         end
 
         # Check significant bit values
@@ -126,13 +126,13 @@ module PngConform
         # Check individual significant bit value
         def check_sbit_value(value, max_depth, name)
           if value.zero?
-            add_error("#{name} significant bits cannot be 0")
+            add_error("png.sBIT.bits-zero", "#{name} significant bits cannot be 0")
             return false
           end
 
           if value > max_depth
-            add_error("#{name} significant bits (#{value}) exceeds " \
-                      "sample depth (#{max_depth})")
+            add_error("png.sBIT.bits-exceed-depth", "#{name} significant bits (#{value}) exceeds " \
+                                                    "sample depth (#{max_depth})")
             return false
           end
 
@@ -148,26 +148,26 @@ module PngConform
           when 0
             gray = data[0].unpack1("C")
             context.store(:significant_bits, { gray: gray })
-            add_info("sBIT: gray=#{gray}")
+            add_info("info.png.sBIT.bits-gray", "sBIT: gray=#{gray}")
           when 2
             red, green, blue = data.unpack("CCC")
             context.store(:significant_bits,
                           { red: red, green: green, blue: blue })
-            add_info("sBIT: R=#{red}, G=#{green}, B=#{blue}")
+            add_info("info.png.sBIT.bits-rgb", "sBIT: R=#{red}, G=#{green}, B=#{blue}")
           when 3
             red, green, blue = data.unpack("CCC")
             context.store(:significant_bits,
                           { red: red, green: green, blue: blue })
-            add_info("sBIT: R=#{red}, G=#{green}, B=#{blue}")
+            add_info("info.png.sBIT.bits-rgb", "sBIT: R=#{red}, G=#{green}, B=#{blue}")
           when 4
             gray, alpha = data.unpack("CC")
             context.store(:significant_bits, { gray: gray, alpha: alpha })
-            add_info("sBIT: gray=#{gray}, alpha=#{alpha}")
+            add_info("info.png.sBIT.bits-gray-alpha", "sBIT: gray=#{gray}, alpha=#{alpha}")
           when 6
             red, green, blue, alpha = data.unpack("CCCC")
             context.store(:significant_bits,
                           { red: red, green: green, blue: blue, alpha: alpha })
-            add_info("sBIT: R=#{red}, G=#{green}, B=#{blue}, A=#{alpha}")
+            add_info("info.png.sBIT.bits-rgba", "sBIT: R=#{red}, G=#{green}, B=#{blue}, A=#{alpha}")
           end
         end
       end

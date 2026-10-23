@@ -45,7 +45,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.iTXt.crc")
           return false unless check_structure
           return false unless check_keyword
           return false unless check_compression_flags
@@ -66,15 +66,15 @@ module PngConform
 
           # Must contain at least keyword + 3 nulls + flags
           if data.length < 5
-            add_error("iTXt chunk too short (minimum 5 bytes)")
+            add_error("png.iTXt.min-length", "iTXt chunk too short (minimum 5 bytes)")
             return false
           end
 
           # Must contain three null separators
           nulls = data.bytes.each_index.select { |i| data[i] == "\0" }
           if nulls.length < 3
-            add_error("iTXt chunk missing null separators " \
-                      "(found #{nulls.length}, need 3)")
+            add_error("png.iTXt.null-separators", "iTXt chunk missing null separators " \
+                                                  "(found #{nulls.length}, need 3)")
             return false
           end
 
@@ -89,13 +89,13 @@ module PngConform
 
           # Check keyword length
           if keyword.empty?
-            add_error("iTXt chunk has empty keyword")
+            add_error("png.iTXt.name-empty", "iTXt chunk has empty keyword")
             return false
           end
 
           if keyword.length > MAX_KEYWORD_LENGTH
-            add_error("iTXt keyword too long (#{keyword.length}, " \
-                      "max #{MAX_KEYWORD_LENGTH})")
+            add_error("png.iTXt.name-too-long", "iTXt keyword too long (#{keyword.length}, " \
+                                                "max #{MAX_KEYWORD_LENGTH})")
             return false
           end
 
@@ -103,25 +103,25 @@ module PngConform
           keyword.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("iTXt keyword contains non-printable character " \
-                      "(0x#{byte.to_s(16)})")
+            add_error("png.iTXt.name-printable", "iTXt keyword contains non-printable character " \
+                                                 "(0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if keyword.start_with?(" ")
-            add_error("iTXt keyword has leading space")
+            add_error("png.iTXt.name-leading-space", "iTXt keyword has leading space")
             return false
           end
 
           if keyword.end_with?(" ")
-            add_error("iTXt keyword has trailing space")
+            add_error("png.iTXt.name-trailing-space", "iTXt keyword has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if keyword.include?("  ")
-            add_error("iTXt keyword has consecutive spaces")
+            add_error("png.iTXt.name-consecutive-spaces", "iTXt keyword has consecutive spaces")
             return false
           end
 
@@ -136,15 +136,15 @@ module PngConform
           compression_method = data[null_pos + 2].ord
 
           unless [UNCOMPRESSED, COMPRESSED].include?(compression_flag)
-            add_error("iTXt invalid compression flag " \
-                      "(#{compression_flag}, must be 0 or 1)")
+            add_error("png.iTXt.compression-flag", "iTXt invalid compression flag " \
+                                                   "(#{compression_flag}, must be 0 or 1)")
             return false
           end
 
           if compression_flag == COMPRESSED &&
               compression_method != COMPRESSION_DEFLATE
-            add_error("iTXt invalid compression method " \
-                      "(#{compression_method}, must be 0 when compressed)")
+            add_error("png.iTXt.compression-method", "iTXt invalid compression method " \
+                                                     "(#{compression_method}, must be 0 when compressed)")
             return false
           end
 
@@ -165,8 +165,8 @@ module PngConform
           lang_tag.bytes.each do |byte|
             next unless byte > 127
 
-            add_error("iTXt language tag contains non-ASCII character " \
-                      "(0x#{byte.to_s(16)})")
+            add_error("png.iTXt.language-tag-ascii", "iTXt language tag contains non-ASCII character " \
+                                                     "(0x#{byte.to_s(16)})")
             return false
           end
 
@@ -183,14 +183,14 @@ module PngConform
           # Translated keyword
           translated_keyword = data[(second_null + 1)...third_null]
           unless valid_utf8?(translated_keyword)
-            add_error("iTXt translated keyword is not valid UTF-8")
+            add_error("png.iTXt.translated-keyword-utf8", "iTXt translated keyword is not valid UTF-8")
             return false
           end
 
           # Text field (may be compressed)
           text_data = data[(third_null + 1)..] || ""
           if !compressed? && !valid_utf8?(text_data)
-            add_error("iTXt text is not valid UTF-8")
+            add_error("png.iTXt.text-utf8", "iTXt text is not valid UTF-8")
             return false
           end
 
@@ -208,11 +208,11 @@ module PngConform
           begin
             decompressed = Zlib::Inflate.inflate(compressed_data)
             unless valid_utf8?(decompressed)
-              add_error("iTXt decompressed text is not valid UTF-8")
+              add_error("png.iTXt.decompressed-text-utf8", "iTXt decompressed text is not valid UTF-8")
               return false
             end
           rescue Zlib::Error => e
-            add_error("iTXt decompression failed: #{e.message}")
+            add_error("png.iTXt.decompress", "iTXt decompression failed: #{e.message}")
             return false
           end
 
@@ -271,8 +271,8 @@ module PngConform
           text_preview = text.length > 40 ? "#{text[0, 40]}..." : text
           lang_info = lang_tag.empty? ? "" : " [#{lang_tag}]"
           trans_info = translated_keyword.empty? ? "" : " (#{translated_keyword})"
-          add_info("iTXt: #{keyword}#{lang_info}#{trans_info} = " \
-                   "\"#{text_preview}\"#{comp_info}")
+          add_info("info.png.iTXt.text-content", "iTXt: #{keyword}#{lang_info}#{trans_info} = " \
+                                                 "\"#{text_preview}\"#{comp_info}")
         end
       end
     end

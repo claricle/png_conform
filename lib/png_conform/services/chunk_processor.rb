@@ -174,19 +174,19 @@ module PngConform
         # Bit 5 (0x20) of first byte indicates ancillary vs critical
         if first_byte.nobits?(0x20)
           # Critical chunk - must be recognized
-          @context.add_error(
-            chunk_type: chunk_type,
-            message: "Unknown critical chunk type: #{chunk_type}",
-            severity: :error,
-            offset: chunk.abs_offset,
+          @context.add_diagnostic(
+            "png.chunk.unknown-critical",
+            "Unknown critical chunk type: #{chunk_type}",
+            chunk_type: chunk_type, offset: chunk.abs_offset,
+            field: "chunk type", actual: chunk_type
           )
         else
           # Ancillary chunk - safe to ignore
-          @context.add_error(
-            chunk_type: chunk_type,
-            message: "Unknown ancillary chunk type: #{chunk_type} (ignored)",
-            severity: :info,
-            offset: chunk.abs_offset,
+          @context.add_diagnostic(
+            "info.png.chunk.unknown-ancillary",
+            "Unknown ancillary chunk type: #{chunk_type} (ignored)",
+            chunk_type: chunk_type, offset: chunk.abs_offset,
+            field: "chunk type", actual: chunk_type
           )
         end
       end

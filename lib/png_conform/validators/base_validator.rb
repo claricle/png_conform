@@ -36,41 +36,43 @@ module PngConform
 
       # Add an error to the validation result
       #
-      # @param message [String] The error message
-      # @param severity [Symbol] :error, :warning, or :info
-      def add_error(message, severity: :error)
-        context.add_error(
-          chunk_type: chunk.chunk_type,
-          message: message,
-          severity: severity,
-          offset: chunk.abs_offset,
-        )
+      # The catalog entry for +id+ supplies severity, kind and citation.
+      #
+      # @param id [String] catalog requirement ID
+      # @param message [String] the rendered finding text
+      # @param detail [Hash] field:, expected:, actual:, chunk_index:
+      def add_error(id, message = nil, **detail)
+        report(:error, id, message, **detail)
       end
 
       # Add a warning to the validation result
       #
-      # @param message [String] The warning message
-      def add_warning(message)
-        add_error(message, severity: :warning)
+      # @param id [String] catalog requirement ID
+      # @param message [String] the warning message
+      def add_warning(id, message = nil, **detail)
+        report(:warning, id, message, **detail)
       end
 
       # Add an info message to the validation result
       #
-      # @param message [String] The info message
-      def add_info(message)
-        add_error(message, severity: :info)
+      # @param id [String] catalog requirement ID
+      # @param message [String] the info message
+      def add_info(id, message = nil, **detail)
+        report(:info, id, message, **detail)
       end
 
       # Check if chunk data length matches expected length
       #
       # @param expected [Integer] Expected data length
+      # @param id [String] catalog requirement ID reported on failure
       # @return [Boolean] True if length matches
-      def check_length(expected)
+      def check_length(expected, id: nil)
         actual = chunk.chunk_data.length
         return true if actual == expected
 
-        add_error("invalid #{chunk.chunk_type} length (#{actual}, " \
-                  "should be #{expected})")
+        add_error(id, "invalid #{chunk.chunk_type} length (#{actual}, " \
+                      "should be #{expected})",
+                  field: "length", expected: expected, actual: actual)
         false
       end
 
@@ -80,11 +82,13 @@ module PngConform
       # @param min [Integer] Minimum valid value
       # @param max [Integer] Maximum valid value
       # @param name [String] Name of the value for error message
+      # @param id [String] catalog requirement ID reported on failure
       # @return [Boolean] True if value is in range
-      def check_range(value, min, max, name)
+      def check_range(value, min, max, name, id: nil)
         return true if value.between?(min, max)
 
-        add_error("invalid #{name} (#{value}, must be #{min}-#{max})")
+        add_error(id, "invalid #{name} (#{value}, must be #{min}-#{max})",
+                  field: name, expected: "#{min}-#{max}", actual: value)
         false
       end
 
@@ -93,23 +97,42 @@ module PngConform
       # @param value [Object] Value to check
       # @param valid [Array] Array of valid values
       # @param name [String] Name of the value for error message
+      # @param id [String] catalog requirement ID reported on failure
       # @return [Boolean] True if value is valid
-      def check_enum(value, valid, name)
+      def check_enum(value, valid, name, id: nil)
         return true if valid.include?(value)
 
-        add_error("invalid #{name} (#{value}, must be one of " \
-                  "#{valid.join(', ')})")
+        add_error(id, "invalid #{name} (#{value}, must be one of " \
+                      "#{valid.join(', ')})",
+                  field: name, expected: valid.join(", "), actual: value)
         false
       end
 
       # Check if chunk CRC is valid
       #
+      # @param id [String] catalog requirement ID reported on failure
       # @return [Boolean] True if CRC is valid
-      def check_crc
+      def check_crc(id: nil)
         return true if chunk.crc_valid?
 
-        add_error("CRC error in #{chunk.chunk_type} chunk")
+        add_error(id, "CRC error in #{chunk.chunk_type} chunk", field: "crc")
         false
+      end
+
+      private
+
+      def report(severity, id, message, **detail)
+        # TRANSITIONAL (card 03b removes): MNG/JNG validators still call the
+        # message-only form until they are converted.
+        return report_message_only(severity, message || id) if id.nil? || message.nil?
+
+        context.add_diagnostic(id, message, chunk_type: chunk.chunk_type,
+                                            offset: chunk.abs_offset, **detail)
+      end
+
+      def report_message_only(severity, message)
+        context.add_error(chunk_type: chunk.chunk_type, message: message,
+                          severity: severity, offset: chunk.abs_offset)
       end
     end
 
@@ -123,19 +146,35 @@ module PngConform
         @file_info = {}
       end
 
-      # Add an error/warning/info to the context
+      # Add an uncataloged error/warning/info to the context
+      #
+      # Compatibility path for ValidationOrchestrator only, until card 03c
+      # converts its findings to #add_diagnostic. Not for validators.
       #
       # @param chunk_type [String] The chunk type
       # @param message [String] The error message
       # @param severity [Symbol] :error, :warning, or :info
       # @param offset [Integer] File offset of the error
       def add_error(chunk_type:, message:, severity: :error, offset: nil)
-        @errors << {
-          chunk_type: chunk_type,
-          message: message,
-          severity: severity,
-          offset: offset,
-        }
+        @errors << Models::ValidationError.public_send(
+          severity, message, chunk_type: chunk_type, chunk_offset: offset
+        )
+      end
+
+      # Add a cataloged conformance diagnostic to the context
+      #
+      # Severity, kind and citation come from the catalog entry for +id+;
+      # the message and dynamic data are passed separately.
+      #
+      # @param id [String] catalog requirement ID
+      # @param message [String] rendered finding text
+      # @param detail [Hash] chunk_type:, offset:, chunk_index:, field:,
+      #   expected:, actual:, citation_note:
+      # @return [Models::ValidationError] the stored diagnostic
+      def add_diagnostic(id, message, **detail)
+        diagnostic = Diagnostics::Builder.build(id, message, **detail)
+        @errors << diagnostic
+        diagnostic
       end
 
       # Record that a chunk type has been seen
@@ -184,35 +223,35 @@ module PngConform
       #
       # @return [Boolean] True if there are any errors
       def has_errors?
-        @errors.any? { |e| e[:severity] == :error }
+        @errors.any?(&:error?)
       end
 
       # Check if validation has warnings
       #
       # @return [Boolean] True if there are any warnings
       def has_warnings?
-        @errors.any? { |e| e[:severity] == :warning }
+        @errors.any?(&:warning?)
       end
 
       # Get all errors
       #
-      # @return [Array] Array of error hashes
+      # @return [Array<Models::ValidationError>]
       def all_errors
-        @errors.select { |e| e[:severity] == :error }
+        @errors.select(&:error?)
       end
 
       # Get all warnings
       #
       # @return [Array] Array of warning hashes
       def all_warnings
-        @errors.select { |e| e[:severity] == :warning }
+        @errors.select(&:warning?)
       end
 
       # Get all info messages
       #
       # @return [Array] Array of info hashes
       def all_info
-        @errors.select { |e| e[:severity] == :info }
+        @errors.select(&:info?)
       end
 
       # Provide attribute-style access to file_info

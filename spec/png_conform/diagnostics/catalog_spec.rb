@@ -166,7 +166,7 @@ RSpec.describe PngConform::Diagnostics::Catalog do
       data["requirements"].delete("png.gAMA.single-instance")
       reduced = load_document(data)
       expect(uncovered_sites(reduced, sites).map(&:last))
-        .to eq(['add_error("duplicate gAMA chunk")'])
+        .to eq(['add_error("png.gAMA.single-instance", "duplicate gAMA chunk")'])
     end
 
     it "agrees with the call each entry's severity is reported through" do
@@ -190,7 +190,7 @@ RSpec.describe PngConform::Diagnostics::Catalog do
       direct = catalog.flat_map do |req|
         req.emitters.select { |e| e.call.include?("severity: :") }.map { |e| [req.id, e.call] }
       end
-      expect(direct.size).to be >= 6
+      expect(direct.size).to be >= 4
       direct.each do |id, call|
         expect(call).to include("severity: :#{catalog.fetch(id).severity}")
       end

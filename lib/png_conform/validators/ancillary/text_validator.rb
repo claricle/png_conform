@@ -30,7 +30,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.tEXt.crc")
           return false unless check_structure
           return false unless check_keyword
 
@@ -46,14 +46,14 @@ module PngConform
 
           # Must contain at least keyword + null
           if data.length < 2
-            add_error("tEXt chunk too short (minimum 2 bytes)")
+            add_error("png.tEXt.min-length", "tEXt chunk too short (minimum 2 bytes)")
             return false
           end
 
           # Must contain null separator
           null_pos = data.index("\0")
           unless null_pos
-            add_error("tEXt chunk missing null separator")
+            add_error("png.tEXt.null-separator", "tEXt chunk missing null separator")
             return false
           end
 
@@ -68,13 +68,13 @@ module PngConform
 
           # Check keyword length
           if keyword.empty?
-            add_error("tEXt chunk has empty keyword")
+            add_error("png.tEXt.name-empty", "tEXt chunk has empty keyword")
             return false
           end
 
           if keyword.length > MAX_KEYWORD_LENGTH
-            add_error("tEXt keyword too long (#{keyword.length}, " \
-                      "max #{MAX_KEYWORD_LENGTH})")
+            add_error("png.tEXt.name-too-long", "tEXt keyword too long (#{keyword.length}, " \
+                                                "max #{MAX_KEYWORD_LENGTH})")
             return false
           end
 
@@ -82,25 +82,25 @@ module PngConform
           keyword.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("tEXt keyword contains non-printable character " \
-                      "(0x#{byte.to_s(16)})")
+            add_error("png.tEXt.name-printable", "tEXt keyword contains non-printable character " \
+                                                 "(0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if keyword.start_with?(" ")
-            add_error("tEXt keyword has leading space")
+            add_error("png.tEXt.name-leading-space", "tEXt keyword has leading space")
             return false
           end
 
           if keyword.end_with?(" ")
-            add_error("tEXt keyword has trailing space")
+            add_error("png.tEXt.name-trailing-space", "tEXt keyword has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if keyword.include?("  ")
-            add_error("tEXt keyword has consecutive spaces")
+            add_error("png.tEXt.name-consecutive-spaces", "tEXt keyword has consecutive spaces")
             return false
           end
 
@@ -121,7 +121,7 @@ module PngConform
 
           # Add info about the text chunk
           text_preview = text.length > 40 ? "#{text[0, 40]}..." : text
-          add_info("tEXt: #{keyword} = \"#{text_preview}\"")
+          add_info("info.png.tEXt.text-content", "tEXt: #{keyword} = \"#{text_preview}\"")
         end
       end
     end

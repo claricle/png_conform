@@ -26,8 +26,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(4)
+          return false unless check_crc(id: "png.gAMA.crc")
+          return false unless check_length(4, id: "png.gAMA.length")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_value
@@ -44,12 +44,12 @@ module PngConform
 
           # gAMA should appear before PLTE and IDAT
           if context.seen?("PLTE")
-            add_error("gAMA chunk after PLTE (should be before)")
+            add_error("png.gAMA.before-plte", "gAMA chunk after PLTE (should be before)")
             valid = false
           end
 
           if context.seen?("IDAT")
-            add_error("gAMA chunk after IDAT (must be before)")
+            add_error("png.gAMA.before-idat", "gAMA chunk after IDAT (must be before)")
             valid = false
           end
 
@@ -59,7 +59,7 @@ module PngConform
         # Check that only one gAMA chunk is present
         def check_uniqueness
           if context.seen?("gAMA")
-            add_error("duplicate gAMA chunk")
+            add_error("png.gAMA.single-instance", "duplicate gAMA chunk")
             return false
           end
           true
@@ -70,24 +70,24 @@ module PngConform
           gamma = chunk.chunk_data.unpack1("N")
 
           if gamma.zero?
-            add_error("invalid gAMA value (0)")
+            add_error("png.gAMA.value-zero", "invalid gAMA value (0)")
             return false
           end
 
           # Check sRGB interaction
           if context.seen?("sRGB") && gamma != GAMMA_2_2
-            add_warning("gAMA value #{gamma} with sRGB present (should be #{GAMMA_2_2} for gamma 2.2)")
+            add_warning("png.gAMA.srgb-consistency", "gAMA value #{gamma} with sRGB present (should be #{GAMMA_2_2} for gamma 2.2)")
           end
 
           # Info about common values
           case gamma
           when GAMMA_2_2
-            add_info("gAMA: 2.2 (standard display gamma)")
+            add_info("info.png.gAMA.gamma-standard", "gAMA: 2.2 (standard display gamma)")
           when GAMMA_1_0
-            add_info("gAMA: 1.0 (linear)")
+            add_info("info.png.gAMA.gamma-linear", "gAMA: 1.0 (linear)")
           else
             actual_gamma = gamma / 100_000.0
-            add_info("gAMA: #{format('%.5f', actual_gamma)}")
+            add_info("info.png.gAMA.gamma-value", "gAMA: #{format('%.5f', actual_gamma)}")
           end
 
           true

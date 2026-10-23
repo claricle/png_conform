@@ -53,182 +53,182 @@ requirements:
     severity: error
     abstract: true
     emitters:
-      - {file: "validators/base_validator.rb", call: "add_error(\"CRC error in #{chunk.chunk_type} chunk\")"}
+      - {file: "validators/base_validator.rb", call: "add_error(id, \"CRC error in #{chunk.chunk_type} chunk\", field: \"crc\")"}
   all.helper.enum:
     format: all
     kind: value
     severity: error
     abstract: true
     emitters:
-      - {file: "validators/base_validator.rb", call: "add_error(\"invalid #{name} (#{value}, must be one of #{valid.join(', ')})\")"}
+      - {file: "validators/base_validator.rb", call: "add_error(id, \"invalid #{name} (#{value}, must be one of #{valid.join(', ')})\", field: name, expected: valid.join(\", \"), actual: value)"}
   all.helper.length:
     format: all
     kind: length
     severity: error
     abstract: true
     emitters:
-      - {file: "validators/base_validator.rb", call: "add_error(\"invalid #{chunk.chunk_type} length (#{actual}, should be #{expected})\")"}
+      - {file: "validators/base_validator.rb", call: "add_error(id, \"invalid #{chunk.chunk_type} length (#{actual}, should be #{expected})\", field: \"length\", expected: expected, actual: actual)"}
   all.helper.range:
     format: all
     kind: value
     severity: error
     abstract: true
     emitters:
-      - {file: "validators/base_validator.rb", call: "add_error(\"invalid #{name} (#{value}, must be #{min}-#{max})\")"}
+      - {file: "validators/base_validator.rb", call: "add_error(id, \"invalid #{name} (#{value}, must be #{min}-#{max})\", field: name, expected: \"#{min}-#{max}\", actual: value)"}
   apng.acTL.before-fctl:
     format: apng
     kind: ordering
     severity: error
     citation: {specification: apng, section: "2.2", title: "acTL: The Animation Control Chunk"}
     emitters:
-      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"acTL must appear before first fcTL\")"}
+      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"apng.acTL.before-fctl\", \"acTL must appear before first fcTL\")"}
   apng.acTL.before-idat:
     format: apng
     kind: ordering
     severity: error
     citation: {specification: apng, section: "2.2", title: "acTL: The Animation Control Chunk"}
     emitters:
-      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"acTL must appear before IDAT\")"}
+      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"apng.acTL.before-idat\", \"acTL must appear before IDAT\")"}
   apng.acTL.crc:
     format: apng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/apng/actl_validator.rb", call: "check_crc"}
+      - {file: "validators/apng/actl_validator.rb", call: "check_crc(id: \"apng.acTL.crc\")"}
   apng.acTL.length:
     format: apng
     kind: length
     severity: error
     citation: {specification: apng, section: "2.2", title: "acTL: The Animation Control Chunk"}
     emitters:
-      - {file: "validators/apng/actl_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/apng/actl_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"apng.acTL.length\")"}
   apng.acTL.num-frames-zero:
     format: apng
     kind: value
     severity: error
     citation: {specification: apng, section: "2.2", title: "acTL: The Animation Control Chunk"}
     emitters:
-      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"acTL num_frames must be > 0\")"}
+      - {file: "validators/apng/actl_validator.rb", call: "add_error(\"apng.acTL.num-frames-zero\", \"acTL num_frames must be > 0\")"}
   apng.fcTL.blend-op:
     format: apng
     kind: value
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "check_enum(blend_op, [BLEND_OP_SOURCE, BLEND_OP_OVER], \"blend_op\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "check_enum(blend_op, [BLEND_OP_SOURCE, BLEND_OP_OVER], \"blend_op\", id: \"apng.fcTL.blend-op\")"}
   apng.fcTL.crc:
     format: apng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "check_crc"}
+      - {file: "validators/apng/fctl_validator.rb", call: "check_crc(id: \"apng.fcTL.crc\")"}
   apng.fcTL.dimensions-zero:
     format: apng
     kind: value
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL width and height must be > 0\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.dimensions-zero\", \"fcTL width and height must be > 0\")"}
   apng.fcTL.dispose-op:
     format: apng
     kind: value
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "check_enum(dispose_op, [DISPOSE_OP_NONE, DISPOSE_OP_BACKGROUND, DISPOSE_OP_PREVIOUS], \"dispose_op\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "check_enum(dispose_op, [DISPOSE_OP_NONE, DISPOSE_OP_BACKGROUND, DISPOSE_OP_PREVIOUS], \"dispose_op\", id: \"apng.fcTL.dispose-op\")"}
   apng.fcTL.exceeds-ihdr:
     format: apng
     kind: consistency
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL frame dimensions exceed IHDR dimensions\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.exceeds-ihdr\", \"fcTL frame dimensions exceed IHDR dimensions\")"}
   apng.fcTL.extends-ihdr-height:
     format: apng
     kind: consistency
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL frame extends beyond IHDR height\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.extends-ihdr-height\", \"fcTL frame extends beyond IHDR height\")"}
   apng.fcTL.extends-ihdr-width:
     format: apng
     kind: consistency
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL frame extends beyond IHDR width\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.extends-ihdr-width\", \"fcTL frame extends beyond IHDR width\")"}
   apng.fcTL.length:
     format: apng
     kind: length
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/apng/fctl_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"apng.fcTL.length\")"}
   apng.fcTL.requires-actl:
     format: apng
     kind: presence
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL requires acTL chunk\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.requires-actl\", \"fcTL requires acTL chunk\")"}
   apng.fcTL.sequence-number:
     format: apng
     kind: ordering
     severity: error
     citation: {specification: apng, section: "2.3", title: "fcTL: The Frame Control Chunk"}
     emitters:
-      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"fcTL sequence number mismatch (expected #{expected_sequence}, got #{sequence_number})\")"}
+      - {file: "validators/apng/fctl_validator.rb", call: "add_error(\"apng.fcTL.sequence-number\", \"fcTL sequence number mismatch (expected #{expected_sequence}, got #{sequence_number})\")"}
   apng.fdAT.after-fctl:
     format: apng
     kind: ordering
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT must follow fcTL chunk\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.after-fctl\", \"fdAT must follow fcTL chunk\")"}
   apng.fdAT.crc:
     format: apng
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "check_crc"}
+      - {file: "validators/apng/fdat_validator.rb", call: "check_crc(id: \"apng.fdAT.crc\")"}
   apng.fdAT.frame-data-empty:
     format: apng
     kind: length
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT has no frame data\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.frame-data-empty\", \"fdAT has no frame data\")"}
   apng.fdAT.min-length:
     format: apng
     kind: length
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT chunk too short (#{actual} bytes, minimum #{MIN_LENGTH})\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.min-length\", \"fdAT chunk too short (#{actual} bytes, minimum #{MIN_LENGTH})\")"}
   apng.fdAT.requires-actl:
     format: apng
     kind: presence
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT requires acTL chunk\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.requires-actl\", \"fdAT requires acTL chunk\")"}
   apng.fdAT.requires-fctl:
     format: apng
     kind: presence
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT chunk requires fcTL chunk\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.requires-fctl\", \"fdAT chunk requires fcTL chunk\")"}
   apng.fdAT.sequence-number:
     format: apng
     kind: ordering
     severity: error
     citation: {specification: apng, section: "2.4", title: "fdAT: The Frame Data Chunk"}
     emitters:
-      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"fdAT sequence number mismatch (expected #{expected_sequence}, got #{sequence_number})\")"}
+      - {file: "validators/apng/fdat_validator.rb", call: "add_error(\"apng.fdAT.sequence-number\", \"fdAT sequence number mismatch (expected #{expected_sequence}, got #{sequence_number})\")"}
   jng.JDAT.after-jhdr:
     format: jng
     kind: ordering
@@ -921,28 +921,28 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"IDAT chunk before IHDR\")"}
+      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"png.IDAT.after-ihdr\", \"IDAT chunk before IHDR\")"}
   png.IDAT.after-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"IDAT chunk before PLTE for indexed-color image\")"}
+      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"png.IDAT.after-plte\", \"IDAT chunk before PLTE for indexed-color image\")"}
   png.IDAT.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/critical/idat_validator.rb", call: "check_crc"}
+      - {file: "validators/critical/idat_validator.rb", call: "check_crc(id: \"png.IDAT.crc\")"}
   png.IDAT.empty:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.2.4", title: "IDAT Image data"}
     emitters:
-      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"IDAT chunk is empty\")"}
+      - {file: "validators/critical/idat_validator.rb", call: "add_error(\"png.IDAT.empty\", \"IDAT chunk is empty\")"}
   png.IDAT.missing:
     format: png
     kind: presence
@@ -956,28 +956,28 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"IEND chunk before IDAT\")"}
+      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"png.IEND.after-idat\", \"IEND chunk before IDAT\")"}
   png.IEND.after-ihdr:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"IEND chunk before IHDR\")"}
+      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"png.IEND.after-ihdr\", \"IEND chunk before IHDR\")"}
   png.IEND.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/critical/iend_validator.rb", call: "check_crc"}
+      - {file: "validators/critical/iend_validator.rb", call: "check_crc(id: \"png.IEND.crc\")"}
   png.IEND.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.2.5", title: "IEND Image trailer"}
     emitters:
-      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"invalid IEND chunk length (#{chunk.chunk_data.length}, should be 0)\")"}
+      - {file: "validators/critical/iend_validator.rb", call: "add_error(\"png.IEND.length\", \"invalid IEND chunk length (#{chunk.chunk_data.length}, should be 0)\")"}
   png.IEND.missing:
     format: png
     kind: presence
@@ -991,63 +991,63 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"invalid bit depth (#{bit_depth}) for #{COLOR_TYPES[color_type]} (must be one of #{valid_depths.join(', ')})\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.bit-depth\", \"invalid bit depth (#{bit_depth}) for #{COLOR_TYPES[color_type]} (must be one of #{valid_depths.join(', ')})\")"}
   png.IHDR.color-type:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "check_enum(color_type, COLOR_TYPES.keys, \"color type\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "check_enum(color_type, COLOR_TYPES.keys, \"color type\", id: \"png.IHDR.color-type\")"}
   png.IHDR.compression-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"invalid compression method (#{compression}, must be 0)\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.compression-method\", \"invalid compression method (#{compression}, must be 0)\")"}
   png.IHDR.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "check_crc"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "check_crc(id: \"png.IHDR.crc\")"}
   png.IHDR.filter-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"invalid filter method (#{filter}, must be 0)\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.filter-method\", \"invalid filter method (#{filter}, must be 0)\")"}
   png.IHDR.height-recommended-max:
     format: png
     kind: value
     severity: warning
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_warning(\"image height (#{height}) exceeds maximum recommended value\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_warning(\"png.IHDR.height-recommended-max\", \"image height (#{height}) exceeds maximum recommended value\")"}
   png.IHDR.height-zero:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"invalid image height (0)\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.height-zero\", \"invalid image height (0)\")"}
   png.IHDR.interlace-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "check_enum(interlace, [0, 1], \"interlace method\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "check_enum(interlace, [0, 1], \"interlace method\", id: \"png.IHDR.interlace-method\")"}
   png.IHDR.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "check_length(13)"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "check_length(13, id: \"png.IHDR.length\")"}
   png.IHDR.missing:
     format: png
     kind: presence
@@ -1061,1165 +1061,1162 @@ requirements:
     severity: warning
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_warning(\"image width (#{width}) exceeds maximum recommended value\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_warning(\"png.IHDR.width-recommended-max\", \"image width (#{width}) exceeds maximum recommended value\")"}
   png.IHDR.width-zero:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.2", title: "IHDR Image header"}
     emitters:
-      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"invalid image width (0)\")"}
+      - {file: "validators/critical/ihdr_validator.rb", call: "add_error(\"png.IHDR.width-zero\", \"invalid image width (0)\")"}
   png.PLTE.color-type-grayscale:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"PLTE chunk not allowed for grayscale images\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"png.PLTE.color-type-grayscale\", \"PLTE chunk not allowed for grayscale images\")"}
   png.PLTE.color-type-unknown:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_warning(\"PLTE chunk present but color type unknown\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_warning(\"png.PLTE.color-type-unknown\", \"PLTE chunk present but color type unknown\")"}
   png.PLTE.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "check_crc"}
+      - {file: "validators/critical/plte_validator.rb", call: "check_crc(id: \"png.PLTE.crc\")"}
   png.PLTE.entries-max:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"invalid PLTE chunk (#{entries} entries, maximum is #{MAX_ENTRIES})\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"png.PLTE.entries-max\", \"invalid PLTE chunk (#{entries} entries, maximum is #{MAX_ENTRIES})\")"}
   png.PLTE.entries-none:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"invalid PLTE chunk (no entries)\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"png.PLTE.entries-none\", \"invalid PLTE chunk (no entries)\")"}
   png.PLTE.entries-vs-bit-depth:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"PLTE chunk has #{entries} entries but bit depth #{bit_depth} allows maximum of #{max_entries}\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"png.PLTE.entries-vs-bit-depth\", \"PLTE chunk has #{entries} entries but bit depth #{bit_depth} allows maximum of #{max_entries}\")"}
   png.PLTE.length-multiple-of-3:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.2.3", title: "PLTE Palette"}
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"invalid PLTE length (#{length}, must be divisible by 3)\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_error(\"png.PLTE.length-multiple-of-3\", \"invalid PLTE length (#{length}, must be divisible by 3)\")"}
   png.bKGD.after-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"bKGD chunk before PLTE for indexed-color image\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"png.bKGD.after-plte\", \"bKGD chunk before PLTE for indexed-color image\")"}
   png.bKGD.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"bKGD chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"png.bKGD.before-idat\", \"bKGD chunk after IDAT (must be before)\")"}
   png.bKGD.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_crc(id: \"png.bKGD.crc\")"}
   png.bKGD.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.5.1", title: "bKGD Background colour"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(2)"}
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(6)"}
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(1)"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(2, id: \"png.bKGD.length\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(6, id: \"png.bKGD.length\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "check_length(1, id: \"png.bKGD.length\")"}
   png.bKGD.palette-index:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.5.1", title: "bKGD Background colour"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"bKGD palette index (#{index}) exceeds palette size (#{palette_entries})\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"png.bKGD.palette-index\", \"bKGD palette index (#{index}) exceeds palette size (#{palette_entries})\")"}
   png.bKGD.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"duplicate bKGD chunk\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_error(\"png.bKGD.single-instance\", \"duplicate bKGD chunk\")"}
   png.cHRM.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_error(\"cHRM chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_error(\"png.cHRM.before-idat\", \"cHRM chunk after IDAT (must be before)\")"}
   png.cHRM.before-plte:
     format: png
     kind: ordering
     severity: warning
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"cHRM chunk after PLTE (should be before)\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"png.cHRM.before-plte\", \"cHRM chunk after PLTE (should be before)\")"}
   png.cHRM.chromaticity-range:
     format: png
     kind: value
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.1", title: "cHRM Primary chromaticities and white point"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"#{name} chromaticity (#{value / 100_000.0}) exceeds typical range (0.0-1.0)\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"png.cHRM.chromaticity-range\", \"#{name} chromaticity (#{value / 100_000.0}) exceeds typical range (0.0-1.0)\")"}
   png.cHRM.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "check_crc(id: \"png.cHRM.crc\")"}
   png.cHRM.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.1", title: "cHRM Primary chromaticities and white point"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "check_length(32)"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "check_length(32, id: \"png.cHRM.length\")"}
   png.cHRM.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_error(\"duplicate cHRM chunk\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_error(\"png.cHRM.single-instance\", \"duplicate cHRM chunk\")"}
   png.cHRM.srgb-consistency:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.1", title: "cHRM Primary chromaticities and white point"}
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"cHRM values don't match sRGB: #{mismatches.join(', ')}\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_warning(\"png.cHRM.srgb-consistency\", \"cHRM values don't match sRGB: #{mismatches.join(', ')}\")"}
   png.cICP.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"cICP must appear before IDAT\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.before-idat\", \"cICP must appear before IDAT\")"}
   png.cICP.before-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"cICP must appear before PLTE\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.before-plte\", \"cICP must appear before PLTE\")"}
   png.cICP.coexist-iccp:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"cICP should not coexist with iCCP (both specify color space information)\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"png.cICP.coexist-iccp\", \"cICP should not coexist with iCCP (both specify color space information)\")"}
   png.cICP.coexist-srgb:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"cICP should not coexist with sRGB (both specify color space information)\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"png.cICP.coexist-srgb\", \"cICP should not coexist with sRGB (both specify color space information)\")"}
   png.cICP.color-primaries:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"invalid color primaries: #{value} (valid: #{VALID_COLOR_PRIMARIES.join(', ')})\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.color-primaries\", \"invalid color primaries: #{value} (valid: #{VALID_COLOR_PRIMARIES.join(', ')})\")"}
   png.cICP.color-primaries-reserved:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"color primaries = 0 (reserved)\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"png.cICP.color-primaries-reserved\", \"color primaries = 0 (reserved)\")"}
   png.cICP.full-range-flag:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "check_enum(value, [0, 1], \"video full range flag\")"}
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"invalid video full range flag: #{value} (must be 0 or 1)\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "check_enum(value, [0, 1], \"video full range flag\", id: \"png.cICP.full-range-flag\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.full-range-flag\", \"invalid video full range flag: #{value} (must be 0 or 1)\")"}
   png.cICP.length:
     format: png
     kind: length
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "check_length(4)"}
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"invalid chunk length: #{chunk.chunk_data.bytesize} bytes\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "check_length(4, id: \"png.cICP.length\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.length\", \"invalid chunk length: #{chunk.chunk_data.bytesize} bytes\")"}
   png.cICP.matrix-coefficients:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"invalid matrix coefficients: #{value} (valid: #{VALID_MATRIX_COEFFICIENTS.join(', ')})\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.matrix-coefficients\", \"invalid matrix coefficients: #{value} (valid: #{VALID_MATRIX_COEFFICIENTS.join(', ')})\")"}
   png.cICP.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"multiple cICP chunks not allowed\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.single-instance\", \"multiple cICP chunks not allowed\")"}
   png.cICP.transfer-function:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"invalid transfer function: #{value} (valid: #{VALID_TRANSFER_FUNCTIONS.join(', ')})\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_error(\"png.cICP.transfer-function\", \"invalid transfer function: #{value} (valid: #{VALID_TRANSFER_FUNCTIONS.join(', ')})\")"}
   png.cICP.transfer-function-reserved:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.6", title: "cICP Coding-independent code points for video signal type identification"}
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"transfer function = 0 (reserved)\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_warning(\"png.cICP.transfer-function-reserved\", \"transfer function = 0 (reserved)\")"}
   png.chunk.unknown-critical:
     format: png
     kind: presence
     severity: error
     citation: {specification: iso15948, section: "13.2", title: "Error handling"}
     emitters:
-      - {file: "services/chunk_processor.rb", call: "add_error(chunk_type: chunk_type, message: \"Unknown critical chunk type: #{chunk_type}\", severity: :error, offset: chunk.abs_offset)"}
+      - {file: "services/chunk_processor.rb", call: "add_diagnostic(\"png.chunk.unknown-critical\", \"Unknown critical chunk type: #{chunk_type}\", chunk_type: chunk_type, offset: chunk.abs_offset, field: \"chunk type\", actual: chunk_type )"}
   png.gAMA.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"gAMA chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"png.gAMA.before-idat\", \"gAMA chunk after IDAT (must be before)\")"}
   png.gAMA.before-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"gAMA chunk after PLTE (should be before)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"png.gAMA.before-plte\", \"gAMA chunk after PLTE (should be before)\")"}
   png.gAMA.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "check_crc(id: \"png.gAMA.crc\")"}
   png.gAMA.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.2", title: "gAMA Image gamma"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "check_length(4)"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "check_length(4, id: \"png.gAMA.length\")"}
   png.gAMA.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"duplicate gAMA chunk\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"png.gAMA.single-instance\", \"duplicate gAMA chunk\")"}
   png.gAMA.srgb-consistency:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.2", title: "gAMA Image gamma"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_warning(\"gAMA value #{gamma} with sRGB present (should be #{GAMMA_2_2} for gamma 2.2)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_warning(\"png.gAMA.srgb-consistency\", \"gAMA value #{gamma} with sRGB present (should be #{GAMMA_2_2} for gamma 2.2)\")"}
   png.gAMA.value-zero:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.3.2", title: "gAMA Image gamma"}
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"invalid gAMA value (0)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_error(\"png.gAMA.value-zero\", \"invalid gAMA value (0)\")"}
   png.hIST.after-ihdr:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk before IHDR\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.after-ihdr\", \"hIST chunk before IHDR\")"}
   png.hIST.after-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk without preceding PLTE chunk\")"}
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk before PLTE chunk\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.after-plte\", \"hIST chunk without preceding PLTE chunk\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.after-plte\", \"hIST chunk before PLTE chunk\")"}
   png.hIST.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.before-idat\", \"hIST chunk after IDAT chunk\")"}
   png.hIST.color-type-indexed:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.3.5.2", title: "hIST Image histogram"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk invalid for color type #{color_type} (only valid for indexed color)\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.color-type-indexed\", \"hIST chunk invalid for color type #{color_type} (only valid for indexed color)\")"}
   png.hIST.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "check_crc(id: \"png.hIST.crc\")"}
   png.hIST.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.5.2", title: "hIST Image histogram"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "check_length"}
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"hIST chunk wrong length (#{actual_length} bytes, expected #{expected_length} for #{palette_entries} palette entries)\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.length\", \"hIST chunk wrong length (#{actual_length} bytes, expected #{expected_length} for #{palette_entries} palette entries)\")"}
   png.hIST.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"Multiple hIST chunks (only one allowed)\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_error(\"png.hIST.single-instance\", \"Multiple hIST chunks (only one allowed)\")"}
   png.iCCP.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.before-idat\", \"iCCP chunk after IDAT chunk\")"}
   png.iCCP.before-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP chunk after PLTE chunk\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.before-plte\", \"iCCP chunk after PLTE chunk\")"}
   png.iCCP.coexist-srgb:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_warning(\"iCCP chunk present with sRGB chunk (iCCP takes precedence)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_warning(\"png.iCCP.coexist-srgb\", \"iCCP chunk present with sRGB chunk (iCCP takes precedence)\")"}
   png.iCCP.compression-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP invalid compression method (#{compression_method}, must be 0)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.compression-method\", \"iCCP invalid compression method (#{compression_method}, must be 0)\")"}
   png.iCCP.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "check_crc(id: \"png.iCCP.crc\")"}
   png.iCCP.decompress:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP decompression failed: #{e.message}\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.decompress\", \"iCCP decompression failed: #{e.message}\")"}
   png.iCCP.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP chunk too short (minimum 3 bytes)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.min-length\", \"iCCP chunk too short (minimum 3 bytes)\")"}
   png.iCCP.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP profile name has consecutive spaces\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-consecutive-spaces\", \"iCCP profile name has consecutive spaces\")"}
   png.iCCP.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP chunk has empty profile name\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-empty\", \"iCCP chunk has empty profile name\")"}
   png.iCCP.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP profile name has leading space\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-leading-space\", \"iCCP profile name has leading space\")"}
   png.iCCP.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP profile name contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-printable\", \"iCCP profile name contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.iCCP.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP profile name too long (#{profile_name.length}, max #{MAX_PROFILE_NAME_LENGTH})\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-too-long\", \"iCCP profile name too long (#{profile_name.length}, max #{MAX_PROFILE_NAME_LENGTH})\")"}
   png.iCCP.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP profile name has trailing space\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.name-trailing-space\", \"iCCP profile name has trailing space\")"}
   png.iCCP.null-separator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP chunk missing null separator\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.null-separator\", \"iCCP chunk missing null separator\")"}
   png.iCCP.profile-min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"iCCP decompressed profile too short (#{decompressed.length} bytes, minimum 128)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.profile-min-length\", \"iCCP decompressed profile too short (#{decompressed.length} bytes, minimum 128)\")"}
   png.iCCP.profile-signature:
     format: png
     kind: value
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.3", title: "iCCP Embedded ICC profile"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_warning(\"iCCP profile signature mismatch (expected 'acsp', got '#{signature}')\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_warning(\"png.iCCP.profile-signature\", \"iCCP profile signature mismatch (expected 'acsp', got '#{signature}')\")"}
   png.iCCP.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"Multiple iCCP chunks (only one allowed)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_error(\"png.iCCP.single-instance\", \"Multiple iCCP chunks (only one allowed)\")"}
   png.iDOT.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: apple_idot, section: "n/a", title: "iDOT (unpublished vendor chunk)"}
     emitters:
-      - {file: "validators/ancillary/idot_validator.rb", call: "add_error(\"iDOT chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/idot_validator.rb", call: "add_error(\"png.iDOT.before-idat\", \"iDOT chunk after IDAT (must be before)\")"}
   png.iDOT.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/idot_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/idot_validator.rb", call: "check_crc(id: \"png.iDOT.crc\")"}
   png.iDOT.length:
     format: png
     kind: length
     severity: error
     citation: {specification: apple_idot, section: "n/a", title: "iDOT (unpublished vendor chunk)"}
     emitters:
-      - {file: "validators/ancillary/idot_validator.rb", call: "check_length(EXPECTED_LENGTH)"}
+      - {file: "validators/ancillary/idot_validator.rb", call: "check_length(EXPECTED_LENGTH, id: \"png.iDOT.length\")"}
   png.iDOT.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: apple_idot, section: "n/a", title: "iDOT (unpublished vendor chunk)"}
     emitters:
-      - {file: "validators/ancillary/idot_validator.rb", call: "add_error(\"duplicate iDOT chunk (only one allowed)\")"}
+      - {file: "validators/ancillary/idot_validator.rb", call: "add_error(\"png.iDOT.single-instance\", \"duplicate iDOT chunk (only one allowed)\")"}
   png.iTXt.compression-flag:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt invalid compression flag (#{compression_flag}, must be 0 or 1)\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.compression-flag\", \"iTXt invalid compression flag (#{compression_flag}, must be 0 or 1)\")"}
   png.iTXt.compression-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt invalid compression method (#{compression_method}, must be 0 when compressed)\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.compression-method\", \"iTXt invalid compression method (#{compression_method}, must be 0 when compressed)\")"}
   png.iTXt.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "check_crc(id: \"png.iTXt.crc\")"}
   png.iTXt.decompress:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt decompression failed: #{e.message}\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.decompress\", \"iTXt decompression failed: #{e.message}\")"}
   png.iTXt.decompressed-text-utf8:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt decompressed text is not valid UTF-8\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.decompressed-text-utf8\", \"iTXt decompressed text is not valid UTF-8\")"}
   png.iTXt.language-tag-ascii:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt language tag contains non-ASCII character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.language-tag-ascii\", \"iTXt language tag contains non-ASCII character (0x#{byte.to_s(16)})\")"}
   png.iTXt.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt chunk too short (minimum 5 bytes)\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.min-length\", \"iTXt chunk too short (minimum 5 bytes)\")"}
   png.iTXt.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt keyword has consecutive spaces\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-consecutive-spaces\", \"iTXt keyword has consecutive spaces\")"}
   png.iTXt.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt chunk has empty keyword\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-empty\", \"iTXt chunk has empty keyword\")"}
   png.iTXt.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt keyword has leading space\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-leading-space\", \"iTXt keyword has leading space\")"}
   png.iTXt.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-printable\", \"iTXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.iTXt.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-too-long\", \"iTXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
   png.iTXt.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt keyword has trailing space\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.name-trailing-space\", \"iTXt keyword has trailing space\")"}
   png.iTXt.null-separators:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt chunk missing null separators (found #{nulls.length}, need 3)\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.null-separators\", \"iTXt chunk missing null separators (found #{nulls.length}, need 3)\")"}
   png.iTXt.text-utf8:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt text is not valid UTF-8\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.text-utf8\", \"iTXt text is not valid UTF-8\")"}
   png.iTXt.translated-keyword-utf8:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.5", title: "iTXt International textual data"}
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"iTXt translated keyword is not valid UTF-8\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_error(\"png.iTXt.translated-keyword-utf8\", \"iTXt translated keyword is not valid UTF-8\")"}
   png.mDCv.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"mDCv must appear before IDAT\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.before-idat\", \"mDCv must appear before IDAT\")"}
   png.mDCv.before-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"mDCv must appear before PLTE\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.before-plte\", \"mDCv must appear before PLTE\")"}
   png.mDCv.coordinate-range:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "check_range(value, 0, MAX_COORDINATE, name)"}
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"#{name} out of range: #{value} (must be 0-#{MAX_COORDINATE})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "check_range(value, 0, MAX_COORDINATE, name, id: \"png.mDCv.coordinate-range\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.coordinate-range\", \"#{name} out of range: #{value} (must be 0-#{MAX_COORDINATE})\")"}
   png.mDCv.length:
     format: png
     kind: length
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "check_length(24)"}
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"invalid chunk length: #{chunk.chunk_data.bytesize} bytes\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "check_length(24, id: \"png.mDCv.length\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.length\", \"invalid chunk length: #{chunk.chunk_data.bytesize} bytes\")"}
   png.mDCv.luminance-order:
     format: png
     kind: value
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"maximum luminance (#{format_luminance(max_lum)}) must be > minimum luminance (#{format_luminance(min_lum)})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.luminance-order\", \"maximum luminance (#{format_luminance(max_lum)}) must be > minimum luminance (#{format_luminance(min_lum)})\")"}
   png.mDCv.max-luminance-high:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"maximum luminance very high: #{format_luminance(max_lum)} (> 10,000 cd/m²)\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"png.mDCv.max-luminance-high\", \"maximum luminance very high: #{format_luminance(max_lum)} (> 10,000 cd/m²)\")"}
   png.mDCv.max-luminance-zero:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"maximum luminance is 0 cd/m²\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"png.mDCv.max-luminance-zero\", \"maximum luminance is 0 cd/m²\")"}
   png.mDCv.primary-sum:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"#{color} primary coordinates sum > 1.0 (x=#{format_coordinate(x_value)}, y=#{format_coordinate(y_value)})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"png.mDCv.primary-sum\", \"#{color} primary coordinates sum > 1.0 (x=#{format_coordinate(x_value)}, y=#{format_coordinate(y_value)})\")"}
   png.mDCv.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"duplicate mDCV chunk (only one allowed)\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_error(\"png.mDCv.single-instance\", \"duplicate mDCV chunk (only one allowed)\")"}
   png.mDCv.white-point-sum:
     format: png
     kind: value
     severity: warning
     citation: {specification: png3, section: "11.3.2.7", title: "mDCV Mastering Display Color Volume"}
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"white point coordinates sum > 1.0 (x=#{format_coordinate(x_value)}, y=#{format_coordinate(y_value)})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_warning(\"png.mDCv.white-point-sum\", \"white point coordinates sum > 1.0 (x=#{format_coordinate(x_value)}, y=#{format_coordinate(y_value)})\")"}
   png.oFFs.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: pngext, section: "3.1", title: "oFFs Image offset"}
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"oFFs chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"png.oFFs.before-idat\", \"oFFs chunk after IDAT chunk\")"}
   png.oFFs.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "check_crc(id: \"png.oFFs.crc\")"}
   png.oFFs.length:
     format: png
     kind: length
     severity: error
     citation: {specification: pngext, section: "3.1", title: "oFFs Image offset"}
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "check_length"}
-      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"oFFs chunk wrong length (#{actual_length} bytes, expected #{EXPECTED_LENGTH})\")"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"png.oFFs.length\", \"oFFs chunk wrong length (#{actual_length} bytes, expected #{EXPECTED_LENGTH})\")"}
   png.oFFs.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: pngext, section: "3.1", title: "oFFs Image offset"}
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"Multiple oFFs chunks (only one allowed)\")"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"png.oFFs.single-instance\", \"Multiple oFFs chunks (only one allowed)\")"}
   png.oFFs.unit:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.1", title: "oFFs Image offset"}
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"oFFs invalid unit specifier (#{unit}, must be 0 or 1)\")"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "add_error(\"png.oFFs.unit\", \"oFFs invalid unit specifier (#{unit}, must be 0 or 1)\")"}
   png.pCAL.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.before-idat\", \"pCAL chunk after IDAT chunk\")"}
   png.pCAL.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "check_crc(id: \"png.pCAL.crc\")"}
   png.pCAL.equation-type:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL invalid equation type (#{equation_type}, must be 0-3)\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.equation-type\", \"pCAL invalid equation type (#{equation_type}, must be 0-3)\")"}
   png.pCAL.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL chunk too short (minimum 12 bytes)\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.min-length\", \"pCAL chunk too short (minimum 12 bytes)\")"}
   png.pCAL.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL calibration name has consecutive spaces\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-consecutive-spaces\", \"pCAL calibration name has consecutive spaces\")"}
   png.pCAL.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL chunk has empty calibration name\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-empty\", \"pCAL chunk has empty calibration name\")"}
   png.pCAL.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL calibration name has leading space\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-leading-space\", \"pCAL calibration name has leading space\")"}
   png.pCAL.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL calibration name contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-printable\", \"pCAL calibration name contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.pCAL.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL calibration name too long (#{cal_name.length}, max #{MAX_CALIBRATION_NAME_LENGTH})\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-too-long\", \"pCAL calibration name too long (#{cal_name.length}, max #{MAX_CALIBRATION_NAME_LENGTH})\")"}
   png.pCAL.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL calibration name has trailing space\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.name-trailing-space\", \"pCAL calibration name has trailing space\")"}
   png.pCAL.null-separator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL chunk missing null separator\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.null-separator\", \"pCAL chunk missing null separator\")"}
   png.pCAL.parameter-count:
     format: png
     kind: consistency
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL found #{params_found} parameters, expected #{num_params}\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.parameter-count\", \"pCAL found #{params_found} parameters, expected #{num_params}\")"}
   png.pCAL.parameter-count-mismatch:
     format: png
     kind: consistency
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL parameter count mismatch (#{num_params}, expected #{expected_params} for equation type #{equation_type})\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.parameter-count-mismatch\", \"pCAL parameter count mismatch (#{num_params}, expected #{expected_params} for equation type #{equation_type})\")"}
   png.pCAL.parameter-format:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL invalid parameter #{params_found + 1} format: '#{param_str}'\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.parameter-format\", \"pCAL invalid parameter #{params_found + 1} format: '#{param_str}'\")"}
   png.pCAL.parameter-terminator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL missing parameter #{params_found + 1} null terminator\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.parameter-terminator\", \"pCAL missing parameter #{params_found + 1} null terminator\")"}
   png.pCAL.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"duplicate pCAL chunk (only one allowed)\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.single-instance\", \"duplicate pCAL chunk (only one allowed)\")"}
   png.pCAL.unit-terminator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.2", title: "pCAL Calibration of pixel values"}
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"pCAL missing unit name null terminator\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_error(\"png.pCAL.unit-terminator\", \"pCAL missing unit name null terminator\")"}
   png.pHYs.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "add_error(\"pHYs chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "add_error(\"png.pHYs.before-idat\", \"pHYs chunk after IDAT (must be before)\")"}
   png.pHYs.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "check_crc(id: \"png.pHYs.crc\")"}
   png.pHYs.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.5.3", title: "pHYs Physical pixel dimensions"}
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "check_length(9)"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "check_length(9, id: \"png.pHYs.length\")"}
   png.pHYs.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "add_error(\"duplicate pHYs chunk\")"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "add_error(\"png.pHYs.single-instance\", \"duplicate pHYs chunk\")"}
   png.pHYs.unit-specifier:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.5.3", title: "pHYs Physical pixel dimensions"}
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "check_enum(unit, [UNIT_UNKNOWN, UNIT_METER], \"unit specifier\")"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "check_enum(unit, [UNIT_UNKNOWN, UNIT_METER], \"unit specifier\", id: \"png.pHYs.unit-specifier\")"}
   png.sBIT.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"sBIT chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"png.sBIT.before-idat\", \"sBIT chunk after IDAT (must be before)\")"}
   png.sBIT.before-plte:
     format: png
     kind: ordering
     severity: warning
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_warning(\"sBIT chunk after PLTE (should be before)\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_warning(\"png.sBIT.before-plte\", \"sBIT chunk after PLTE (should be before)\")"}
   png.sBIT.bits-exceed-depth:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.3.4", title: "sBIT Significant bits"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"#{name} significant bits (#{value}) exceeds sample depth (#{max_depth})\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"png.sBIT.bits-exceed-depth\", \"#{name} significant bits (#{value}) exceeds sample depth (#{max_depth})\")"}
   png.sBIT.bits-zero:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.3.4", title: "sBIT Significant bits"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"#{name} significant bits cannot be 0\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"png.sBIT.bits-zero\", \"#{name} significant bits cannot be 0\")"}
   png.sBIT.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "check_crc(id: \"png.sBIT.crc\")"}
   png.sBIT.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.4", title: "sBIT Significant bits"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "check_length(expected_length)"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "check_length(expected_length, id: \"png.sBIT.length\")"}
   png.sBIT.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"duplicate sBIT chunk\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_error(\"png.sBIT.single-instance\", \"duplicate sBIT chunk\")"}
   png.sCAL.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.before-idat\", \"sCAL chunk after IDAT chunk\")"}
   png.sCAL.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "check_crc(id: \"png.sCAL.crc\")"}
   png.sCAL.height-format:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL invalid height format: '#{height_str}'\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.height-format\", \"sCAL invalid height format: '#{height_str}'\")"}
   png.sCAL.height-positive:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL height must be positive (got #{height})\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.height-positive\", \"sCAL height must be positive (got #{height})\")"}
   png.sCAL.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL chunk too short (minimum 5 bytes)\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.min-length\", \"sCAL chunk too short (minimum 5 bytes)\")"}
   png.sCAL.null-separators:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL chunk missing null separators (found #{nulls.length}, need 2)\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.null-separators\", \"sCAL chunk missing null separators (found #{nulls.length}, need 2)\")"}
   png.sCAL.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"duplicate sCAL chunk (only one allowed)\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.single-instance\", \"duplicate sCAL chunk (only one allowed)\")"}
   png.sCAL.unit:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL invalid unit specifier (#{unit}, must be 1 or 2)\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.unit\", \"sCAL invalid unit specifier (#{unit}, must be 1 or 2)\")"}
   png.sCAL.width-format:
     format: png
     kind: encoding
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL invalid width format: '#{width_str}'\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.width-format\", \"sCAL invalid width format: '#{width_str}'\")"}
   png.sCAL.width-positive:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.3", title: "sCAL Physical scale of image subject"}
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"sCAL width must be positive (got #{width})\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_error(\"png.sCAL.width-positive\", \"sCAL width must be positive (got #{width})\")"}
   png.sPLT.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.before-idat\", \"sPLT chunk after IDAT chunk\")"}
   png.sPLT.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "check_crc(id: \"png.sPLT.crc\")"}
   png.sPLT.entries-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT entries data length (#{entries_data.length}) not a multiple of entry size (#{entry_size})\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.entries-length\", \"sPLT entries data length (#{entries_data.length}) not a multiple of entry size (#{entry_size})\")"}
   png.sPLT.entries-none:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT chunk has no palette entries\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.entries-none\", \"sPLT chunk has no palette entries\")"}
   png.sPLT.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT chunk too short (minimum 3 bytes)\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.min-length\", \"sPLT chunk too short (minimum 3 bytes)\")"}
   png.sPLT.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT palette name has consecutive spaces\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-consecutive-spaces\", \"sPLT palette name has consecutive spaces\")"}
   png.sPLT.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT chunk has empty palette name\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-empty\", \"sPLT chunk has empty palette name\")"}
   png.sPLT.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT palette name has leading space\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-leading-space\", \"sPLT palette name has leading space\")"}
   png.sPLT.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT palette name contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-printable\", \"sPLT palette name contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.sPLT.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT palette name too long (#{palette_name.length}, max #{MAX_PALETTE_NAME_LENGTH})\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-too-long\", \"sPLT palette name too long (#{palette_name.length}, max #{MAX_PALETTE_NAME_LENGTH})\")"}
   png.sPLT.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT palette name has trailing space\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.name-trailing-space\", \"sPLT palette name has trailing space\")"}
   png.sPLT.null-separator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT chunk missing null separator\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.null-separator\", \"sPLT chunk missing null separator\")"}
   png.sPLT.sample-depth:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.5.4", title: "sPLT Suggested palette"}
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"sPLT invalid sample depth (#{sample_depth}, must be 8 or 16)\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_error(\"png.sPLT.sample-depth\", \"sPLT invalid sample depth (#{sample_depth}, must be 8 or 16)\")"}
   png.sRGB.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "add_error(\"sRGB chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "add_error(\"png.sRGB.before-idat\", \"sRGB chunk after IDAT (must be before)\")"}
   png.sRGB.before-plte:
     format: png
     kind: ordering
     severity: warning
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "add_warning(\"sRGB chunk after PLTE (should be before)\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "add_warning(\"png.sRGB.before-plte\", \"sRGB chunk after PLTE (should be before)\")"}
   png.sRGB.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "check_crc(id: \"png.sRGB.crc\")"}
   png.sRGB.gama-consistency:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.3.3.5", title: "sRGB Standard RGB colour space"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "add_warning(\"sRGB chunk present but gAMA is #{actual_gamma} (should be 2.2 for sRGB)\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "add_warning(\"png.sRGB.gama-consistency\", \"sRGB chunk present but gAMA is #{actual_gamma} (should be 2.2 for sRGB)\")"}
   png.sRGB.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.3.5", title: "sRGB Standard RGB colour space"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "check_length(1)"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "check_length(1, id: \"png.sRGB.length\")"}
   png.sRGB.rendering-intent:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.3.5", title: "sRGB Standard RGB colour space"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "check_enum(intent, INTENT_NAMES.keys, \"rendering intent\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "check_enum(intent, INTENT_NAMES.keys, \"rendering intent\", id: \"png.sRGB.rendering-intent\")"}
   png.sRGB.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "add_error(\"duplicate sRGB chunk\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "add_error(\"png.sRGB.single-instance\", \"duplicate sRGB chunk\")"}
   png.sTER.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: pngext, section: "3.6", title: "sTER Indicator of Stereo Image"}
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"sTER chunk after IDAT chunk\")"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"png.sTER.before-idat\", \"sTER chunk after IDAT chunk\")"}
   png.sTER.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "check_crc(id: \"png.sTER.crc\")"}
   png.sTER.length:
     format: png
     kind: length
     severity: error
     citation: {specification: pngext, section: "3.6", title: "sTER Indicator of Stereo Image"}
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "check_length"}
-      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"sTER chunk wrong length (#{actual_length} byte(s), expected #{EXPECTED_LENGTH})\")"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"png.sTER.length\", \"sTER chunk wrong length (#{actual_length} byte(s), expected #{EXPECTED_LENGTH})\")"}
   png.sTER.mode:
     format: png
     kind: value
     severity: error
     citation: {specification: pngext, section: "3.6", title: "sTER Indicator of Stereo Image"}
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"sTER invalid mode (#{mode}, must be 0 or 1)\")"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"png.sTER.mode\", \"sTER invalid mode (#{mode}, must be 0 or 1)\")"}
   png.sTER.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: pngext, section: "3.6", title: "sTER Indicator of Stereo Image"}
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"Multiple sTER chunks (only one allowed)\")"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "add_error(\"png.sTER.single-instance\", \"Multiple sTER chunks (only one allowed)\")"}
   png.signature.invalid:
     format: png
     kind: presence
@@ -2233,527 +2230,527 @@ requirements:
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/text_validator.rb", call: "check_crc(id: \"png.tEXt.crc\")"}
   png.tEXt.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.4.3", title: "tEXt Textual data"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt chunk too short (minimum 2 bytes)\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.min-length\", \"tEXt chunk too short (minimum 2 bytes)\")"}
   png.tEXt.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt keyword has consecutive spaces\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-consecutive-spaces\", \"tEXt keyword has consecutive spaces\")"}
   png.tEXt.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt chunk has empty keyword\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-empty\", \"tEXt chunk has empty keyword\")"}
   png.tEXt.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt keyword has leading space\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-leading-space\", \"tEXt keyword has leading space\")"}
   png.tEXt.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-printable\", \"tEXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.tEXt.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-too-long\", \"tEXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
   png.tEXt.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt keyword has trailing space\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.name-trailing-space\", \"tEXt keyword has trailing space\")"}
   png.tEXt.null-separator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.3", title: "tEXt Textual data"}
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"tEXt chunk missing null separator\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_error(\"png.tEXt.null-separator\", \"tEXt chunk missing null separator\")"}
   png.tIME.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_crc(id: \"png.tIME.crc\")"}
   png.tIME.day:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_range(day, 1, 31, \"day\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_range(day, 1, 31, \"day\", id: \"png.tIME.day\")"}
   png.tIME.day-of-month:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"invalid day (#{day}) for month #{month}\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"png.tIME.day-of-month\", \"invalid day (#{day}) for month #{month}\")"}
   png.tIME.hour:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_range(hour, 0, 23, \"hour\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_range(hour, 0, 23, \"hour\", id: \"png.tIME.hour\")"}
   png.tIME.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_length(7)"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_length(7, id: \"png.tIME.length\")"}
   png.tIME.minute:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_range(minute, 0, 59, \"minute\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_range(minute, 0, 59, \"minute\", id: \"png.tIME.minute\")"}
   png.tIME.month:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_range(month, 1, 12, \"month\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_range(month, 1, 12, \"month\", id: \"png.tIME.month\")"}
   png.tIME.second:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "check_range(second, 0, 60, \"second\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "check_range(second, 0, 60, \"second\", id: \"png.tIME.second\")"}
   png.tIME.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"duplicate tIME chunk\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"png.tIME.single-instance\", \"duplicate tIME chunk\")"}
   png.tIME.year:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.6.1", title: "tIME Image last-modification time"}
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"invalid tIME year (before PNG existed!) (#{year})\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "add_error(\"png.tIME.year\", \"invalid tIME year (before PNG existed!) (#{year})\")"}
   png.tRNS.after-plte:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"tRNS chunk before PLTE for indexed-color image\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.after-plte\", \"tRNS chunk before PLTE for indexed-color image\")"}
   png.tRNS.before-idat:
     format: png
     kind: ordering
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"tRNS chunk after IDAT (must be before)\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.before-idat\", \"tRNS chunk after IDAT (must be before)\")"}
   png.tRNS.color-type-alpha:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"tRNS chunk not allowed for color type with alpha channel\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.color-type-alpha\", \"tRNS chunk not allowed for color type with alpha channel\")"}
   png.tRNS.color-type-unknown:
     format: png
     kind: consistency
     severity: warning
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_warning(\"tRNS chunk present but color type unknown\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_warning(\"png.tRNS.color-type-unknown\", \"tRNS chunk present but color type unknown\")"}
   png.tRNS.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "check_crc(id: \"png.tRNS.crc\")"}
   png.tRNS.entries-exceed-palette:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"tRNS has more entries than palette (#{length} > #{palette_entries})\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.entries-exceed-palette\", \"tRNS has more entries than palette (#{length} > #{palette_entries})\")"}
   png.tRNS.indexed-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"invalid tRNS length for indexed-color (#{length}, must be 1-256)\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.indexed-length\", \"invalid tRNS length for indexed-color (#{length}, must be 1-256)\")"}
   png.tRNS.indexed-needs-plte:
     format: png
     kind: consistency
     severity: error
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"tRNS chunk for indexed-color without PLTE chunk\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.indexed-needs-plte\", \"tRNS chunk for indexed-color without PLTE chunk\")"}
   png.tRNS.length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.2.1", title: "tRNS Transparency"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "check_length(2)"}
-      - {file: "validators/ancillary/trns_validator.rb", call: "check_length(6)"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "check_length(2, id: \"png.tRNS.length\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "check_length(6, id: \"png.tRNS.length\")"}
   png.tRNS.single-instance:
     format: png
     kind: multiplicity
     severity: error
     citation: {specification: iso15948, section: "5.6", title: "Chunk ordering"}
     emitters:
-      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"duplicate tRNS chunk\")"}
+      - {file: "validators/ancillary/trns_validator.rb", call: "add_error(\"png.tRNS.single-instance\", \"duplicate tRNS chunk\")"}
   png.zTXt.compression-method:
     format: png
     kind: value
     severity: error
     citation: {specification: iso15948, section: "11.3.4.4", title: "zTXt Compressed textual data"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt invalid compression method (#{compression_method}, must be 0)\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.compression-method\", \"zTXt invalid compression method (#{compression_method}, must be 0)\")"}
   png.zTXt.crc:
     format: png
     kind: integrity
     severity: error
     citation: {specification: iso15948, section: "5.5", title: "Cyclic Redundancy Code algorithm"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "check_crc"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "check_crc(id: \"png.zTXt.crc\")"}
   png.zTXt.decompress:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.4", title: "zTXt Compressed textual data"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt decompression failed: #{e.message}\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.decompress\", \"zTXt decompression failed: #{e.message}\")"}
   png.zTXt.min-length:
     format: png
     kind: length
     severity: error
     citation: {specification: iso15948, section: "11.3.4.4", title: "zTXt Compressed textual data"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt chunk too short (minimum 3 bytes)\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.min-length\", \"zTXt chunk too short (minimum 3 bytes)\")"}
   png.zTXt.name-consecutive-spaces:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt keyword has consecutive spaces\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-consecutive-spaces\", \"zTXt keyword has consecutive spaces\")"}
   png.zTXt.name-empty:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt chunk has empty keyword\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-empty\", \"zTXt chunk has empty keyword\")"}
   png.zTXt.name-leading-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt keyword has leading space\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-leading-space\", \"zTXt keyword has leading space\")"}
   png.zTXt.name-printable:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-printable\", \"zTXt keyword contains non-printable character (0x#{byte.to_s(16)})\")"}
   png.zTXt.name-too-long:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-too-long\", \"zTXt keyword too long (#{keyword.length}, max #{MAX_KEYWORD_LENGTH})\")"}
   png.zTXt.name-trailing-space:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.2", title: "Keywords and text strings"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt keyword has trailing space\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.name-trailing-space\", \"zTXt keyword has trailing space\")"}
   png.zTXt.null-separator:
     format: png
     kind: encoding
     severity: error
     citation: {specification: iso15948, section: "11.3.4.4", title: "zTXt Compressed textual data"}
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"zTXt chunk missing null separator\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_error(\"png.zTXt.null-separator\", \"zTXt chunk missing null separator\")"}
   profile.chunk.prohibited:
     format: png
     kind: policy
     severity: error
     citation: {specification: profile, section: "prohibited_chunks", title: "Prohibited chunks"}
     emitters:
-      - {file: "services/profile_manager.rb", call: "error_result(\"#{chunk_type} chunk prohibited in #{profile[:name]} profile\")"}
+      - {file: "services/profile_manager.rb", call: "error_result(\"profile.chunk.prohibited\", \"#{chunk_type} chunk prohibited in #{profile[:name]} profile\", **context)"}
   profile.chunk.undefined:
     format: png
     kind: policy
     severity: warning
     citation: {specification: profile, section: "required_chunks / optional_chunks", title: "Chunks undefined by the profile"}
     emitters:
-      - {file: "services/profile_manager.rb", call: "warning_result(\"#{chunk_type} chunk not defined in #{profile[:name]} profile\")"}
+      - {file: "services/profile_manager.rb", call: "warning_result(\"profile.chunk.undefined\", \"#{chunk_type} chunk not defined in #{profile[:name]} profile\", **context)"}
   profile.chunk.unknown-profile:
     format: png
     kind: policy
     severity: error
     citation: {specification: profile, section: "unknown-profile", title: "Profile lookup"}
     emitters:
-      - {file: "services/profile_manager.rb", call: "error_result(\"Unknown profile: #{profile_name}\")"}
+      - {file: "services/profile_manager.rb", call: "error_result(\"profile.chunk.unknown-profile\", \"Unknown profile: #{profile_name}\", chunk_type: chunk_type, profile: profile_name )"}
   profile.file.prohibited-present:
     format: png
     kind: policy
     severity: error
     citation: {specification: profile, section: "prohibited_chunks", title: "Prohibited chunks"}
     emitters:
-      - {file: "services/profile_manager.rb", call: "results[:errors] << \"Prohibited chunk present: #{chunk_type}\""}
+      - {file: "services/profile_manager.rb", call: "profile_diagnostic(\"profile.file.prohibited-present\", \"Prohibited chunk present: #{chunk_type}\", chunk_type: chunk_type, profile: profile_name, label: profile[:name] )"}
   profile.file.required-missing:
     format: png
     kind: policy
     severity: error
     citation: {specification: profile, section: "required_chunks", title: "Required chunks"}
     emitters:
-      - {file: "services/profile_manager.rb", call: "results[:errors] << \"Missing required chunk: #{chunk_type}\""}
+      - {file: "services/profile_manager.rb", call: "profile_diagnostic(\"profile.file.required-missing\", \"Missing required chunk: #{chunk_type}\", chunk_type: chunk_type, profile: profile_name, label: profile[:name] )"}
 informational:
   info.png.PLTE.palette-present:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/critical/plte_validator.rb", call: "add_info(\"PLTE chunk present (suggested palette)\")"}
+      - {file: "validators/critical/plte_validator.rb", call: "add_info(\"info.png.PLTE.palette-present\", \"PLTE chunk present (suggested palette)\")"}
   info.png.bKGD.gray:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"bKGD: gray = #{gray}\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"info.png.bKGD.gray\", \"bKGD: gray = #{gray}\")"}
   info.png.bKGD.palette-index:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"bKGD: palette index = #{index}\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"info.png.bKGD.palette-index\", \"bKGD: palette index = #{index}\")"}
   info.png.bKGD.rgb:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"bKGD: RGB = (#{r}, #{g}, #{b})\")"}
+      - {file: "validators/ancillary/bkgd_validator.rb", call: "add_info(\"info.png.bKGD.rgb\", \"bKGD: RGB = (#{r}, #{g}, #{b})\")"}
   info.png.cHRM.white-point:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/chrm_validator.rb", call: "add_info(\"cHRM: white=(#{format('%.4f', white_x / 100_000.0)}, #{format('%.4f', white_y / 100_000.0)})\")"}
+      - {file: "validators/ancillary/chrm_validator.rb", call: "add_info(\"info.png.cHRM.white-point\", \"cHRM: white=(#{format('%.4f', white_x / 100_000.0)}, #{format('%.4f', white_y / 100_000.0)})\")"}
   info.png.cICP.matrix-coefficients-rgb-recommendation:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/cicp_validator.rb", call: "add_info(\"matrix coefficients = 0 (identity) is recommended for RGB\")"}
+      - {file: "validators/ancillary/cicp_validator.rb", call: "add_info(\"info.png.cICP.matrix-coefficients-rgb-recommendation\", \"matrix coefficients = 0 (identity) is recommended for RGB\")"}
   info.png.chunk.unknown-ancillary:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "services/chunk_processor.rb", call: "add_error(chunk_type: chunk_type, message: \"Unknown ancillary chunk type: #{chunk_type} (ignored)\", severity: :info, offset: chunk.abs_offset)"}
+      - {file: "services/chunk_processor.rb", call: "add_diagnostic(\"info.png.chunk.unknown-ancillary\", \"Unknown ancillary chunk type: #{chunk_type} (ignored)\", chunk_type: chunk_type, offset: chunk.abs_offset, field: \"chunk type\", actual: chunk_type )"}
   info.png.gAMA.gamma-linear:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"gAMA: 1.0 (linear)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"info.png.gAMA.gamma-linear\", \"gAMA: 1.0 (linear)\")"}
   info.png.gAMA.gamma-standard:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"gAMA: 2.2 (standard display gamma)\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"info.png.gAMA.gamma-standard\", \"gAMA: 2.2 (standard display gamma)\")"}
   info.png.gAMA.gamma-value:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"gAMA: #{format('%.5f', actual_gamma)}\")"}
+      - {file: "validators/ancillary/gama_validator.rb", call: "add_info(\"info.png.gAMA.gamma-value\", \"gAMA: #{format('%.5f', actual_gamma)}\")"}
   info.png.hIST.all-zero:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_info(\"hIST: #{palette_entries} entries (all zero)\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_info(\"info.png.hIST.all-zero\", \"hIST: #{palette_entries} entries (all zero)\")"}
   info.png.hIST.usage-summary:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/hist_validator.rb", call: "add_info(\"hIST: #{palette_entries} palette entries, most used: index #{max_idx} (#{max_freq}), least used: index #{min_idx} (#{min_freq})\")"}
+      - {file: "validators/ancillary/hist_validator.rb", call: "add_info(\"info.png.hIST.usage-summary\", \"hIST: #{palette_entries} palette entries, most used: index #{max_idx} (#{max_freq}), least used: index #{min_idx} (#{min_freq})\")"}
   info.png.iCCP.profile-summary:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/iccp_validator.rb", call: "add_info(\"iCCP: \\\"#{profile_name}\\\" (#{decompressed.length} bytes, compressed from #{compressed_data.length} bytes, ratio #{compression_ratio}:1)\")"}
+      - {file: "validators/ancillary/iccp_validator.rb", call: "add_info(\"info.png.iCCP.profile-summary\", \"iCCP: \\\"#{profile_name}\\\" (#{decompressed.length} bytes, compressed from #{compressed_data.length} bytes, ratio #{compression_ratio}:1)\")"}
   info.png.iDOT.apple-display-optimization:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/idot_validator.rb", call: "add_info(\"iDOT: Apple display optimization (#{idot_data.detailed_info})\")"}
+      - {file: "validators/ancillary/idot_validator.rb", call: "add_info(\"info.png.iDOT.apple-display-optimization\", \"iDOT: Apple display optimization (#{idot_data.detailed_info})\")"}
   info.png.iTXt.text-content:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/itxt_validator.rb", call: "add_info(\"iTXt: #{keyword}#{lang_info}#{trans_info} = \\\"#{text_preview}\\\"#{comp_info}\")"}
+      - {file: "validators/ancillary/itxt_validator.rb", call: "add_info(\"info.png.iTXt.text-content\", \"iTXt: #{keyword}#{lang_info}#{trans_info} = \\\"#{text_preview}\\\"#{comp_info}\")"}
   info.png.mDCv.luminance-range:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"luminance range: #{format_luminance(min_lum)} - #{format_luminance(max_lum)} cd/m²\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"info.png.mDCv.luminance-range\", \"luminance range: #{format_luminance(min_lum)} - #{format_luminance(max_lum)} cd/m²\")"}
   info.png.mDCv.primaries:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"mastering display: R=(#{format_coordinate(red_x)},#{format_coordinate(red_y)}), G=(#{format_coordinate(green_x)},#{format_coordinate(green_y)}), B=(#{format_coordinate(blue_x)},#{format_coordinate(blue_y)})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"info.png.mDCv.primaries\", \"mastering display: R=(#{format_coordinate(red_x)},#{format_coordinate(red_y)}), G=(#{format_coordinate(green_x)},#{format_coordinate(green_y)}), B=(#{format_coordinate(blue_x)},#{format_coordinate(blue_y)})\")"}
   info.png.mDCv.white-point:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"white point: (#{format_coordinate(white_x)},#{format_coordinate(white_y)})\")"}
+      - {file: "validators/ancillary/mdcv_validator.rb", call: "add_info(\"info.png.mDCv.white-point\", \"white point: (#{format_coordinate(white_x)},#{format_coordinate(white_y)})\")"}
   info.png.oFFs.position:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/offs_validator.rb", call: "add_info(\"oFFs: position (#{x_pos}, #{y_pos}) #{unit_name}\")"}
+      - {file: "validators/ancillary/offs_validator.rb", call: "add_info(\"info.png.oFFs.position\", \"oFFs: position (#{x_pos}, #{y_pos}) #{unit_name}\")"}
   info.png.pCAL.calibration-summary:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/pcal_validator.rb", call: "add_info(\"pCAL: \\\"#{cal_name}\\\" #{eq_type_name} equation, range #{orig_zero}..#{orig_max}, unit \\\"#{unit_name}\\\", params: #{params.join(', ')}\")"}
+      - {file: "validators/ancillary/pcal_validator.rb", call: "add_info(\"info.png.pCAL.calibration-summary\", \"pCAL: \\\"#{cal_name}\\\" #{eq_type_name} equation, range #{orig_zero}..#{orig_max}, unit \\\"#{unit_name}\\\", params: #{params.join(', ')}\")"}
   info.png.pHYs.dpi:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "add_info(\"pHYs: #{dpi} DPI\")"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "add_info(\"info.png.pHYs.dpi\", \"pHYs: #{dpi} DPI\")"}
   info.png.pHYs.non-square-pixels:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/phys_validator.rb", call: "add_info(\"pHYs: non-square pixels (aspect ratio #{format('%.3f', aspect)})\")"}
+      - {file: "validators/ancillary/phys_validator.rb", call: "add_info(\"info.png.pHYs.non-square-pixels\", \"pHYs: non-square pixels (aspect ratio #{format('%.3f', aspect)})\")"}
   info.png.sBIT.bits-gray:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"sBIT: gray=#{gray}\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"info.png.sBIT.bits-gray\", \"sBIT: gray=#{gray}\")"}
   info.png.sBIT.bits-gray-alpha:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"sBIT: gray=#{gray}, alpha=#{alpha}\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"info.png.sBIT.bits-gray-alpha\", \"sBIT: gray=#{gray}, alpha=#{alpha}\")"}
   info.png.sBIT.bits-rgb:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"sBIT: R=#{red}, G=#{green}, B=#{blue}\")", sites: 2}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"info.png.sBIT.bits-rgb\", \"sBIT: R=#{red}, G=#{green}, B=#{blue}\")", sites: 2}
   info.png.sBIT.bits-rgba:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"sBIT: R=#{red}, G=#{green}, B=#{blue}, A=#{alpha}\")"}
+      - {file: "validators/ancillary/sbit_validator.rb", call: "add_info(\"info.png.sBIT.bits-rgba\", \"sBIT: R=#{red}, G=#{green}, B=#{blue}, A=#{alpha}\")"}
   info.png.sCAL.scale:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/scal_validator.rb", call: "add_info(\"sCAL: #{width} x #{height} #{unit_name}s per pixel\")"}
+      - {file: "validators/ancillary/scal_validator.rb", call: "add_info(\"info.png.sCAL.scale\", \"sCAL: #{width} x #{height} #{unit_name}s per pixel\")"}
   info.png.sPLT.palette-summary:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/splt_validator.rb", call: "add_info(\"sPLT: \\\"#{palette_name}\\\" (#{num_entries} entries, #{sample_depth}-bit, frequency range #{min_freq}-#{max_freq}, total #{total_freq})\")"}
+      - {file: "validators/ancillary/splt_validator.rb", call: "add_info(\"info.png.sPLT.palette-summary\", \"sPLT: \\\"#{palette_name}\\\" (#{num_entries} entries, #{sample_depth}-bit, frequency range #{min_freq}-#{max_freq}, total #{total_freq})\")"}
   info.png.sRGB.rendering-intent:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/srgb_validator.rb", call: "add_info(\"sRGB: #{intent_name} rendering intent\")"}
+      - {file: "validators/ancillary/srgb_validator.rb", call: "add_info(\"info.png.sRGB.rendering-intent\", \"sRGB: #{intent_name} rendering intent\")"}
   info.png.sTER.mode:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/ster_validator.rb", call: "add_info(\"sTER: #{mode_name} (mode #{mode})\")"}
+      - {file: "validators/ancillary/ster_validator.rb", call: "add_info(\"info.png.sTER.mode\", \"sTER: #{mode_name} (mode #{mode})\")"}
   info.png.tEXt.text-content:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/text_validator.rb", call: "add_info(\"tEXt: #{keyword} = \\\"#{text_preview}\\\"\")"}
+      - {file: "validators/ancillary/text_validator.rb", call: "add_info(\"info.png.tEXt.text-content\", \"tEXt: #{keyword} = \\\"#{text_preview}\\\"\")"}
   info.png.tIME.timestamp:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/time_validator.rb", call: "add_info(\"tIME: #{iso_time}\")"}
+      - {file: "validators/ancillary/time_validator.rb", call: "add_info(\"info.png.tIME.timestamp\", \"tIME: #{iso_time}\")"}
   info.png.zTXt.text-content:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_info(\"zTXt: #{keyword} = \\\"#{text_preview}\\\" (compressed from #{compressed_data.length} bytes)\")"}
+      - {file: "validators/ancillary/ztxt_validator.rb", call: "add_info(\"info.png.zTXt.text-content\", \"zTXt: #{keyword} = \\\"#{text_preview}\\\" (compressed from #{compressed_data.length} bytes)\")"}
   info.profile.chunk.optional-present:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "services/profile_manager.rb", call: "success_result(\"#{chunk_type} chunk optional and present\")"}
+      - {file: "services/profile_manager.rb", call: "success_result(\"info.profile.chunk.optional-present\", \"#{chunk_type} chunk optional and present\", **context)"}
   info.profile.chunk.required-present:
     format: png
     kind: information
     severity: info
     emitters:
-      - {file: "services/profile_manager.rb", call: "success_result(\"#{chunk_type} chunk required and present\")"}
+      - {file: "services/profile_manager.rb", call: "success_result(\"info.profile.chunk.required-present\", \"#{chunk_type} chunk required and present\", **context)"}
 excluded_sources:
   pipelines:
     paths: ["pipelines/"]

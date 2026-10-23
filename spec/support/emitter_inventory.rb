@@ -35,6 +35,20 @@ module PngConform
         end
       end
 
+      # @return [Array<String>] the 28 PNG/APNG validators
+      def png_apng_validator_files
+        registered_validator_files.grep(%r{/(critical|ancillary|apng)/})
+      end
+
+      # @return [Array<String>] the 19 MNG/JNG validators
+      def mng_jng_validator_files
+        registered_validator_files.grep(%r{/(mng|jng)/})
+      end
+
+      # Service files whose direct findings are built from catalog IDs.
+      SERVICE_FILES = %w[services/chunk_processor.rb
+                         services/profile_manager.rb].freeze
+
       # @return [Hash{String=>Hash}] file => scan options
       def sources
         validators = registered_validator_files.to_h do |f|
@@ -46,9 +60,10 @@ module PngConform
           "services/validation_orchestrator.rb" =>
             { methods: %w[add_error], dotted: true },
           "services/chunk_processor.rb" =>
-            { methods: %w[add_error], dotted: true },
+            { methods: %w[add_diagnostic], dotted: true },
           "services/profile_manager.rb" =>
-            { methods: %w[error_result warning_result success_result],
+            { methods: %w[error_result warning_result success_result
+                          profile_diagnostic],
               dotted: false, appends: true },
         )
       end
@@ -122,10 +137,12 @@ module PngConform
         token[1] == :on_kw && BARE_KEYWORDS.include?(token[2])
       end
 
-      # `add_error(message, severity: :warning)` forwards a caller message;
-      # the caller's own site is what gets inventoried.
+      # `add_error(message, severity: :warning)` and `profile_diagnostic(id, ...)`
+      # forward a caller's identity; the caller's own site is what gets
+      # inventoried.
       def pass_through?(call)
-        call.match?(/\Aadd_error\(\s*message\s*,\s*severity:/)
+        call.match?(/\Aadd_error\(\s*message\s*,\s*severity:/) ||
+          call.match?(/\Aprofile_diagnostic\(\s*id\b/)
       end
 
       def normalize(text)

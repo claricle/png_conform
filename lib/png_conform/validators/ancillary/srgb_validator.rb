@@ -42,8 +42,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(1)
+          return false unless check_crc(id: "png.sRGB.crc")
+          return false unless check_length(1, id: "png.sRGB.length")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_intent
@@ -62,11 +62,11 @@ module PngConform
 
           # sRGB should appear before PLTE and IDAT
           if context.seen?("PLTE")
-            add_warning("sRGB chunk after PLTE (should be before)")
+            add_warning("png.sRGB.before-plte", "sRGB chunk after PLTE (should be before)")
           end
 
           if context.seen?("IDAT")
-            add_error("sRGB chunk after IDAT (must be before)")
+            add_error("png.sRGB.before-idat", "sRGB chunk after IDAT (must be before)")
             valid = false
           end
 
@@ -76,7 +76,7 @@ module PngConform
         # Check that only one sRGB chunk is present
         def check_uniqueness
           if context.seen?("sRGB")
-            add_error("duplicate sRGB chunk")
+            add_error("png.sRGB.single-instance", "duplicate sRGB chunk")
             return false
           end
           true
@@ -85,7 +85,7 @@ module PngConform
         # Check rendering intent
         def check_intent
           intent = chunk.chunk_data.unpack1("C")
-          check_enum(intent, INTENT_NAMES.keys, "rendering intent")
+          check_enum(intent, INTENT_NAMES.keys, "rendering intent", id: "png.sRGB.rendering-intent")
         end
 
         # Check consistency with gAMA chunk if present
@@ -98,8 +98,8 @@ module PngConform
           return unless gamma != SRGB_GAMMA
 
           actual_gamma = gamma / 100_000.0
-          add_warning("sRGB chunk present but gAMA is #{actual_gamma} " \
-                      "(should be 2.2 for sRGB)")
+          add_warning("png.sRGB.gama-consistency", "sRGB chunk present but gAMA is #{actual_gamma} " \
+                                                   "(should be 2.2 for sRGB)")
         end
 
         # Store sRGB information in context
@@ -109,7 +109,7 @@ module PngConform
           context.store(:uses_srgb, true)
 
           intent_name = INTENT_NAMES[intent]
-          add_info("sRGB: #{intent_name} rendering intent")
+          add_info("info.png.sRGB.rendering-intent", "sRGB: #{intent_name} rendering intent")
         end
       end
     end

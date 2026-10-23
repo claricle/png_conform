@@ -23,7 +23,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.bKGD.crc")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_length_for_color_type
@@ -41,14 +41,14 @@ module PngConform
 
           # bKGD must appear before IDAT
           if context.seen?("IDAT")
-            add_error("bKGD chunk after IDAT (must be before)")
+            add_error("png.bKGD.before-idat", "bKGD chunk after IDAT (must be before)")
             valid = false
           end
 
           # For indexed-color, bKGD must appear after PLTE
           color_type = context.retrieve(:color_type)
           if color_type == 3 && !context.seen?("PLTE")
-            add_error("bKGD chunk before PLTE for indexed-color image")
+            add_error("png.bKGD.after-plte", "bKGD chunk before PLTE for indexed-color image")
             valid = false
           end
 
@@ -58,7 +58,7 @@ module PngConform
         # Check that only one bKGD chunk is present
         def check_uniqueness
           if context.seen?("bKGD")
-            add_error("duplicate bKGD chunk")
+            add_error("png.bKGD.single-instance", "duplicate bKGD chunk")
             return false
           end
           true
@@ -74,13 +74,13 @@ module PngConform
           case color_type
           when 0, 4
             # Grayscale or grayscale+alpha: 2 bytes
-            check_length(2)
+            check_length(2, id: "png.bKGD.length")
           when 2, 6
             # Truecolor or truecolor+alpha: 6 bytes
-            check_length(6)
+            check_length(6, id: "png.bKGD.length")
           when 3
             # Indexed-color: 1 byte
-            check_length(1)
+            check_length(1, id: "png.bKGD.length")
           else
             true
           end
@@ -100,8 +100,8 @@ module PngConform
             palette_entries = context.retrieve(:palette_entries)
 
             if palette_entries && index >= palette_entries
-              add_error("bKGD palette index (#{index}) exceeds " \
-                        "palette size (#{palette_entries})")
+              add_error("png.bKGD.palette-index", "bKGD palette index (#{index}) exceeds " \
+                                                  "palette size (#{palette_entries})")
               return false
             end
           end
@@ -119,17 +119,17 @@ module PngConform
             # Grayscale: store gray value
             gray = data.unpack1("n")
             context.store(:background_gray, gray)
-            add_info("bKGD: gray = #{gray}")
+            add_info("info.png.bKGD.gray", "bKGD: gray = #{gray}")
           when 2, 6
             # Truecolor: store RGB values
             r, g, b = data.unpack("nnn")
             context.store(:background_color, { r: r, g: g, b: b })
-            add_info("bKGD: RGB = (#{r}, #{g}, #{b})")
+            add_info("info.png.bKGD.rgb", "bKGD: RGB = (#{r}, #{g}, #{b})")
           when 3
             # Indexed-color: store palette index
             index = data.unpack1("C")
             context.store(:background_index, index)
-            add_info("bKGD: palette index = #{index}")
+            add_info("info.png.bKGD.palette-index", "bKGD: palette index = #{index}")
           end
 
           context.store(:has_background, true)

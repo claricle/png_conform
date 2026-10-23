@@ -28,8 +28,8 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
-          return false unless check_length(7)
+          return false unless check_crc(id: "png.tIME.crc")
+          return false unless check_length(7, id: "png.tIME.length")
           return false unless check_uniqueness
           return false unless check_datetime
 
@@ -42,7 +42,7 @@ module PngConform
         # Check that only one tIME chunk is present
         def check_uniqueness
           if context.seen?("tIME")
-            add_error("duplicate tIME chunk")
+            add_error("png.tIME.single-instance", "duplicate tIME chunk")
             return false
           end
           true
@@ -62,19 +62,19 @@ module PngConform
 
           # PNG was created in 1996, so years before that are invalid
           if year < 1996
-            add_error("invalid tIME year (before PNG existed!) (#{year})")
+            add_error("png.tIME.year", "invalid tIME year (before PNG existed!) (#{year})")
             valid = false
           end
 
-          valid &= check_range(month, 1, 12, "month")
-          valid &= check_range(day, 1, 31, "day")
-          valid &= check_range(hour, 0, 23, "hour")
-          valid &= check_range(minute, 0, 59, "minute")
-          valid &= check_range(second, 0, 60, "second")
+          valid &= check_range(month, 1, 12, "month", id: "png.tIME.month")
+          valid &= check_range(day, 1, 31, "day", id: "png.tIME.day")
+          valid &= check_range(hour, 0, 23, "hour", id: "png.tIME.hour")
+          valid &= check_range(minute, 0, 59, "minute", id: "png.tIME.minute")
+          valid &= check_range(second, 0, 60, "second", id: "png.tIME.second")
 
           # Additional day validation based on month
           if valid && !valid_day_for_month?(year, month, day)
-            add_error("invalid day (#{day}) for month #{month}")
+            add_error("png.tIME.day-of-month", "invalid day (#{day}) for month #{month}")
             valid = false
           end
 
@@ -124,7 +124,7 @@ module PngConform
           # Format as ISO 8601
           iso_time = format("%04d-%02d-%02d %02d:%02d:%02d UTC",
                             year, month, day, hour, minute, second)
-          add_info("tIME: #{iso_time}")
+          add_info("info.png.tIME.timestamp", "tIME: #{iso_time}")
         end
       end
     end

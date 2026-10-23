@@ -137,24 +137,40 @@ module PngConform
 
         # Validate chunk against profile
         #
+        # Each result carries the canonical diagnostic under :diagnostic;
+        # :status and :message remain as compatibility projections of it.
+        #
         # @param chunk_type [String] Chunk type code
         # @param profile_name [Symbol, String] Profile name
-        # @return [Hash] Validation result with status and message
+        # @return [Hash] Validation result with status, message, diagnostic
         def validate_chunk_against_profile(chunk_type, profile_name)
           profile = get_profile(profile_name)
-          return error_result("Unknown profile: #{profile_name}") unless profile
+          unless profile
+            return error_result(
+              "profile.chunk.unknown-profile", "Unknown profile: #{profile_name}",
+              chunk_type: chunk_type, profile: profile_name
+            )
+          end
 
+          context = { chunk_type: chunk_type, profile: profile_name,
+                      profile_label: profile[:name] }
           if profile[:prohibited_chunks].include?(chunk_type)
             error_result(
+              "profile.chunk.prohibited",
               "#{chunk_type} chunk prohibited in #{profile[:name]} profile",
+              **context,
             )
           elsif profile[:required_chunks].include?(chunk_type)
-            success_result("#{chunk_type} chunk required and present")
+            success_result("info.profile.chunk.required-present",
+                           "#{chunk_type} chunk required and present", **context)
           elsif profile[:optional_chunks].include?(chunk_type) || profile[:optional_chunks] == ["*"]
-            success_result("#{chunk_type} chunk optional and present")
+            success_result("info.profile.chunk.optional-present",
+                           "#{chunk_type} chunk optional and present", **context)
           else
             warning_result(
+              "profile.chunk.undefined",
               "#{chunk_type} chunk not defined in #{profile[:name]} profile",
+              **context,
             )
           end
         end
@@ -185,31 +201,39 @@ module PngConform
 
         # Validate file chunks against profile
         #
+        # :diagnostics holds the canonical diagnostics; :errors holds their
+        # messages as a compatibility projection, with :valid derived from them.
+        #
         # @param chunks [Array<String>] List of chunk types in file
         # @param profile_name [Symbol, String] Profile name
-        # @return [Hash] Validation results with errors and warnings
+        # @return [Hash] Validation results with errors, warnings, diagnostics
         def validate_file_against_profile(chunks, profile_name)
-          results = {
-            errors: [],
-            warnings: [],
-            valid: true,
+          profile = get_profile(profile_name)
+          diagnostics = check_required_chunks(chunks, profile_name).map do |chunk_type|
+            profile_diagnostic(
+              "profile.file.required-missing",
+              "Missing required chunk: #{chunk_type}",
+              chunk_type: chunk_type, profile: profile_name,
+              label: profile[:name]
+            )
+          end
+
+          check_prohibited_chunks(chunks, profile_name).each do |chunk_type|
+            diagnostics << profile_diagnostic(
+              "profile.file.prohibited-present",
+              "Prohibited chunk present: #{chunk_type}",
+              chunk_type: chunk_type, profile: profile_name,
+              label: profile[:name]
+            )
+          end
+
+          errors = diagnostics.select(&:error?)
+          {
+            errors: errors.map(&:message),
+            warnings: diagnostics.select(&:warning?).map(&:message),
+            valid: errors.empty?,
+            diagnostics: diagnostics,
           }
-
-          # Check for missing required chunks
-          missing = check_required_chunks(chunks, profile_name)
-          missing.each do |chunk_type|
-            results[:errors] << "Missing required chunk: #{chunk_type}"
-            results[:valid] = false
-          end
-
-          # Check for prohibited chunks
-          prohibited = check_prohibited_chunks(chunks, profile_name)
-          prohibited.each do |chunk_type|
-            results[:errors] << "Prohibited chunk present: #{chunk_type}"
-            results[:valid] = false
-          end
-
-          results
         end
 
         # Reload profiles from YAML
@@ -244,26 +268,51 @@ module PngConform
 
         # Create success result
         #
+        # @param id [String] informational catalog ID
         # @param message [String] Success message
         # @return [Hash] Result hash
-        def success_result(message)
-          { status: :success, message: message }
+        def success_result(id, message, **context)
+          profile_result(:success, id, message, **context)
         end
 
         # Create warning result
         #
+        # @param id [String] catalog ID
         # @param message [String] Warning message
         # @return [Hash] Result hash
-        def warning_result(message)
-          { status: :warning, message: message }
+        def warning_result(id, message, **context)
+          profile_result(:warning, id, message, **context)
         end
 
         # Create error result
         #
+        # @param id [String] catalog ID
         # @param message [String] Error message
         # @return [Hash] Result hash
-        def error_result(message)
-          { status: :error, message: message }
+        def error_result(id, message, **context)
+          profile_result(:error, id, message, **context)
+        end
+
+        def profile_result(status, id, message, **context)
+          {
+            status: status, message: message,
+            diagnostic: profile_diagnostic(
+              id, message, chunk_type: context[:chunk_type],
+                           profile: context[:profile],
+                           label: context[:profile_label]
+            )
+          }
+        end
+
+        # Canonical diagnostic for a profile policy finding. The citation
+        # names the profile; there is no byte offset (the finding concerns
+        # the file or chunk type, not a position).
+        def profile_diagnostic(id, message, chunk_type:, profile:, label: nil)
+          note = "profile #{profile}"
+          note += " (#{label})" if label
+          Diagnostics::Builder.build(id, message, chunk_type: chunk_type,
+                                                  profile: profile,
+                                                  citation_note: note)
         end
       end
     end

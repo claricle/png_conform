@@ -71,6 +71,10 @@ RSpec.describe PngConform::Validators::Ancillary::GamaValidator do
 
         expect(context.has_warnings?).to be true
         expect(context.all_warnings.first[:message]).to match(/sRGB.*45455|gamma/i)
+        expect(context.all_warnings.first).to have_attributes(
+          requirement_id: "png.gAMA.srgb-consistency", severity: "warning",
+          error_type: "consistency", chunk_type: "gAMA"
+        )
       end
 
       it "accepts gAMA = 45455 with sRGB present" do
@@ -89,6 +93,10 @@ RSpec.describe PngConform::Validators::Ancillary::GamaValidator do
 
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to match(/after PLTE.*before/i)
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.gAMA.before-plte", severity: "error",
+          error_type: "ordering", citation_label: a_string_including("5.6")
+        )
       end
 
       it "appears before IDAT" do

@@ -81,6 +81,7 @@ module PngConform
   require_relative "png_conform/models/file_analysis"
 
   require_relative "png_conform/diagnostics/catalog"
+  require_relative "png_conform/diagnostics/builder"
 
   # Load base validator and registry (Phase 4 optimization: lazy validator loading)
   # All validators are loaded on-demand by chunk_registry

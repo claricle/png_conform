@@ -26,7 +26,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.PLTE.crc")
           return false unless check_divisible_by_3
           return false unless check_entry_count
           return false unless check_color_type_compatibility
@@ -43,7 +43,7 @@ module PngConform
           length = chunk.chunk_data.length
           return true if (length % 3).zero?
 
-          add_error("invalid PLTE length (#{length}, must be divisible by 3)")
+          add_error("png.PLTE.length-multiple-of-3", "invalid PLTE length (#{length}, must be divisible by 3)")
           false
         end
 
@@ -53,13 +53,13 @@ module PngConform
           entries = length / 3
 
           if entries.zero?
-            add_error("invalid PLTE chunk (no entries)")
+            add_error("png.PLTE.entries-none", "invalid PLTE chunk (no entries)")
             return false
           end
 
           if entries > MAX_ENTRIES
-            add_error("invalid PLTE chunk (#{entries} entries, " \
-                      "maximum is #{MAX_ENTRIES})")
+            add_error("png.PLTE.entries-max", "invalid PLTE chunk (#{entries} entries, " \
+                                              "maximum is #{MAX_ENTRIES})")
             return false
           end
 
@@ -74,18 +74,18 @@ module PngConform
           case color_type
           when 0, 4
             # Grayscale and grayscale+alpha: PLTE forbidden
-            add_error("PLTE chunk not allowed for grayscale images")
+            add_error("png.PLTE.color-type-grayscale", "PLTE chunk not allowed for grayscale images")
             false
           when 3
             # Indexed-color: PLTE required (checked elsewhere)
             true
           when 2, 6
             # Truecolor and truecolor+alpha: PLTE optional (suggested palette)
-            add_info("PLTE chunk present (suggested palette)")
+            add_info("info.png.PLTE.palette-present", "PLTE chunk present (suggested palette)")
             true
           else
             # Unknown color type
-            add_warning("PLTE chunk present but color type unknown")
+            add_warning("png.PLTE.color-type-unknown", "PLTE chunk present but color type unknown")
             true
           end
         end
@@ -103,8 +103,8 @@ module PngConform
 
           return true if entries <= max_entries
 
-          add_error("PLTE chunk has #{entries} entries but bit depth " \
-                    "#{bit_depth} allows maximum of #{max_entries}")
+          add_error("png.PLTE.entries-vs-bit-depth", "PLTE chunk has #{entries} entries but bit depth " \
+                                                     "#{bit_depth} allows maximum of #{max_entries}")
           false
         end
 

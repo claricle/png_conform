@@ -23,7 +23,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.tRNS.crc")
           return false unless check_position
           return false unless check_uniqueness
           return false unless check_color_type_compatibility
@@ -41,14 +41,14 @@ module PngConform
 
           # tRNS must appear before IDAT
           if context.seen?("IDAT")
-            add_error("tRNS chunk after IDAT (must be before)")
+            add_error("png.tRNS.before-idat", "tRNS chunk after IDAT (must be before)")
             valid = false
           end
 
           # For indexed-color, tRNS must appear after PLTE
           color_type = context.retrieve(:color_type)
           if color_type == 3 && !context.seen?("PLTE")
-            add_error("tRNS chunk before PLTE for indexed-color image")
+            add_error("png.tRNS.after-plte", "tRNS chunk before PLTE for indexed-color image")
             valid = false
           end
 
@@ -58,7 +58,7 @@ module PngConform
         # Check that only one tRNS chunk is present
         def check_uniqueness
           if context.retrieve(:has_transparency)
-            add_error("duplicate tRNS chunk")
+            add_error("png.tRNS.single-instance", "duplicate tRNS chunk")
             return false
           end
           true
@@ -75,11 +75,11 @@ module PngConform
             true
           when 4, 6
             # Grayscale+alpha, truecolor+alpha: tRNS forbidden
-            add_error("tRNS chunk not allowed for color type with " \
-                      "alpha channel")
+            add_error("png.tRNS.color-type-alpha", "tRNS chunk not allowed for color type with " \
+                                                   "alpha channel")
             false
           else
-            add_warning("tRNS chunk present but color type unknown")
+            add_warning("png.tRNS.color-type-unknown", "tRNS chunk present but color type unknown")
             true
           end
         end
@@ -94,31 +94,31 @@ module PngConform
           case color_type
           when 0
             # Grayscale: must be 2 bytes
-            check_length(2)
+            check_length(2, id: "png.tRNS.length")
           when 2
             # Truecolor: must be 6 bytes (RGB)
-            check_length(6)
+            check_length(6, id: "png.tRNS.length")
           when 3
             # Indexed-color: 1-256 bytes (alpha for each palette entry)
             palette_entries = context.retrieve(:palette_entries)
 
             # Check if palette exists
             unless context.retrieve(:has_palette)
-              add_error("tRNS chunk for indexed-color without PLTE chunk")
+              add_error("png.tRNS.indexed-needs-plte", "tRNS chunk for indexed-color without PLTE chunk")
               return false
             end
 
             # Check length doesn't exceed palette size
             if palette_entries && length > palette_entries
-              add_error("tRNS has more entries than palette " \
-                        "(#{length} > #{palette_entries})")
+              add_error("png.tRNS.entries-exceed-palette", "tRNS has more entries than palette " \
+                                                           "(#{length} > #{palette_entries})")
               return false
             end
 
             return true if length.between?(1, 256)
 
-            add_error("invalid tRNS length for indexed-color " \
-                      "(#{length}, must be 1-256)")
+            add_error("png.tRNS.indexed-length", "invalid tRNS length for indexed-color " \
+                                                 "(#{length}, must be 1-256)")
             false
           else
             true

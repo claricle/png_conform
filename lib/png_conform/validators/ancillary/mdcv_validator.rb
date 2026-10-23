@@ -49,23 +49,23 @@ module PngConform
         private
 
         def check_chunk_length
-          return if check_length(24)
+          return if check_length(24, id: "png.mDCv.length")
 
-          add_error("invalid chunk length: #{chunk.chunk_data.bytesize} bytes")
+          add_error("png.mDCv.length", "invalid chunk length: #{chunk.chunk_data.bytesize} bytes")
         end
 
         def check_uniqueness
           return unless context.seen?(CHUNK_TYPE)
 
-          add_error("duplicate mDCV chunk (only one allowed)")
+          add_error("png.mDCv.single-instance", "duplicate mDCV chunk (only one allowed)")
         end
 
         def check_position
-          add_error("mDCv must appear before PLTE") if context.seen?("PLTE")
+          add_error("png.mDCv.before-plte", "mDCv must appear before PLTE") if context.seen?("PLTE")
 
           return unless context.seen?("IDAT")
 
-          add_error("mDCv must appear before IDAT")
+          add_error("png.mDCv.before-idat", "mDCv must appear before IDAT")
         end
 
         def validate_fields
@@ -109,6 +109,7 @@ module PngConform
           return unless x_value + y_value > MAX_COORDINATE
 
           add_warning(
+            "png.mDCv.primary-sum",
             "#{color} primary coordinates sum > 1.0 " \
             "(x=#{format_coordinate(x_value)}, " \
             "y=#{format_coordinate(y_value)})",
@@ -123,6 +124,7 @@ module PngConform
           return unless x_value + y_value > MAX_COORDINATE
 
           add_warning(
+            "png.mDCv.white-point-sum",
             "white point coordinates sum > 1.0 " \
             "(x=#{format_coordinate(x_value)}, " \
             "y=#{format_coordinate(y_value)})",
@@ -130,9 +132,10 @@ module PngConform
         end
 
         def validate_coordinate(name, value)
-          return if check_range(value, 0, MAX_COORDINATE, name)
+          return if check_range(value, 0, MAX_COORDINATE, name, id: "png.mDCv.coordinate-range")
 
           add_error(
+            "png.mDCv.coordinate-range",
             "#{name} out of range: #{value} " \
             "(must be 0-#{MAX_COORDINATE})",
           )
@@ -142,17 +145,19 @@ module PngConform
           # Maximum luminance must be greater than minimum
           if max_lum <= min_lum
             add_error(
+              "png.mDCv.luminance-order",
               "maximum luminance (#{format_luminance(max_lum)}) must be > " \
               "minimum luminance (#{format_luminance(min_lum)})",
             )
           end
 
           # Check for reasonable luminance ranges
-          add_warning("maximum luminance is 0 cd/m²") if max_lum.zero?
+          add_warning("png.mDCv.max-luminance-zero", "maximum luminance is 0 cd/m²") if max_lum.zero?
 
           return unless max_lum > 100_000_000 # 10,000 cd/m²
 
           add_warning(
+            "png.mDCv.max-luminance-high",
             "maximum luminance very high: #{format_luminance(max_lum)} " \
             "(> 10,000 cd/m²)",
           )
@@ -163,6 +168,7 @@ module PngConform
           white_x, white_y, max_lum, min_lum
         )
           add_info(
+            "info.png.mDCv.primaries",
             "mastering display: " \
             "R=(#{format_coordinate(red_x)},#{format_coordinate(red_y)}), " \
             "G=(#{format_coordinate(green_x)},#{format_coordinate(green_y)}), " \
@@ -170,11 +176,13 @@ module PngConform
           )
 
           add_info(
+            "info.png.mDCv.white-point",
             "white point: " \
             "(#{format_coordinate(white_x)},#{format_coordinate(white_y)})",
           )
 
           add_info(
+            "info.png.mDCv.luminance-range",
             "luminance range: " \
             "#{format_luminance(min_lum)} - #{format_luminance(max_lum)} cd/m²",
           )

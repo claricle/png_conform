@@ -78,6 +78,10 @@ RSpec.describe PngConform::Validators::Critical::IhdrValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("CRC error")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IHDR.crc", severity: "error", chunk_offset: 8,
+          error_type: "integrity", field: "crc"
+        )
       end
     end
 
@@ -90,6 +94,9 @@ RSpec.describe PngConform::Validators::Critical::IhdrValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("invalid IHDR length")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IHDR.length", severity: "error", chunk_offset: 8, expected: "13", actual: "12",
+        )
       end
     end
 
@@ -107,6 +114,9 @@ RSpec.describe PngConform::Validators::Critical::IhdrValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("invalid image width (0)")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IHDR.width-zero", severity: "error", chunk_offset: 8,
+        )
       end
 
       it "rejects zero height" do

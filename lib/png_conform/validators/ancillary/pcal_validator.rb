@@ -52,7 +52,7 @@ module PngConform
         #
         # @return [Boolean] True if validation passed
         def validate
-          return false unless check_crc
+          return false unless check_crc(id: "png.pCAL.crc")
           return false unless check_uniqueness
           return false unless check_position
           return false unless check_structure
@@ -69,7 +69,7 @@ module PngConform
         # Check that only one pCAL chunk exists
         def check_uniqueness
           if context.retrieve(:has_calibration)
-            add_error("duplicate pCAL chunk (only one allowed)")
+            add_error("png.pCAL.single-instance", "duplicate pCAL chunk (only one allowed)")
             return false
           end
 
@@ -79,7 +79,7 @@ module PngConform
         # Check that pCAL appears before IDAT
         def check_position
           if context.seen?("IDAT")
-            add_error("pCAL chunk after IDAT chunk")
+            add_error("png.pCAL.before-idat", "pCAL chunk after IDAT chunk")
             return false
           end
 
@@ -92,14 +92,14 @@ module PngConform
 
           # Must contain at least name + nulls + int fields + equation type + param count
           if data.length < 12
-            add_error("pCAL chunk too short (minimum 12 bytes)")
+            add_error("png.pCAL.min-length", "pCAL chunk too short (minimum 12 bytes)")
             return false
           end
 
           # Must contain null separator after name
           null_pos = data.index("\0")
           unless null_pos
-            add_error("pCAL chunk missing null separator")
+            add_error("png.pCAL.null-separator", "pCAL chunk missing null separator")
             return false
           end
 
@@ -114,13 +114,13 @@ module PngConform
 
           # Check calibration name length
           if cal_name.empty?
-            add_error("pCAL chunk has empty calibration name")
+            add_error("png.pCAL.name-empty", "pCAL chunk has empty calibration name")
             return false
           end
 
           if cal_name.length > MAX_CALIBRATION_NAME_LENGTH
-            add_error("pCAL calibration name too long " \
-                      "(#{cal_name.length}, max #{MAX_CALIBRATION_NAME_LENGTH})")
+            add_error("png.pCAL.name-too-long", "pCAL calibration name too long " \
+                                                "(#{cal_name.length}, max #{MAX_CALIBRATION_NAME_LENGTH})")
             return false
           end
 
@@ -128,25 +128,25 @@ module PngConform
           cal_name.bytes.each do |byte|
             next if PRINTABLE_LATIN1.include?(byte)
 
-            add_error("pCAL calibration name contains non-printable " \
-                      "character (0x#{byte.to_s(16)})")
+            add_error("png.pCAL.name-printable", "pCAL calibration name contains non-printable " \
+                                                 "character (0x#{byte.to_s(16)})")
             return false
           end
 
           # Check for leading/trailing spaces
           if cal_name.start_with?(" ")
-            add_error("pCAL calibration name has leading space")
+            add_error("png.pCAL.name-leading-space", "pCAL calibration name has leading space")
             return false
           end
 
           if cal_name.end_with?(" ")
-            add_error("pCAL calibration name has trailing space")
+            add_error("png.pCAL.name-trailing-space", "pCAL calibration name has trailing space")
             return false
           end
 
           # Check for consecutive spaces
           if cal_name.include?("  ")
-            add_error("pCAL calibration name has consecutive spaces")
+            add_error("png.pCAL.name-consecutive-spaces", "pCAL calibration name has consecutive spaces")
             return false
           end
 
@@ -160,8 +160,8 @@ module PngConform
           equation_type = data[null_pos + 9].ord
 
           unless EQUATION_PARAM_COUNTS.key?(equation_type)
-            add_error("pCAL invalid equation type (#{equation_type}, " \
-                      "must be 0-3)")
+            add_error("png.pCAL.equation-type", "pCAL invalid equation type (#{equation_type}, " \
+                                                "must be 0-3)")
             return false
           end
 
@@ -177,8 +177,8 @@ module PngConform
 
           expected_params = EQUATION_PARAM_COUNTS[equation_type]
           unless num_params == expected_params
-            add_error("pCAL parameter count mismatch (#{num_params}, " \
-                      "expected #{expected_params} for equation type #{equation_type})")
+            add_error("png.pCAL.parameter-count-mismatch", "pCAL parameter count mismatch (#{num_params}, " \
+                                                           "expected #{expected_params} for equation type #{equation_type})")
             return false
           end
 
@@ -186,7 +186,7 @@ module PngConform
           unit_start = null_pos + 11
           unit_null = data.index("\0", unit_start)
           unless unit_null
-            add_error("pCAL missing unit name null terminator")
+            add_error("png.pCAL.unit-terminator", "pCAL missing unit name null terminator")
             return false
           end
 
@@ -198,15 +198,15 @@ module PngConform
           while params_found < num_params && pos < data.length
             param_end = data.index("\0", pos)
             unless param_end
-              add_error("pCAL missing parameter #{params_found + 1} " \
-                        "null terminator")
+              add_error("png.pCAL.parameter-terminator", "pCAL missing parameter #{params_found + 1} " \
+                                                         "null terminator")
               return false
             end
 
             param_str = data[pos, param_end - pos]
             unless valid_float_string?(param_str)
-              add_error("pCAL invalid parameter #{params_found + 1} " \
-                        "format: '#{param_str}'")
+              add_error("png.pCAL.parameter-format", "pCAL invalid parameter #{params_found + 1} " \
+                                                     "format: '#{param_str}'")
               return false
             end
 
@@ -215,8 +215,8 @@ module PngConform
           end
 
           unless params_found == num_params
-            add_error("pCAL found #{params_found} parameters, " \
-                      "expected #{num_params}")
+            add_error("png.pCAL.parameter-count", "pCAL found #{params_found} parameters, " \
+                                                  "expected #{num_params}")
             return false
           end
 
@@ -278,10 +278,10 @@ module PngConform
           # Add info about the calibration
           eq_type_name = %w[linear base-e base-10
                             arbitrary][equation_type]
-          add_info("pCAL: \"#{cal_name}\" #{eq_type_name} equation, " \
-                   "range #{orig_zero}..#{orig_max}, " \
-                   "unit \"#{unit_name}\", " \
-                   "params: #{params.join(', ')}")
+          add_info("info.png.pCAL.calibration-summary", "pCAL: \"#{cal_name}\" #{eq_type_name} equation, " \
+                                                        "range #{orig_zero}..#{orig_max}, " \
+                                                        "unit \"#{unit_name}\", " \
+                                                        "params: #{params.join(', ')}")
         end
       end
     end

@@ -23,7 +23,7 @@ module PngConform
         MIN_LENGTH = 5 # At least 4 bytes for sequence + 1 byte data
 
         def validate
-          return unless check_crc
+          return unless check_crc(id: "apng.fdAT.crc")
           return unless validate_min_length
 
           validate_structure
@@ -36,8 +36,8 @@ module PngConform
         def validate_min_length
           actual = chunk.chunk_data.length
           if actual < MIN_LENGTH
-            add_error("fdAT chunk too short (#{actual} bytes, " \
-                      "minimum #{MIN_LENGTH})")
+            add_error("apng.fdAT.min-length", "fdAT chunk too short (#{actual} bytes, " \
+                                              "minimum #{MIN_LENGTH})")
             return false
           end
           true
@@ -57,7 +57,7 @@ module PngConform
           frame_data = data[4..]
 
           if frame_data.nil? || frame_data.empty?
-            add_error("fdAT has no frame data")
+            add_error("apng.fdAT.frame-data-empty", "fdAT has no frame data")
             return false
           end
 
@@ -71,7 +71,7 @@ module PngConform
         def validate_sequence_number
           # Check if acTL exists
           unless context.retrieve(:actl_num_frames)
-            add_error("fdAT requires acTL chunk")
+            add_error("apng.fdAT.requires-actl", "fdAT requires acTL chunk")
             return false
           end
 
@@ -81,13 +81,13 @@ module PngConform
 
           # First fdAT should follow fcTL sequences
           if expected_sequence.nil?
-            add_error("fdAT must follow fcTL chunk")
+            add_error("apng.fdAT.after-fctl", "fdAT must follow fcTL chunk")
             return false
           end
 
           if sequence_number != expected_sequence
-            add_error("fdAT sequence number mismatch " \
-                      "(expected #{expected_sequence}, got #{sequence_number})")
+            add_error("apng.fdAT.sequence-number", "fdAT sequence number mismatch " \
+                                                   "(expected #{expected_sequence}, got #{sequence_number})")
             return false
           end
 
@@ -105,7 +105,7 @@ module PngConform
           # Each frame should have fcTL followed by fdAT(s)
           # We can have multiple fdAT chunks per frame, but must have at least one fcTL
           if fctl_count.zero?
-            add_error("fdAT chunk requires fcTL chunk")
+            add_error("apng.fdAT.requires-fctl", "fdAT chunk requires fcTL chunk")
             return false
           end
 

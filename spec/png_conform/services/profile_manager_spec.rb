@@ -88,6 +88,67 @@ RSpec.describe PngConform::Services::ProfileManager do
     end
   end
 
+  describe ".validate_chunk_against_profile diagnostics" do
+    def diagnostic_for(chunk_type, profile)
+      described_class.validate_chunk_against_profile(chunk_type, profile)
+    end
+
+    it "keeps the status/message keys and adds a canonical diagnostic" do
+      result = diagnostic_for("iCCP", "web")
+      expect(result).to include(status: :error,
+                                message: "iCCP chunk prohibited in Web profile")
+      expect(result[:diagnostic]).to be_a(PngConform::Models::ValidationError)
+      expect(result[:diagnostic].message).to eq(result[:message])
+    end
+
+    it "reports an unknown profile with ID, citation and profile context" do
+      result = diagnostic_for("tEXt", "nope")
+      expect(result).to include(status: :error, message: "Unknown profile: nope")
+      expect(result[:diagnostic]).to have_attributes(
+        requirement_id: "profile.chunk.unknown-profile", severity: "error",
+        error_type: "policy", chunk_type: "tEXt", profile: "nope",
+        citation_label: a_string_including("unknown-profile", "profile nope")
+      )
+      expect(result[:diagnostic].to_lens_h["context"])
+        .to eq("profile" => "nope", "chunk_type" => "tEXt")
+    end
+
+    it "reports a prohibited chunk with its profile citation" do
+      diagnostic = diagnostic_for("iCCP", "web")[:diagnostic]
+      expect(diagnostic).to have_attributes(
+        requirement_id: "profile.chunk.prohibited", severity: "error",
+        message: "iCCP chunk prohibited in Web profile", chunk_type: "iCCP",
+        profile: "web",
+        citation_label: a_string_including("prohibited_chunks", "profile web (Web)")
+      )
+      expect(diagnostic.to_lens_h).to include(
+        "requirement_id" => "profile.chunk.prohibited",
+        "context" => { "profile" => "web", "chunk_type" => "iCCP" },
+      )
+    end
+
+    it "reports a chunk undefined by the profile as a warning" do
+      result = diagnostic_for("XXXX", "web")
+      expect(result[:status]).to eq(:warning)
+      expect(result[:diagnostic]).to have_attributes(
+        requirement_id: "profile.chunk.undefined", severity: "warning",
+        message: "XXXX chunk not defined in Web profile", chunk_type: "XXXX",
+        profile: "web"
+      )
+    end
+
+    it "keeps required/optional presence as informational diagnostics" do
+      required = diagnostic_for("IHDR", "web")
+      expect(required[:status]).to eq(:success)
+      expect(required[:diagnostic]).to have_attributes(
+        requirement_id: "info.profile.chunk.required-present", severity: "info",
+        citation_uri: nil
+      )
+      expect(diagnostic_for("gAMA", "web")[:diagnostic].requirement_id)
+        .to eq("info.profile.chunk.optional-present")
+    end
+  end
+
   describe ".check_required_chunks" do
     let(:chunks) { %w[IHDR IDAT IEND] }
 
@@ -152,6 +213,46 @@ RSpec.describe PngConform::Services::ProfileManager do
         expect(result[:errors].first).to include("required")
         expect(result[:errors].first).to include("pHYs")
       end
+    end
+  end
+
+  describe ".validate_file_against_profile diagnostics" do
+    it "reports a prohibited-present chunk and projects it into :errors" do
+      result = described_class.validate_file_against_profile(
+        %w[IHDR iCCP IDAT IEND], "web"
+      )
+      expect(result[:errors]).to eq(["Prohibited chunk present: iCCP"])
+      expect(result[:warnings]).to eq([])
+      expect(result[:diagnostics].size).to eq(1)
+      expect(result[:diagnostics].first).to have_attributes(
+        requirement_id: "profile.file.prohibited-present", severity: "error",
+        error_type: "policy", message: "Prohibited chunk present: iCCP",
+        chunk_type: "iCCP", profile: "web",
+        citation_label: a_string_including("prohibited_chunks", "profile web (Web)")
+      )
+    end
+
+    it "reports a missing required chunk with the profile citation" do
+      result = described_class.validate_file_against_profile(
+        %w[IHDR IDAT IEND], "print"
+      )
+      expect(result[:valid]).to be false
+      expect(result[:errors]).to eq(["Missing required chunk: pHYs"])
+      expect(result[:diagnostics].first).to have_attributes(
+        requirement_id: "profile.file.required-missing", severity: "error",
+        message: "Missing required chunk: pHYs", chunk_type: "pHYs",
+        profile: "print",
+        citation_label: a_string_including("required_chunks", "profile print (Print)")
+      )
+      expect(result[:diagnostics].first.to_lens_h["context"])
+        .to eq("profile" => "print", "chunk_type" => "pHYs")
+    end
+
+    it "returns no diagnostics for a conforming file" do
+      result = described_class.validate_file_against_profile(
+        %w[IHDR IDAT IEND], "minimal"
+      )
+      expect(result).to include(valid: true, errors: [], diagnostics: [])
     end
   end
 end

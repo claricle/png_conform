@@ -89,6 +89,9 @@ RSpec.describe PngConform::Validators::Critical::IdatValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("IDAT chunk is empty")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IDAT.empty", severity: "error", chunk_offset: 45,
+        )
       end
     end
 
@@ -103,6 +106,9 @@ RSpec.describe PngConform::Validators::Critical::IdatValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("IDAT chunk before IHDR")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IDAT.after-ihdr", severity: "error", chunk_offset: 45, error_type: "ordering",
+        )
       end
 
       it "rejects IDAT before PLTE for indexed-color" do
@@ -117,6 +123,9 @@ RSpec.describe PngConform::Validators::Critical::IdatValidator do
         expect(validator.validate).to be false
         expect(context.has_errors?).to be true
         expect(context.all_errors.first[:message]).to include("IDAT chunk before PLTE")
+        expect(context.all_errors.first).to have_attributes(
+          requirement_id: "png.IDAT.after-plte", severity: "error", chunk_offset: 45,
+        )
       end
     end
 
