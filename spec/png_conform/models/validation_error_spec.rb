@@ -190,4 +190,23 @@ RSpec.describe PngConform::Models::ValidationError do
       expect(error.actual).to eq("128 entries")
     end
   end
+
+  describe "legacy compatibility with the shared diagnostic" do
+    it "keeps legacy readers and to_s unchanged for a legacy-only error" do
+      error = described_class.error("Invalid CRC", chunk_type: "IDAT",
+                                                   chunk_offset: 100,
+                                                   error_type: "crc")
+      expect([error.severity, error.chunk_type, error.chunk_offset,
+              error.error_type, error.error?, error.to_s])
+        .to eq(["error", "IDAT", 100, "crc", true,
+                "[ERROR] IDAT at 0x00064 Invalid CRC"])
+    end
+
+    it "derives a valid shared diagnostic from legacy fields only" do
+      error = described_class.warning("Odd", chunk_type: "oFFs",
+                                             chunk_offset: 7)
+      expect(error.to_diagnostic.warning?).to be true
+      expect(error.to_diagnostic.location.record_type).to eq("oFFs")
+    end
+  end
 end

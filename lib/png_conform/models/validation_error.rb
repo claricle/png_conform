@@ -11,6 +11,12 @@ module PngConform
       attribute :error_type, :string
       attribute :expected, :string
       attribute :actual, :string
+      attribute :requirement_id, :string
+      attribute :chunk_index, :integer
+      attribute :field, :string
+      attribute :remediation, :string
+      attribute :citation_uri, :string
+      attribute :citation_label, :string
 
       # Severity levels
       SEVERITY_ERROR = "error"
@@ -27,6 +33,9 @@ module PngConform
       ERROR_TYPE_INVALID_VALUE = "invalid_value"
       ERROR_TYPE_PROFILE = "profile"
 
+      EXTRA_OPTIONS = %i[requirement_id chunk_index field remediation
+                         citation_uri citation_label expected actual].freeze
+
       # Create error-level validation error
       def self.error(message, options = {})
         new(
@@ -35,6 +44,7 @@ module PngConform
           chunk_type: options[:chunk_type],
           chunk_offset: options[:chunk_offset],
           error_type: options[:error_type],
+          **options.slice(*EXTRA_OPTIONS),
         )
       end
 
@@ -46,6 +56,7 @@ module PngConform
           chunk_type: options[:chunk_type],
           chunk_offset: options[:chunk_offset],
           error_type: options[:error_type],
+          **options.slice(*EXTRA_OPTIONS),
         )
       end
 
@@ -57,6 +68,7 @@ module PngConform
           chunk_type: options[:chunk_type],
           chunk_offset: options[:chunk_offset],
           error_type: options[:error_type],
+          **options.slice(*EXTRA_OPTIONS),
         )
       end
 
@@ -75,7 +87,45 @@ module PngConform
         severity == SEVERITY_INFO
       end
 
-      # Format for display
+      # Shared-contract location, or nil when no byte offset is known.
+      def location
+        return nil if chunk_offset.nil?
+
+        Diagnostics::Location.new(
+          byte_offset: chunk_offset, chunk_type: chunk_type,
+          chunk_index: chunk_index, field: field
+        )
+      end
+
+      # The immutable LensCore diagnostic; all structured fields derive here.
+      def to_diagnostic
+        LensCore::Diagnostic.new(
+          severity: severity, kind: error_type || "validation",
+          requirement_id: requirement_id || "png.#{error_type || 'unspecified'}",
+          message: message, remediation: remediation,
+          citations: lens_citations, context: lens_context,
+          location: location&.to_lens
+        )
+      end
+
+      # Plain-hash (JSON-safe) form of the shared diagnostic.
+      def to_lens_h
+        to_diagnostic.to_h
+      end
+
+      # Human rendering through the shared renderer.
+      def to_human(profile_id: "png")
+        LensCore::Renderers::Human.render(
+          LensCore::Report.new(
+            producer: LensCore::Producer.new(name: "png_conform",
+                                             version: VERSION),
+            profile: LensCore::Profile.new(id: profile_id),
+            diagnostics: [to_diagnostic], valid: !error?
+          ),
+        )
+      end
+
+      # Format for display (legacy, kept as a compatibility alias)
       def to_s
         parts = []
         parts << "[#{severity.upcase}]"
@@ -83,6 +133,18 @@ module PngConform
         parts << format("at 0x%05x", chunk_offset) if chunk_offset
         parts << message
         parts.join(" ")
+      end
+
+      private
+
+      def lens_citations
+        return [] if citation_uri.nil?
+
+        [LensCore::Citation.new(uri: citation_uri, label: citation_label)]
+      end
+
+      def lens_context
+        { "expected" => expected, "actual" => actual }.compact
       end
     end
   end
