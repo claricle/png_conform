@@ -49,7 +49,7 @@ RSpec.describe PngConform::Reporters::SummaryReporter do
 
       it "outputs pngcheck-compatible summary line" do
         reporter.report(file_analysis)
-        expect(output.string).to match(/test\.png/)
+        expect(output.string).to include("test.png")
       end
     end
 
