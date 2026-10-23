@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Regenerates or verifies the structured-diagnostic golden JSON files under
+# spec/fixtures/diagnostics/.
+#
+#   script/regenerate_diagnostic_goldens --check   compare, never write
+#   script/regenerate_diagnostic_goldens --write   controlled regeneration
+#
+# Exactly one mode is required; any other option is rejected. --check exits 1
+# on any missing, extra, stale, reordered, schema-incompatible or
+# host-dependent golden. See CONTRIBUTING.md before using --write.
+
+require "bundler/setup"
+require "optparse"
+
+root = File.expand_path("..", __dir__)
+$LOAD_PATH.unshift(File.join(root, "lib"))
+require File.join(root, "spec/support/diagnostic_corpus")
+
+modes = []
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($PROGRAM_NAME)} --check | --write"
+  opts.on("--check", "compare goldens with fresh output; never writes") do
+    modes << :check
+  end
+  opts.on("--write", "regenerate every golden (reviewed transition only)") do
+    modes << :write
+  end
+end
+
+begin
+  parser.parse!(ARGV)
+  raise OptionParser::InvalidOption, ARGV.first unless ARGV.empty?
+  unless modes.size == 1
+    raise OptionParser::MissingArgument, "exactly one of --check or --write"
+  end
+rescue OptionParser::ParseError => e
+  warn "#{e.message}\n#{parser.help}"
+  exit 2
+end
+
+corpus = PngConform::DiagnosticCorpus.new(root)
+
+if modes.first == :write
+  begin
+    written = corpus.write
+  rescue RuntimeError, PngConform::DiagnosticCorpus::RenderError => e
+    warn "refusing to write: #{e.message}"
+    exit 1
+  end
+  puts "wrote #{written.size} goldens"
+else
+  problems = corpus.check
+  if problems.empty?
+    puts "#{corpus.inputs.size} goldens current"
+  else
+    problems.each { |problem| warn problem }
+    warn "#{problems.size} problem(s); run with --write only for a reviewed transition"
+    exit 1
+  end
+end
