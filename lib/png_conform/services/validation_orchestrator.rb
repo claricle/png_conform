@@ -29,7 +29,11 @@ module PngConform
       def self.validate_file(filepath, options = {})
         require_relative "../readers/full_load_reader"
         reader = Readers::FullLoadReader.new(filepath)
-        new(reader, filepath, options).validate
+        begin
+          new(reader, filepath, options).validate
+        ensure
+          reader.close
+        end
       end
 
       # Initialize validation orchestrator
