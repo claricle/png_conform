@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 5
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-standard",
+      "message": "gAMA: 2.2 (standard display gamma)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.cHRM.white-point",
+      "message": "cHRM: white=(0.3127, 0.3290)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "cHRM"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.chunk.unknown-ancillary",
+      "message": "Unknown ancillary chunk type: eXIf (ignored)",
+      "citations": [],
+      "context": {
+        "actual": "eXIf"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 93,
+        "record_type": "eXIf",
+        "field": "chunk type"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.pHYs.dpi",
+      "message": "pHYs: 144 DPI",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 267,
+        "record_type": "pHYs"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: XML:com.adobe.xmp = \"<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xm...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 288,
+        "record_type": "iTXt"
+      }
+    }
+  ],
+  "file": "spec/fixtures/idot/white-10x10-noalpha.png"
+}
