@@ -10,6 +10,8 @@ module PngConform
     # Canonical corpus reports. Checking compares bytes, including diagnostic
     # order, and never creates directories or repairs files.
     class GoldenGenerator
+      EXTENSIONS = %w[.png .mng .jng].freeze
+
       def initialize(root:, fixtures: "spec/fixtures",
                      goldens: "spec/fixtures/diagnostics", output: $stdout)
         @root = Pathname.new(root).expand_path
@@ -50,7 +52,7 @@ module PngConform
 
       def fixture_files
         @fixtures.glob("**/*").select do |path|
-          path.file? && %w[.png .mng .jng].include?(path.extname.downcase) &&
+          path.file? && EXTENSIONS.include?(path.extname.downcase) &&
             !path.to_s.start_with?("#{@goldens}/")
         end.sort_by { |path| relative(path).b }
       end

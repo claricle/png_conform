@@ -8,37 +8,33 @@ require "open3"
 
 RSpec.describe PngConform::Diagnostics::GoldenGenerator do
   let(:output) { StringIO.new }
-  let(:generator) { described_class.new(root: @root, output: output) }
-  let(:goldens) { File.join(@root, "spec/fixtures/diagnostics") }
+  let(:generator) { described_class.new(root: root, output: output) }
   let(:png) { "pngsuite/Z.png" }
   let(:mng) { "mng/valid.mng" }
   let(:jng) { "jng/valid.jng" }
 
-  around do |example|
-    Dir.mktmpdir("diagnostic-goldens") do |root|
-      @root = root
-      example.run
-    end
-  end
+  let(:root) { Dir.mktmpdir("diagnostic-goldens") }
+
+  after { FileUtils.remove_entry(root) }
 
   before do
     copy_fixture("pngsuite/basic/non_interlaced/basn0g01.png", png)
     copy_fixture("mng/valid-minimal.mng", mng)
     copy_fixture("jng/valid-minimal.jng", jng)
     # A signature-only PNG produces multiple diagnostics in emission order.
-    File.binwrite(File.join(@root, "spec/fixtures/pngsuite/a.png"),
+    File.binwrite(File.join(root, "spec/fixtures/pngsuite/a.png"),
                   "\x89PNG\r\n\x1a\n".b)
   end
 
   def copy_fixture(source, target)
-    destination = File.join(@root, "spec/fixtures", target)
+    destination = File.join(root, "spec/fixtures", target)
     FileUtils.mkdir_p(File.dirname(destination))
     FileUtils.cp(File.expand_path("../../fixtures/#{source}", __dir__),
                  destination)
   end
 
   def snapshot
-    Dir.glob("#{@root}/**/*").to_h do |path|
+    Dir.glob("#{root}/**/*").to_h do |path|
       [path, [File.stat(path).mtime, File.file?(path) ? File.binread(path) : nil]]
     end
   end
@@ -47,12 +43,16 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
     File.join(goldens, "#{path}.json")
   end
 
+  def goldens
+    File.join(root, "spec/fixtures/diagnostics")
+  end
+
   it "writes byte-identical reports twice and then checks successfully" do
     expect(generator.run(["--write"])).to eq(0)
     first = Dir.glob("#{goldens}/**/*.json").to_h { |p| [p, File.binread(p)] }
     expect(first.size).to eq(4)
     expect(generator.run(["--write"])).to eq(0)
-    expect(first.transform_values.with_index { |_, i| File.binread(first.keys[i]) })
+    expect(first.keys.to_h { |path| [path, File.binread(path)] })
       .to eq(first)
     before_check = snapshot
     expect(generator.run(["--check"])).to eq(0)
@@ -63,7 +63,7 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
     paths = []
     allow(PngConform::Services::ValidationService).to receive(:validate_file)
       .and_wrap_original do |method, path|
-        paths << path.delete_prefix("#{@root}/")
+        paths << path.delete_prefix("#{root}/")
         method.call(path)
       end
     generator.run(["--write"])
@@ -71,22 +71,58 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
                          "spec/fixtures/mng/valid.mng",
                          "spec/fixtures/pngsuite/Z.png",
                          "spec/fixtures/pngsuite/a.png"])
+  end
+
+  it "writes valid LensCore reports without timestamps or host paths" do
+    generator.run(["--write"])
     [png, mng, jng].each do |path|
       report = JSON.parse(File.binread(golden(path)))
-      expect(report).to include("valid" => true, "diagnostics" => [],
+      expect(report).to include("valid" => true,
                                 "file" => "spec/fixtures/#{path}")
       expect(report).not_to have_key("timestamp")
       expect(report).not_to have_key("extensions")
-      expect(File.binread(golden(path))).not_to include(@root)
+      expect(File.binread(golden(path))).not_to include(root)
       expect(LensCore::Report.from_h(report).to_h).to eq(report)
     end
+  end
+
+  it "preserves informational diagnostics on valid files" do
+    generator.run(["--write"])
+    report = JSON.parse(File.binread(golden(png)))
+    expect(report.fetch("valid")).to be(true)
+    expect(report.fetch("diagnostics")).to include(
+      include("severity" => "info",
+              "requirement_id" => "info.png.gAMA.gamma-linear"),
+    )
+  end
+
+  it "writes empty diagnostics when validation emits no findings" do
+    generator.run(["--write"])
+    [mng, jng].each do |path|
+      expect(JSON.parse(File.binread(golden(path))))
+        .to include("valid" => true, "diagnostics" => [])
+    end
+  end
+
+  it "preserves warnings alongside info without changing validity or order" do
+    allow(PngConform::Services::ValidationService).to receive(:validate_file)
+      .and_wrap_original do |method, path|
+        method.call(path).tap do |analysis|
+          analysis.validation_result.warning("An advisory")
+        end
+      end
+    generator.run(["--write"])
+    report = JSON.parse(File.binread(golden(png)))
+    expect(report.fetch("valid")).to be(true)
+    expect(report.fetch("diagnostics").map { |d| d.fetch("severity") })
+      .to eq(%w[info warning])
   end
 
   it "serializes exactly the report hash with diagnostics in emission order" do
     generator.run(["--write"])
     path = "spec/fixtures/pngsuite/a.png"
     result = PngConform::Services::ValidationService.validate_file(
-      File.join(@root, path),
+      File.join(root, path),
     ).validation_result
     expect(result.diagnostics.size).to be > 1
     expect(File.binread(golden("pngsuite/a.png"))).to eq(
@@ -167,7 +203,7 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
 
   it "exposes an executable script which rejects unknown options" do
     script = File.expand_path("../../../script/regenerate_diagnostic_goldens", __dir__)
-    text, status = Open3.capture2e(script, "--unknown", chdir: @root)
+    text, status = Open3.capture2e(script, "--unknown", chdir: root)
     expect(status.exitstatus).to eq(2)
     expect(text).to include("Usage:")
   end
