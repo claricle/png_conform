@@ -86,7 +86,9 @@ module PngConform
         @framing_error = ChunkFraming.check(@io, @chunks_read)
         return nil if @framing_error
 
+        source_offset = @io.pos
         chunk = BinData::ChunkStructure.read(@io)
+        chunk.source_offset = source_offset
 
         # Track total bytes read (8 byte header + data + 4 byte CRC)
         @total_bytes_read += (12 + chunk.data_length)

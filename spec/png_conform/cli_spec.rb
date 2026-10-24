@@ -4,6 +4,26 @@ require "spec_helper"
 require "png_conform/cli"
 
 RSpec.describe PngConform::Cli do
+  describe "check diagnostic locations" do
+    batch_flags = [[], ["--no-batch"]]
+    %w[json yaml].each do |format|
+      batch_flags.each do |flags|
+        it "preserves chunk offsets in #{format} with flags #{flags.inspect}" do
+          path = "spec/fixtures/pngsuite/corrupted/xhdn0g08.png"
+          expected = JSON.parse(File.read("spec/fixtures/diagnostics/pngsuite/corrupted/xhdn0g08.png.json"))
+
+          expect do
+            described_class.start(["check", "-f", format, *flags, path])
+          end.to output(satisfy do |output|
+            report = format == "json" ? JSON.parse(output) : YAML.safe_load(output, permitted_classes: [Symbol])
+            expect(report.fetch("diagnostics"))
+              .to eq(expected.fetch("diagnostics"))
+          end).to_stdout
+        end
+      end
+    end
+  end
+
   describe "version command" do
     it "displays version information" do
       expect { described_class.start(["version"]) }.to output(
