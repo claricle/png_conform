@@ -5,6 +5,7 @@ require "png_conform/diagnostics/golden_generator"
 require "tmpdir"
 require "stringio"
 require "open3"
+require "rbconfig"
 
 RSpec.describe PngConform::Diagnostics::GoldenGenerator do
   let(:output) { StringIO.new }
@@ -217,7 +218,7 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
 
   it "exposes an executable script which rejects unknown options" do
     script = File.expand_path("../../../script/regenerate_diagnostic_goldens", __dir__)
-    text, status = Open3.capture2e(script, "--unknown", chdir: root)
+    text, status = Open3.capture2e(RbConfig.ruby, script, "--unknown", chdir: root)
     expect(status.exitstatus).to eq(2)
     expect(text).to include("Usage:")
   end
