@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "../readers/chunk_framing"
 require_relative "../readers/format_dispatch"
 require_relative "chunk_processor"
 require_relative "result_builder"
@@ -121,6 +122,39 @@ module PngConform
         processor = ChunkProcessor.new(@reader, @context, @options)
         processor.process do |chunk|
           @chunks << chunk
+        end
+        report_framing_error
+      end
+
+      # Report a declared chunk length the reader refused to read
+      #
+      # The reader stops before allocating for a length above the format
+      # limit or beyond the remaining bytes, so the finding is identical on
+      # every host.
+      #
+      # @return [void]
+      def report_framing_error
+        error = reader.framing_error if reader.respond_to?(:framing_error)
+        return unless error
+
+        detail = { offset: error.offset, chunk_index: error.chunk_index,
+                   field: "length", actual: error.declared_length }
+        if error.rule == :exceeds_limit
+          @context.add_diagnostic(
+            "all.chunk.length-exceeds-limit",
+            "Chunk length #{error.declared_length} exceeds the maximum " \
+            "#{Readers::ChunkFraming::MAX_LENGTH}",
+            expected: "0-#{Readers::ChunkFraming::MAX_LENGTH}", **detail,
+          )
+        else
+          @context.add_diagnostic(
+            "all.chunk.length-exceeds-data",
+            "Chunk length #{error.declared_length} exceeds the " \
+            "#{error.available - Readers::ChunkFraming::CRC_BYTES} data " \
+            "bytes remaining",
+            expected: "0-#{error.available - Readers::ChunkFraming::CRC_BYTES}",
+            **detail,
+          )
         end
       end
 
