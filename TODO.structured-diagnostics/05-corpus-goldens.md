@@ -38,5 +38,5 @@ bundle exec rubocop
 
 ## Status
 
-State: in progress
+State: done
 PR: https://github.com/claricle/png_conform/pull/12

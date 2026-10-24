@@ -7,4 +7,11 @@ require "rubocop/rake_task"
 RSpec::Core::RakeTask.new(:spec)
 RuboCop::RakeTask.new
 
-task default: %i[spec rubocop]
+namespace :diagnostics do
+  desc "Verify checked-in diagnostics goldens without writing files"
+  task :check do
+    ruby "script/regenerate_diagnostic_goldens", "--check"
+  end
+end
+
+task default: %i[spec rubocop diagnostics:check]
