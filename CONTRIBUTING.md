@@ -147,6 +147,28 @@ bundle exec rspec spec/path/to/spec_file.rb
 COVERAGE=true bundle exec rake spec
 ```
 
+### Diagnostics Goldens
+
+Every fixture under `spec/fixtures` has one structured diagnostics golden
+under `spec/fixtures/diagnostics/`. CI fails if a golden drifts.
+
+```bash
+# Targeted check: corpus spec only
+bundle exec rspec spec/structured_diagnostics/corpus_spec.rb
+
+# Full-corpus verification (non-mutating; also part of the default rake task)
+bundle exec rake diagnostics:check
+
+# Controlled regeneration (writes files)
+script/regenerate_diagnostic_goldens --write
+```
+
+Regenerate only when a rule, report or schema change is intended. After
+`--write`, review the complete `git diff spec/fixtures/diagnostics` and
+confirm every change is explained by your change, then rerun
+`bundle exec rake diagnostics:check` and commit the goldens in their own
+reviewable commit. Never edit a golden by hand.
+
 ### Writing Tests
 
 Follow these principles:
