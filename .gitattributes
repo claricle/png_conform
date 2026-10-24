@@ -1,0 +1,2 @@
+# Goldens are compared byte for byte; never let checkout rewrite line endings.
+spec/fixtures/diagnostics/** text eol=lf
