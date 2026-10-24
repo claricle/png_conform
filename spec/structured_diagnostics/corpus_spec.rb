@@ -59,5 +59,37 @@ RSpec.describe "Structured diagnostics corpus" do
       end
     end
   end
+  # Independent expectations for the invalid cases described in fixtures.yml.
+  # Keep these separate from the validator's citation registry so regeneration
+  # cannot silently bless a missing or incorrect format-specific citation.
+  citation_cases = [
+    ["mng/invalid-missing-mend.mng", "mng.MEND.missing", "mng", "4.1.2"],
+    ["mng/invalid-mhdr-not-first.mng", "mng.MHDR.first-chunk", "mng", "4.1.1"],
+    ["mng/invalid-zero-dimensions.mng", "mng.MHDR.frame-dimensions-zero", "mng", "4.1.1"],
+    ["mng/invalid-bad-crc.mng", "mng.MHDR.crc", "png", "5.5"],
+    ["jng/invalid-missing-jdat.jng", "jng.JDAT.missing", "jng", "1.1.2"],
+    ["jng/invalid-missing-iend.jng", "jng.IEND.missing", "jng", "1.1.6"],
+    ["jng/invalid-compression-method.jng", "jng.JHDR.image-compression-method", "jng", "1.1.1"],
+    ["jng/invalid-color-type.jng", "jng.JHDR.color-type", "jng", "1.1.1"],
+  ]
+  citation_uris = {
+    "mng" => "http://www.libpng.org/pub/mng/spec/",
+    "jng" => "http://www.libpng.org/pub/mng/spec/jng.html",
+    "png" => "https://www.w3.org/TR/2003/REC-PNG-20031110/",
+  }
+
+  citation_cases.each do |file, requirement, format, section|
+    it "cites the expected specification section for #{file}" do
+      report = JSON.parse(File.read("#{goldens}/#{file}.json"))
+
+      expect(report.fetch("diagnostics")).to include(
+        include("requirement_id" => requirement,
+                "citations" => include(
+                  include("uri" => citation_uris.fetch(format),
+                          "label" => include("section #{section}:")),
+                )),
+      )
+    end
+  end
   # rubocop:enable RSpec/LeakyLocalVariable
 end
