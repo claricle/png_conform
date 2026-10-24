@@ -59,6 +59,20 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
     expect(snapshot).to eq(before_check)
   end
 
+  %w[ctfn0g04 ctgn0g04 cthn0g04 ctjn0g04].each do |name|
+    it "checks freshly written non-ASCII diagnostics from #{name} by bytes" do
+      fixture = "pngsuite/ancillary/text/#{name}.png"
+      copy_fixture(fixture, fixture)
+      expect(generator.run(["--write"])).to eq(0)
+      expect(File.binread(golden(fixture)).ascii_only?).to be(false)
+      original = snapshot
+
+      expect(generator.run(["--check"])).to eq(0)
+      expect(output.string).to include("5 goldens match")
+      expect(snapshot).to eq(original)
+    end
+  end
+
   it "validates all formats through the normal service in bytewise path order" do
     paths = []
     allow(PngConform::Services::ValidationService).to receive(:validate_file)

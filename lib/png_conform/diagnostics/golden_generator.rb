@@ -76,7 +76,7 @@ module PngConform
         failures = expected.count do |path, bytes|
           problem = if !path.file?
                       "missing"
-                    elsif File.binread(path) != bytes
+                    elsif File.binread(path) != bytes.b
                       "stale (content or ordering differs)"
                     end
           @output.puts "#{problem}: #{relative(path)}" if problem
