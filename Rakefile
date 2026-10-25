@@ -7,17 +7,16 @@ require "rubocop/rake_task"
 RSpec::Core::RakeTask.new(:spec)
 RuboCop::RakeTask.new
 
-default_tasks = %i[spec rubocop]
-
-# Enable the release gate after the reviewed corpus regeneration.
-if Dir.exist?("spec/fixtures/diagnostics")
-  namespace :goldens do
-    desc "Verify structured-diagnostic goldens without writing"
-    task :check do
-      ruby "script/regenerate_diagnostic_goldens", "--check"
-    end
+namespace :diagnostics do
+  desc "Verify checked-in diagnostics goldens without writing files"
+  task :check do
+    ruby "script/regenerate_diagnostic_goldens", "--check"
   end
-  default_tasks << "goldens:check"
 end
 
-task default: default_tasks
+namespace :goldens do
+  desc "Verify structured-diagnostic goldens without writing"
+  task check: "diagnostics:check"
+end
+
+task default: %i[spec rubocop diagnostics:check]

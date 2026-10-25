@@ -141,18 +141,18 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
     ).validation_result
     expect(result.diagnostics.size).to be > 1
     expect(File.binread(golden("pngsuite/a.png"))).to eq(
-      "#{JSON.pretty_generate(result.to_lens_report.to_h.merge('file' => path))}\n",
+      "#{JSON.pretty_generate(result.to_lens_report(filename: path).to_h)}\n",
     )
   end
 
-  it "keeps corpus filenames out of the public report contract" do
+  it "omits the optional filename unless explicitly supplied" do
     result = PngConform::Models::ValidationResult.new(filename: "/host/a.png")
     expect(result.to_lens_report.to_h).not_to have_key("file")
-    expect { result.to_lens_report(filename: "spec/fixtures/a.png") }
-      .to raise_error(ArgumentError, /unknown keyword: :filename/)
+    expect(result.to_lens_report(filename: "spec/fixtures/a.png").to_h)
+      .to include("file" => "spec/fixtures/a.png")
   end
 
-  it "preserves existing diagnostics for a truncated chunk without adding framing rules" do
+  it "preserves main's diagnostics for a truncated chunk" do
     input = "spec/fixtures/pngsuite/truncated.png"
     File.binwrite(File.join(root, input),
                   "\x89PNG\r\n\x1a\n#{[10].pack('N')}IHDRx".b)
@@ -161,7 +161,7 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
 
     expect(report.fetch("valid")).to be(false)
     expect(report.fetch("diagnostics").map { |diagnostic| diagnostic.fetch("requirement_id") })
-      .to eq(%w[png.IHDR.missing png.IEND.missing png.IDAT.missing])
+      .to eq(%w[all.chunk.length-exceeds-data png.IHDR.missing png.IEND.missing png.IDAT.missing])
   end
 
   it "reports missing goldens without creating the output directory" do

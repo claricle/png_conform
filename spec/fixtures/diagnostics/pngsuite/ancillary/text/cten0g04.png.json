@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 7
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Title [en] (Title) = \"PngSuite\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Author [en] (Author) = \"Willem van Schaik (willem@schaik.com)\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 86,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Copyright [en] (Copyright) = \"Copyright Willem van Schaik, Canada 2011\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 154,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Description [en] (Description) = \"A compilation of a set of images created...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 231,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Software [en] (Software) = \"Created on a NeXTstation color using \"pn...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 511,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: Disclaimer [en] (Disclaimer) = \"Freeware.\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 594,
+        "record_type": "iTXt"
+      }
+    }
+  ],
+  "file": "spec/fixtures/pngsuite/ancillary/text/cten0g04.png"
+}

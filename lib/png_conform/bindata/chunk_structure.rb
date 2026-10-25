@@ -35,6 +35,13 @@ module PngConform
       # CRC is calculated over the Type and Data fields
       uint32 :crc
 
+      # Standalone streamed chunks have no parent to supply their file offset.
+      attr_writer :source_offset
+
+      def abs_offset
+        @source_offset || super
+      end
+
       # Convenience accessor for chunk type
       #
       # @return [String] chunk type code

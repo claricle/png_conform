@@ -46,10 +46,24 @@ RSpec.describe "Diagnostic corpus release integration" do
     [JSON.parse(out), status, err]
   end
 
-  it "keeps the default task free of corpus checks before regeneration" do
+  it "checks the reviewed corpus inherited from main without regenerating it" do
+    inherited = PngConform::DiagnosticCorpus.new(repo_root)
+    expect(inherited.goldens).not_to be_empty
+    expect(inherited.check).to be_empty
+  end
+
+  it "preserves the documented diagnostics check task alongside the goldens alias" do
+    corpus.write
     load_tasks do
-      expect(Rake::Task.task_defined?("goldens:check")).to be(false)
-      expect(Rake::Task[:default].prerequisites).to eq(%w[spec rubocop])
+      expect(Rake::Task.task_defined?("diagnostics:check")).to be(true)
+      expect(Rake::Task["goldens:check"].prerequisites).to include("diagnostics:check")
+    end
+  end
+
+  it "keeps the default corpus gate enabled if the inherited goldens are removed" do
+    load_tasks do
+      expect(Rake::Task.task_defined?("goldens:check")).to be(true)
+      expect(Rake::Task[:default].prerequisites).to eq(%w[spec rubocop diagnostics:check])
     end
     expect(Dir.exist?(goldens)).to be(false)
   end
@@ -58,17 +72,16 @@ RSpec.describe "Diagnostic corpus release integration" do
     corpus.write
     load_tasks do
       expect(Rake::Task.task_defined?("goldens:check")).to be(true)
-      expect(Rake::Task[:default].prerequisites).to include("goldens:check")
+      expect(Rake::Task[:default].prerequisites).to include("diagnostics:check")
     end
   end
 
-  it "defers the release examples without generating a baseline" do
+  it "fails the release examples if the inherited baseline is missing" do
     report, status, err = release_examples
 
-    expect(status.exitstatus).to eq(0), err
-    expect(report.fetch("examples")).not_to be_empty
-    expect(report.fetch("examples").map { |example| example.fetch("status") }.uniq)
-      .to eq(["pending"])
+    expect(status.exitstatus).to eq(1), err
+    expect(report.fetch("summary").fetch("failure_count")).to be_positive
+    expect(report.fetch("summary").fetch("pending_count")).to eq(0)
     expect(Dir.exist?(goldens)).to be(false)
   end
 

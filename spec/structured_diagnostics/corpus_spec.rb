@@ -16,10 +16,6 @@ RSpec.describe "Structured diagnostics corpus" do
   end.sort
   golden_files = Dir.glob("#{goldens}/**/*").select { |path| File.file?(path) }
 
-  before do
-    skip "goldens not yet regenerated (card 05 transition)" unless Dir.exist?(goldens)
-  end
-
   it "has exactly one golden per input, with no orphan goldens" do
     expect(inputs).not_to be_empty
     expected = inputs.map do |path|
@@ -38,7 +34,7 @@ RSpec.describe "Structured diagnostics corpus" do
         .validation_result
 
       expect(report.fetch("schema_version")).to eq(LensCore::SCHEMA_VERSION)
-      expect(report).to eq(result.to_lens_report.to_h.merge("file" => relative))
+      expect(report).to eq(result.to_lens_report(filename: relative).to_h)
     end
   end
 

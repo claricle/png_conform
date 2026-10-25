@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": false,
+  "summary": {
+    "errors": 2,
+    "warnings": 0,
+    "infos": 0
+  },
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "value",
+      "requirement_id": "jng.JHDR.color-type",
+      "message": "invalid color type (9, must be one of 8, 10, 12, 14)",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/jng.html",
+          "label": "JNG (JPEG Network Graphics) Format 1.0, section 1.1.1: JHDR JNG header"
+        }
+      ],
+      "context": {
+        "actual": "9",
+        "expected": "8, 10, 12, 14"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 8,
+        "record_type": "JHDR",
+        "field": "color type"
+      }
+    },
+    {
+      "severity": "error",
+      "kind": "ordering",
+      "requirement_id": "jng.JDAT.after-jhdr",
+      "message": "JDAT must appear after JHDR",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/jng.html",
+          "label": "JNG (JPEG Network Graphics) Format 1.0, section 1.1.1: JHDR JNG header"
+        }
+      ],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 36,
+        "record_type": "JDAT"
+      }
+    }
+  ],
+  "file": "spec/fixtures/jng/invalid-color-type.jng"
+}

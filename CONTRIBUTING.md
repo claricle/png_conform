@@ -149,8 +149,7 @@ COVERAGE=true bundle exec rake spec
 
 ### Diagnostic corpus goldens
 
-After the reviewed schema transition, every PNG, MNG and JNG input under
-`spec/fixtures/` will have exactly one
+Every PNG, MNG and JNG input under `spec/fixtures/` has exactly one
 canonical JSON golden under `spec/fixtures/diagnostics/`, mirroring the input
 path with a `.json` suffix (`pngsuite/basic/x.png` becomes
 `diagnostics/pngsuite/basic/x.png.json`). The goldens use the canonical
@@ -165,7 +164,8 @@ bundle exec rspec spec/structured_diagnostics/corpus_harness_spec.rb
 
 # Full-corpus verification: compares every golden, never writes
 script/regenerate_diagnostic_goldens --check
-bundle exec rake goldens:check   # defined once reviewed goldens exist
+bundle exec rake diagnostics:check   # also runs in the default Rake task
+bundle exec rake goldens:check       # alias for diagnostics:check
 bundle exec rspec spec/structured_diagnostics/corpus_spec.rb
 ```
 
@@ -173,12 +173,11 @@ bundle exec rspec spec/structured_diagnostics/corpus_spec.rb
 schema-incompatible, host-dependent, or unrenderable golden. A new fixture
 needs its golden in the same change.
 
-The checked-in corpus spec and default Rake gate activate only once
-`spec/fixtures/diagnostics` exists. This PR adds the harness; it does not
-perform the transition regeneration or mark the prerequisite cards complete.
+The reviewed goldens are inherited unchanged from main. The release gate
+remains active even if the golden directory is removed, so a missing baseline
+fails CI. This harness change does not regenerate the baseline.
 
-Regeneration must wait for cards 03c/04 and the frozen LensCore schema.
-It is a controlled, reviewed step, never part of a normal change:
+Regeneration is a controlled, reviewed step, never part of a normal change:
 
 ```bash
 script/regenerate_diagnostic_goldens --write

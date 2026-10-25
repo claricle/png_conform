@@ -347,7 +347,7 @@ RSpec.describe PngConform::Diagnostics::Catalog do
     it "catalogs the active orchestrator and chunk processor findings the facade delegates to" do
       ids = catalog.select { |r| r.emitters.any? { |e| e.file == "services/validation_orchestrator.rb" } }.map(&:id)
       expect(ids).to contain_exactly(
-        "all.signature.unknown",
+        "all.signature.unknown", "all.chunk.length-exceeds-limit", "all.chunk.length-exceeds-data",
         "png.IHDR.missing", "png.IHDR.first-chunk", "png.IEND.missing", "png.IEND.last-chunk", "png.IDAT.missing",
         "mng.MHDR.missing", "mng.MHDR.first-chunk", "mng.MEND.missing", "mng.MEND.last-chunk",
         "jng.JHDR.missing", "jng.JHDR.first-chunk", "jng.IEND.missing", "jng.IEND.last-chunk", "jng.JDAT.missing"
