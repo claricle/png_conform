@@ -38,5 +38,5 @@ bundle exec rubocop
 
 ## Status
 
-State: done
-PR: https://github.com/claricle/png_conform/pull/12
+State: in progress
+PR: https://github.com/claricle/png_conform/pull/20 (harness; goldens pending)

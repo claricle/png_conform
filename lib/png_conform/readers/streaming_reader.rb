@@ -2,7 +2,6 @@
 
 require_relative "../bindata/chunk_structure"
 require_relative "format_dispatch"
-require_relative "chunk_framing"
 
 module PngConform
   module Readers
@@ -29,7 +28,7 @@ module PngConform
         .pack("C*")
         .freeze
 
-      attr_reader :io, :signature, :format, :total_bytes_read, :framing_error
+      attr_reader :io, :signature, :format, :total_bytes_read
 
       # Initialize a new streaming reader
       #
@@ -42,7 +41,6 @@ module PngConform
         @format = nil
         @chunks_read = 0
         @total_bytes_read = 0
-        @framing_error = nil
         @validate_crc = options.fetch(:validate_crc, true)
       end
 
@@ -75,20 +73,11 @@ module PngConform
 
       # Read the next chunk from the stream
       #
-      # A chunk whose declared length exceeds the format limit or the
-      # remaining bytes ends the stream and is recorded in #framing_error;
-      # nothing is allocated for it.
-      #
       # @return [BinData::ChunkStructure, nil] the next chunk, or nil if EOF
       def read_chunk
-        return nil if @framing_error || @io.eof?
+        return nil if @io.eof?
 
-        @framing_error = ChunkFraming.check(@io, @chunks_read)
-        return nil if @framing_error
-
-        source_offset = @io.pos
         chunk = BinData::ChunkStructure.read(@io)
-        chunk.source_offset = source_offset
 
         # Track total bytes read (8 byte header + data + 4 byte CRC)
         @total_bytes_read += (12 + chunk.data_length)
@@ -168,7 +157,6 @@ module PngConform
         @format = nil
         @chunks_read = 0
         @total_bytes_read = 0
-        @framing_error = nil
       end
 
       # Get file size from total bytes tracked during reading

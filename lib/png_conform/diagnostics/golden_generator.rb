@@ -97,12 +97,12 @@ module PngConform
       end
 
       # Canonical pretty JSON for one input, named by its repo-relative path.
-      # Uses the shared report contract with a repo-relative filename override.
+      # Adds corpus-only filename metadata to the shared report hash.
       # @raise [RenderError] when validation itself raises
       def render(input)
         result = Services::ValidationService.validate_file(File.join(root, input))
           .validation_result
-        report = result.to_lens_report(filename: input).to_h
+        report = result.to_lens_report.to_h.merge("file" => input)
         "#{JSON.pretty_generate(report)}\n"
       rescue StandardError => e
         raise RenderError, "#{input}: #{e.class}: #{e.message}"

@@ -47,20 +47,6 @@ specifications:
     version: "1"
     url: null
 requirements:
-  all.chunk.length-exceeds-data:
-    format: all
-    kind: length
-    severity: error
-    citation: {specification: iso15948, section: "5.3", title: "Chunk layout"}
-    emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"all.chunk.length-exceeds-data\", \"Chunk length #{error.declared_length} exceeds the #{error.available - Readers::ChunkFraming::CRC_BYTES} data bytes remaining\", expected: \"0-#{error.available - Readers::ChunkFraming::CRC_BYTES}\", **detail)"}
-  all.chunk.length-exceeds-limit:
-    format: all
-    kind: length
-    severity: error
-    citation: {specification: iso15948, section: "5.3", title: "Chunk layout"}
-    emitters:
-      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"all.chunk.length-exceeds-limit\", \"Chunk length #{error.declared_length} exceeds the maximum #{Readers::ChunkFraming::MAX_LENGTH}\", expected: \"0-#{Readers::ChunkFraming::MAX_LENGTH}\", **detail)"}
   all.helper.crc:
     format: all
     kind: integrity

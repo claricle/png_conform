@@ -134,13 +134,12 @@ module PngConform
 
       # Complete shared-contract report. No timestamp is stamped, so the
       # same file always yields the same report.
-      def to_lens_report(profile_id: "png", filename: nil)
+      def to_lens_report(profile_id: "png")
         LensCore::Report.new(
           producer: LensCore::Producer.new(name: "png_conform",
                                            version: VERSION),
           profile: LensCore::Profile.new(id: profile_id),
-          diagnostics: diagnostics, valid: valid? && error_count.zero?,
-          extensions: filename.nil? ? {} : { "file" => filename }
+          diagnostics: diagnostics, valid: valid? && error_count.zero?
         )
       end
 

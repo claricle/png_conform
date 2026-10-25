@@ -4,53 +4,85 @@ require "spec_helper"
 require "json"
 require "open3"
 require "rake"
+require "bundler/gem_tasks"
 require "tmpdir"
+require_relative "../support/diagnostic_corpus"
 
 RSpec.describe "Diagnostic corpus release integration" do
-  let(:root) { File.expand_path("../..", __dir__) }
+  let(:repo_root) { File.expand_path("../..", __dir__) }
+  let(:root) { Dir.mktmpdir("corpus-release") }
+  let(:corpus) { PngConform::DiagnosticCorpus.new(root) }
+  let(:goldens) { File.join(root, "spec/fixtures/diagnostics") }
 
-  it "checks the committed corpus successfully through the script" do
-    out, err, status = Open3.capture3(
-      RbConfig.ruby, "script/regenerate_diagnostic_goldens", "--check", chdir: root
-    )
-    count = Dir.glob(File.join(root, "spec/fixtures/diagnostics/**/*.json")).size
-
-    expect(count).to be_positive
-    expect(status.exitstatus).to eq(0), err
-    expect(out).to eq("#{count} goldens match\n")
+  before do
+    FileUtils.mkdir_p(File.join(root, "spec/structured_diagnostics"))
+    FileUtils.mkdir_p(File.join(root, "spec/fixtures"))
+    %w[mng jng].each do |format|
+      FileUtils.cp_r(File.join(repo_root, "spec/fixtures", format),
+                     File.join(root, "spec/fixtures"))
+    end
+    FileUtils.cp(File.join(repo_root, "spec/structured_diagnostics/corpus_spec.rb"),
+                 File.join(root, "spec/structured_diagnostics"))
   end
 
-  it "keeps the corpus check in the default task even when goldens are absent" do
+  after { FileUtils.rm_rf(root) }
+
+  def load_tasks
     original = Rake.application
     Rake.application = Rake::Application.new
-    allow(Dir).to receive(:exist?).and_call_original
-    allow(Dir).to receive(:exist?).with("spec/fixtures/diagnostics").and_return(false)
-    load File.join(root, "Rakefile")
-
-    expect(Rake::Task.task_defined?("diagnostics:check")).to be(true)
-    expect(Rake::Task[:default].prerequisites).to include("diagnostics:check")
+    Dir.chdir(root) { load File.join(repo_root, "Rakefile") }
+    yield
   ensure
     Rake.application = original
   end
 
-  it "preserves the filename override on the canonical report" do
-    input = "spec/fixtures/pngsuite/basic/non_interlaced/basn0g01.png"
-    result = PngConform::Services::ValidationService.validate_file(input).validation_result
-
-    expect(result.to_lens_report(filename: input).to_h)
-      .to include("file" => input)
+  def release_examples
+    out, err, status = Open3.capture3(
+      RbConfig.ruby, "-S", "rspec",
+      File.join(root, "spec/structured_diagnostics/corpus_spec.rb"),
+      "--options", File::NULL, "--require", "spec_helper",
+      "--format", "json", chdir: repo_root
+    )
+    [JSON.parse(out), status, err]
   end
 
-  it "reports a huge truncated chunk through the JSON CLI" do
-    Dir.mktmpdir("oversized-chunk") do |dir|
-      path = File.join(dir, "big.png")
-      fixture = File.binread(File.join(root, "spec/fixtures/pngsuite/basic/non_interlaced/basn0g01.png"))
-      File.binwrite(path, "#{fixture.byteslice(0, 33)}#{[0x7ffffff0].pack('N')}IDAT#{'x' * 20}")
-      out, = Open3.capture3(RbConfig.ruby, "exe/png_conform", "check", "-f", "json", path,
-                            chdir: root)
-
-      expect(JSON.parse(out).fetch("diagnostics"))
-        .to include(include("requirement_id" => "all.chunk.length-exceeds-data"))
+  it "keeps the default task free of corpus checks before regeneration" do
+    load_tasks do
+      expect(Rake::Task.task_defined?("goldens:check")).to be(false)
+      expect(Rake::Task[:default].prerequisites).to eq(%w[spec rubocop])
     end
+    expect(Dir.exist?(goldens)).to be(false)
+  end
+
+  it "enables the default corpus gate after goldens exist" do
+    corpus.write
+    load_tasks do
+      expect(Rake::Task.task_defined?("goldens:check")).to be(true)
+      expect(Rake::Task[:default].prerequisites).to include("goldens:check")
+    end
+  end
+
+  it "defers the release examples without generating a baseline" do
+    report, status, err = release_examples
+
+    expect(status.exitstatus).to eq(0), err
+    expect(report.fetch("examples")).not_to be_empty
+    expect(report.fetch("examples").map { |example| example.fetch("status") }.uniq)
+      .to eq(["pending"])
+    expect(Dir.exist?(goldens)).to be(false)
+  end
+
+  it "runs the release examples and rejects drift after regeneration" do
+    corpus.write
+    report, status, err = release_examples
+    expect(status.exitstatus).to eq(0), err
+    expect(report.fetch("summary").fetch("pending_count")).to eq(0)
+    path = File.join(root, corpus.goldens.first)
+    File.binwrite(path, "{}\n")
+
+    report, status, = release_examples
+    expect(status.exitstatus).to eq(1)
+    expect(report.fetch("summary").fetch("failure_count")).to be_positive
+    expect(File.binread(path)).to eq("{}\n")
   end
 end
