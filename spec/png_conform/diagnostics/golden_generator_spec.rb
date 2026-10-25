@@ -167,6 +167,19 @@ RSpec.describe PngConform::Diagnostics::GoldenGenerator do
       output.rewind
     end
 
+    it "identifies an unreadable golden as a check failure without writes" do
+      path = golden(png)
+      original = snapshot
+      allow(File).to receive(:binread).and_call_original
+      allow(File).to receive(:binread).with(path).and_raise(Errno::EACCES, path)
+
+      expect(generator.run(["--check"])).to eq(1)
+      expect(output.string).to include("check failed:", "Permission denied", path)
+      expect(output.string).not_to include("refusing to write")
+      allow(File).to receive(:binread).with(path).and_call_original
+      expect(snapshot).to eq(original)
+    end
+
     it "reports missing, extra and stale files together without writes" do
       File.delete(golden(png))
       File.binwrite(golden("extra.png"), "{}\n")

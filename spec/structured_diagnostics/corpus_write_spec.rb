@@ -53,6 +53,16 @@ RSpec.describe "Diagnostic corpus write failures" do
     expect(corpus.check.map(&:kind)).to include(:extra)
   end
 
+  it "refuses a regular file at the golden directory path without deleting it" do
+    File.binwrite(target, "keep")
+
+    expect { corpus.write }.to raise_error(/dirty golden tree/)
+    expect(File.binread(target)).to eq("keep")
+    expect(corpus.check.map { |problem| [problem.kind, problem.path] })
+      .to include([:extra, PngConform::DiagnosticCorpus::GOLDENS])
+    expect(corpus).not_to have_received(:render)
+  end
+
   it "retains a recoverable backup if rollback also fails" do
     corpus.write
     allow(File).to receive(:rename).and_wrap_original do |method, source, destination|

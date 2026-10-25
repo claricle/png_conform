@@ -66,7 +66,8 @@ module PngConform
         @output.puts "#{inputs.size} goldens match"
         0
       rescue RuntimeError, SystemCallError, RenderError => e
-        @output.puts "refusing to write: #{e.message}"
+        action = arguments == ["--write"] ? "refusing to write" : "check failed"
+        @output.puts "#{action}: #{e.message}"
         1
       end
 
@@ -87,6 +88,9 @@ module PngConform
 
       # Repo-relative golden paths actually present, bytewise sorted.
       def goldens
+        target = File.join(root, @golden_directory)
+        return [@golden_directory] if File.exist?(target) && !File.directory?(target)
+
         Dir.glob("#{@golden_directory}/**/*", File::FNM_DOTMATCH, base: root).select do |path|
           File.file?(File.join(root, path))
         end.sort_by(&:b)
