@@ -41,6 +41,16 @@ RSpec.describe "Structured diagnostic corpus" do
       expect(corpus.inputs).to eq(copied.sort_by(&:b))
     end
 
+    it "requires a golden for a new fixture directory" do
+      corpus.write
+      input = "spec/fixtures/newset/b.png"
+      FileUtils.mkdir_p(File.join(root, File.dirname(input)))
+      FileUtils.cp(File.join(repo_root, copied.first), File.join(root, input))
+
+      expect(corpus.check.map { |problem| [problem.kind, problem.path] })
+        .to include([:missing, "spec/fixtures/diagnostics/newset/b.png.json"])
+    end
+
     it "names each golden by mirroring the input path" do
       expect(corpus.golden_path(copied.first))
         .to eq("spec/fixtures/diagnostics/pngsuite/basic/non_interlaced/" \

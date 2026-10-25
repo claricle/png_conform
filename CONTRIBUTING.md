@@ -149,7 +149,7 @@ COVERAGE=true bundle exec rake spec
 
 ### Diagnostic corpus goldens
 
-Every fixture input (`spec/fixtures/{pngsuite,idot,mng,jng}`) has exactly one
+Every PNG, MNG and JNG input anywhere under `spec/fixtures/` has exactly one
 canonical JSON golden under `spec/fixtures/diagnostics/`, mirroring the input
 path with a `.json` suffix (`pngsuite/basic/x.png` becomes
 `diagnostics/pngsuite/basic/x.png.json`). The goldens use the canonical
