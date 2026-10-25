@@ -53,7 +53,7 @@ if modes.first == :write
 else
   problems = corpus.check
   if problems.empty?
-    puts "#{corpus.inputs.size} goldens current"
+    puts "#{corpus.inputs.size} goldens match"
   else
     problems.each { |problem| warn problem }
     warn "#{problems.size} problem(s); run with --write only for a reviewed transition"

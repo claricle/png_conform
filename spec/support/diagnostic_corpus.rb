@@ -2,10 +2,8 @@
 
 require "fileutils"
 require "json"
-require "stringio"
 require "tmpdir"
 require "png_conform"
-require "png_conform/reporters/json_reporter"
 
 module PngConform
   # Mirrors every checked-in fixture as a canonical JSON golden and compares
@@ -68,16 +66,13 @@ module PngConform
     end
 
     # Canonical pretty JSON for one input, named by its repo-relative path.
-    # Runs from the repo root so the recorded filename never depends on the
-    # caller's directory.
+    # Uses the shared report contract with a repo-relative filename override.
     # @raise [RenderError] when validation itself raises
     def render(input)
-      analysis = Dir.chdir(root) do
-        Services::ValidationService.validate_file(input)
-      end
-      out = StringIO.new
-      Reporters::JsonReporter.new(out, colorize: false).report(analysis)
-      out.string
+      result = Services::ValidationService.validate_file(File.join(root, input))
+        .validation_result
+      report = result.to_lens_report(filename: input).to_h
+      "#{JSON.pretty_generate(report)}\n"
     rescue StandardError => e
       raise RenderError, "#{input}: #{e.class}: #{e.message}"
     end
@@ -189,7 +184,7 @@ module PngConform
     end
 
     def compare(path, input, actual)
-      fresh = render(input)
+      fresh = render(input).b
       problems = self.class.document_problems(path, actual, root: root)
       return problems if actual == fresh
 

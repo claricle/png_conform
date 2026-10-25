@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 1
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-value",
+      "message": "gAMA: 2.50000",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    }
+  ],
+  "file": "spec/fixtures/pngsuite/gamma/g25n3p04.png"
+}

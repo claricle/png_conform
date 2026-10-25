@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": false,
+  "summary": {
+    "errors": 1,
+    "warnings": 0,
+    "infos": 1
+  },
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "presence",
+      "requirement_id": "all.signature.unknown",
+      "message": "Unrecognized file signature (not PNG, MNG or JNG)",
+      "citations": [
+        {
+          "uri": "https://www.w3.org/TR/2003/REC-PNG-20031110/",
+          "label": "ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 5.2: PNG signature"
+        }
+      ],
+      "context": {
+        "actual": "89 50 4e 47 0d 0a 20 0a"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 0,
+        "record_type": "SIGNATURE",
+        "field": "signature"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    }
+  ],
+  "file": "spec/fixtures/pngsuite/corrupted/xs7n0g01.png"
+}

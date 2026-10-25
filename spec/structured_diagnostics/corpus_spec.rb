@@ -2,211 +2,94 @@
 
 require "spec_helper"
 require "json"
-require "open3"
-require "tmpdir"
 require "yaml"
-require_relative "../support/diagnostic_corpus"
 
-RSpec.describe "Structured diagnostic corpus" do
-  let(:repo_root) { File.expand_path("../..", __dir__) }
-  let(:script) { File.join(repo_root, "script/regenerate_diagnostic_goldens") }
+RSpec.describe "Structured diagnostics corpus" do
+  # rubocop:disable RSpec/LeakyLocalVariable -- data-driven corpus examples
+  root = File.expand_path("../..", __dir__)
+  fixtures = File.join(root, "spec/fixtures")
+  goldens = File.join(fixtures, "diagnostics")
+  extensions = %w[.png .mng .jng].freeze
+  inputs = Dir.glob("#{fixtures}/**/*").select do |path|
+    File.file?(path) && extensions.include?(File.extname(path).downcase) &&
+      !path.start_with?("#{goldens}/")
+  end.sort
+  golden_files = Dir.glob("#{goldens}/**/*").select { |path| File.file?(path) }
 
-  # A scratch repo root holding one input per format, copied from the real
-  # fixtures, so the harness is exercised without the full corpus.
-  describe "harness behaviour" do
-    let(:root) { Dir.mktmpdir("diagnostic-corpus") }
-    let(:corpus) { PngConform::DiagnosticCorpus.new(root) }
-    let(:copied) do
-      %w[
-        spec/fixtures/pngsuite/basic/non_interlaced/basn0g01.png
-        spec/fixtures/mng/valid-minimal.mng
-        spec/fixtures/jng/invalid-missing-jdat.jng
-      ]
+  it "has exactly one golden per input, with no orphan goldens" do
+    expect(inputs).not_to be_empty
+    expected = inputs.map do |path|
+      "#{goldens}/#{path.delete_prefix("#{fixtures}/")}.json"
     end
+    expect(golden_files).to match_array(expected)
+  end
 
-    before do
-      copied.each do |path|
-        FileUtils.mkdir_p(File.join(root, File.dirname(path)))
-        FileUtils.cp(File.join(repo_root, path), File.join(root, path))
-      end
-    end
+  inputs.each do |input|
+    relative = input.delete_prefix("#{root}/")
+    golden = "#{goldens}/#{input.delete_prefix("#{fixtures}/")}.json"
 
-    after { FileUtils.rm_rf(root) } # best effort: Windows may still hold input handles
+    it "matches the complete report for #{relative}", :aggregate_failures do
+      report = JSON.parse(File.read(golden))
+      result = PngConform::Services::ValidationService.validate_file(input)
+        .validation_result
 
-    def golden(path)
-      File.join(root, corpus.golden_path(path))
-    end
-
-    it "lists inputs across formats in bytewise sorted order" do
-      expect(corpus.inputs).to eq(copied.sort_by(&:b))
-    end
-
-    it "names each golden by mirroring the input path" do
-      expect(corpus.golden_path(copied.first))
-        .to eq("spec/fixtures/diagnostics/pngsuite/basic/non_interlaced/" \
-               "basn0g01.png.json")
-    end
-
-    it "reports every input missing before any write" do
-      expect(corpus.check.map(&:kind)).to eq(%i[missing] * copied.size)
-    end
-
-    it "writes one golden per input without host paths" do
-      corpus.write
-      expect(corpus.goldens.size).to eq(copied.size)
-      text = File.read(golden(copied.first))
-      expect(JSON.parse(text)["filename"]).to eq(copied.first)
-      expect(text).not_to include(root)
-    end
-
-    it "is byte-identical on repeated generation" do
-      first = corpus.write.to_h { |p| [p, File.binread(File.join(root, p))] }
-      second = corpus.write.to_h { |p| [p, File.binread(File.join(root, p))] }
-      expect(second).to eq(first)
-    end
-
-    context "when validation raises on an input" do
-      before do
-        allow(PngConform::Services::ValidationService)
-          .to receive(:validate_file).and_raise(Errno::EINVAL)
-      end
-
-      it "refuses to write and leaves no partial goldens" do
-        expect { corpus.write }
-          .to raise_error(PngConform::DiagnosticCorpus::RenderError)
-        expect(corpus.goldens).to be_empty
-      end
-    end
-
-    context "with a written corpus" do
-      before { corpus.write }
-
-      def kinds
-        corpus.check.map(&:kind)
-      end
-
-      it "reports an input that cannot be rendered" do
-        allow(PngConform::Services::ValidationService)
-          .to receive(:validate_file).and_raise(Errno::EINVAL)
-        expect(kinds).to include(:render)
-      end
-
-      it "detects a missing golden" do
-        File.delete(golden(copied.first))
-        expect(kinds).to include(:missing)
-      end
-
-      it "detects an extra golden" do
-        extra = File.join(root, "spec/fixtures/diagnostics/mng/ghost.mng.json")
-        File.write(extra, "{}\n")
-        expect(kinds).to include(:extra)
-      end
-
-      it "detects a stale golden" do
-        document = JSON.parse(File.read(golden(copied.first)))
-        document["valid"] = !document["valid"]
-        File.write(golden(copied.first), JSON.pretty_generate(document))
-        expect(kinds).to include(:stale)
-      end
-
-      it "detects reordered output" do
-        document = JSON.parse(File.read(golden(copied.first)))
-        File.write(golden(copied.first),
-                   JSON.pretty_generate(document.to_a.reverse.to_h) << "\n")
-        expect(kinds).to include(:reordered)
-      end
-
-      it "detects host-dependent paths" do
-        problems = PngConform::DiagnosticCorpus.document_problems(
-          "x.json", JSON.generate("schema_version" => LensCore::SCHEMA_VERSION,
-                                  "filename" => "/Users/someone/x.png")
-        )
-        expect(problems.map(&:kind)).to eq(%i[host])
-      end
-
-      it "refuses a schema version it does not understand" do
-        problems = PngConform::DiagnosticCorpus.document_problems(
-          "x.json", JSON.generate("schema_version" => LensCore::SCHEMA_VERSION + 1)
-        )
-        expect(problems.map(&:kind)).to eq(%i[schema])
-      end
-
-      it "does not write while checking" do
-        File.delete(golden(copied.first))
-        corpus.check
-        expect(File).not_to exist(golden(copied.first))
-      end
-
-      it "refuses to write over a dirty golden tree" do
-        File.write(File.join(root, "spec/fixtures/diagnostics/stray.txt"), "x")
-        expect { corpus.write }.to raise_error(/dirty golden tree/)
-      end
+      expect(report.fetch("schema_version")).to eq(LensCore::SCHEMA_VERSION)
+      expect(report).to eq(result.to_lens_report(filename: relative).to_h)
     end
   end
 
-  describe "script/regenerate_diagnostic_goldens" do
-    it "rejects an unknown option with status 2" do
-      _out, _err, status = Open3.capture3(RbConfig.ruby, script, "--bogus", chdir: repo_root)
-      expect(status.exitstatus).to eq(2)
-    end
+  it "includes valid reports and preserves their absence of errors" do
+    reports = golden_files.map { |path| JSON.parse(File.read(path)) }
+    valid_reports = reports.select { |report| report.fetch("valid") }
 
-    it "requires exactly one mode" do
-      _out, _err, status = Open3.capture3(RbConfig.ruby, script, "--check", "--write",
-                                          chdir: repo_root)
-      expect(status.exitstatus).to eq(2)
-    end
+    expect(valid_reports).not_to be_empty
+    diagnostics = valid_reports.flat_map { |report| report.fetch("diagnostics") }
+    expect(diagnostics).not_to include(include("severity" => "error"))
   end
 
-  # The release gate itself. Skipped only while no goldens are checked in,
-  # i.e. before the single reviewed regeneration; once they exist these
-  # examples run on every CI build and never write.
-  describe "checked-in corpus" do
-    let(:corpus) { PngConform::DiagnosticCorpus.new(repo_root) }
-    let(:golden_dir) { File.join(repo_root, PngConform::DiagnosticCorpus::GOLDENS) }
-
-    before do
-      skip "goldens not yet regenerated (card 05 transition)" unless
-        Dir.exist?(golden_dir)
-    end
-
-    it "has exactly one golden per fixture input, across all formats" do
-      expect(corpus.goldens)
-        .to eq(corpus.inputs.map { |input| corpus.golden_path(input) }.sort_by(&:b))
-    end
-
-    it "covers PNG, MNG and JNG inputs" do
-      extensions = corpus.inputs.map { |input| File.extname(input) }.uniq
-      expect(extensions).to include(".png", ".mng", ".jng")
-    end
-
-    it "has parseable goldens at the current schema version" do
-      versions = corpus.goldens.map do |path|
-        JSON.parse(File.read(File.join(repo_root, path)))["schema_version"]
-      end
-      expect(versions.uniq).to eq([LensCore::SCHEMA_VERSION])
-    end
-
-    it "matches fresh output exactly, in deterministic order" do
-      expect(corpus.check.map(&:to_s)).to eq([])
-    end
-
-    %w[mng jng].each do |format|
-      it "records declared validity for each #{format.upcase} fixture" do
-        manifest = YAML.safe_load_file(
-          File.join(repo_root, "spec/fixtures/#{format}/fixtures.yml"),
-        )
-        manifest["fixtures"].each do |entry|
-          input = "spec/fixtures/#{format}/#{entry['file']}"
-          document = JSON.parse(
-            File.read(File.join(repo_root, corpus.golden_path(input))),
-          )
-          expect(document["valid"]).to eq(entry["expected_validity"] == "valid"),
-                                       entry["file"]
-          next unless entry["expected_validity"] == "valid"
-
-          expect(document["errors"].to_a).to eq([]), entry["file"]
-        end
+  %w[mng jng].each do |format|
+    metadata = YAML.safe_load_file("#{fixtures}/#{format}/fixtures.yml")
+    metadata.fetch("fixtures").each do |entry|
+      it "preserves expected validity for #{format}/#{entry.fetch('file')}" do
+        report = JSON.parse(File.read(
+                              "#{goldens}/#{format}/#{entry.fetch('file')}.json",
+                            ))
+        expect(report.fetch("valid"))
+          .to eq(entry.fetch("expected_validity") == "valid")
       end
     end
   end
+  # Independent expectations for the invalid cases described in fixtures.yml.
+  # Keep these separate from the validator's citation registry so regeneration
+  # cannot silently bless a missing or incorrect format-specific citation.
+  citation_cases = [
+    ["mng/invalid-missing-mend.mng", "mng.MEND.missing", "mng", "4.1.2"],
+    ["mng/invalid-mhdr-not-first.mng", "mng.MHDR.first-chunk", "mng", "4.1.1"],
+    ["mng/invalid-zero-dimensions.mng", "mng.MHDR.frame-dimensions-zero", "mng", "4.1.1"],
+    ["mng/invalid-bad-crc.mng", "mng.MHDR.crc", "png", "5.5"],
+    ["jng/invalid-missing-jdat.jng", "jng.JDAT.missing", "jng", "1.1.2"],
+    ["jng/invalid-missing-iend.jng", "jng.IEND.missing", "jng", "1.1.6"],
+    ["jng/invalid-compression-method.jng", "jng.JHDR.image-compression-method", "jng", "1.1.1"],
+    ["jng/invalid-color-type.jng", "jng.JHDR.color-type", "jng", "1.1.1"],
+  ]
+  citation_uris = {
+    "mng" => "http://www.libpng.org/pub/mng/spec/",
+    "jng" => "http://www.libpng.org/pub/mng/spec/jng.html",
+    "png" => "https://www.w3.org/TR/2003/REC-PNG-20031110/",
+  }
+
+  citation_cases.each do |file, requirement, format, section|
+    it "cites the expected specification section for #{file}" do
+      report = JSON.parse(File.read("#{goldens}/#{file}.json"))
+
+      expect(report.fetch("diagnostics")).to include(
+        include("requirement_id" => requirement,
+                "citations" => include(
+                  include("uri" => citation_uris.fetch(format),
+                          "label" => include("section #{section}:")),
+                )),
+      )
+    end
+  end
+  # rubocop:enable RSpec/LeakyLocalVariable
 end

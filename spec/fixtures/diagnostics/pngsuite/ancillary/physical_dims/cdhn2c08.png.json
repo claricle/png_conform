@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 3
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.sBIT.bits-rgb",
+      "message": "sBIT: R=4, G=4, B=4",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "sBIT"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.pHYs.non-square-pixels",
+      "message": "pHYs: non-square pixels (aspect ratio 4.000)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 64,
+        "record_type": "pHYs"
+      }
+    }
+  ],
+  "file": "spec/fixtures/pngsuite/ancillary/physical_dims/cdhn2c08.png"
+}

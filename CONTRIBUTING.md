@@ -152,18 +152,21 @@ COVERAGE=true bundle exec rake spec
 Every fixture input (`spec/fixtures/{pngsuite,idot,mng,jng}`) has exactly one
 canonical JSON golden under `spec/fixtures/diagnostics/`, mirroring the input
 path with a `.json` suffix (`pngsuite/basic/x.png` becomes
-`diagnostics/pngsuite/basic/x.png.json`). The goldens are the reporter's JSON
-output with the filename normalized to a repo-relative path. They pin rule
+`diagnostics/pngsuite/basic/x.png.json`). The goldens use the canonical
+LensCore report contract, with the input path recorded in the `file` extension
+as a repo-relative path. They pin rule
 and report behavior, so a change that alters diagnostics fails CI until the
 change is reviewed.
 
 ```bash
 # Targeted check while developing (fast, a handful of fixtures)
-bundle exec rspec spec/structured_diagnostics/corpus_spec.rb
+bundle exec rspec spec/structured_diagnostics/corpus_harness_spec.rb
 
 # Full-corpus verification: compares every golden, never writes
 script/regenerate_diagnostic_goldens --check
-bundle exec rake goldens:check   # same check, via Rake (defined once goldens exist)
+bundle exec rake diagnostics:check   # also runs in the default Rake task
+bundle exec rake goldens:check       # alias for diagnostics:check
+bundle exec rspec spec/structured_diagnostics/corpus_spec.rb
 ```
 
 `--check` exits 1 and names each missing, extra, stale, reordered,
@@ -179,8 +182,8 @@ script/regenerate_diagnostic_goldens --write
 `--write` is all-or-nothing. It processes inputs in bytewise sorted order, and
 it refuses to run if the golden tree holds files that match no fixture or if
 any input cannot be rendered. Output is staged before replacing the golden
-tree, so a failed write preserves the existing goldens. After a write, review the complete golden diff
-once as its own commit (do not mix it with code changes), then rely on
+tree, so a failed write preserves the existing goldens. After a write, review
+the complete golden diff once as its own commit (do not mix it with code changes), then rely on
 `--check` in CI. Never regenerate to make a failing check pass without
 understanding each changed golden. Fixture counts are asserted by the corpus
 spec, not hand-maintained here.

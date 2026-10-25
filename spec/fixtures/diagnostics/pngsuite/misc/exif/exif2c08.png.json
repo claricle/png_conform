@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 1
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.chunk.unknown-ancillary",
+      "message": "Unknown ancillary chunk type: eXIf (ignored)",
+      "citations": [],
+      "context": {
+        "actual": "eXIf"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "eXIf",
+        "field": "chunk type"
+      }
+    }
+  ],
+  "file": "spec/fixtures/pngsuite/misc/exif/exif2c08.png"
+}

@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "producer": {
+    "name": "png_conform",
+    "version": "0.1.4"
+  },
+  "profile": {
+    "id": "png",
+    "citations": []
+  },
+  "valid": true,
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "infos": 5
+  },
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.sRGB.rendering-intent",
+      "message": "sRGB: perceptual rendering intent",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "sRGB"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.chunk.unknown-ancillary",
+      "message": "Unknown ancillary chunk type: eXIf (ignored)",
+      "citations": [],
+      "context": {
+        "actual": "eXIf"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 46,
+        "record_type": "eXIf",
+        "field": "chunk type"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.pHYs.dpi",
+      "message": "pHYs: 144 DPI",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 208,
+        "record_type": "pHYs"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iTXt.text-content",
+      "message": "iTXt: XML:com.adobe.xmp = \"<x:xmpmeta xmlns:x=\"adobe:ns:meta/\" x:xm...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 229,
+        "record_type": "iTXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.iDOT.apple-display-optimization",
+      "message": "iDOT: Apple display optimization (33554432, 0, 436207616, 671088640, 436207616, 436207616, 4261740544)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 710,
+        "record_type": "iDOT"
+      }
+    }
+  ],
+  "file": "spec/fixtures/idot/name-screenshot.png"
+}
