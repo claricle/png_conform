@@ -3,6 +3,7 @@
 require "fileutils"
 require "json"
 require "stringio"
+require "tmpdir"
 require "png_conform"
 require "png_conform/reporters/json_reporter"
 
@@ -61,7 +62,7 @@ module PngConform
 
     # Repo-relative golden paths actually present, bytewise sorted.
     def goldens
-      Dir.glob("#{GOLDENS}/**/*", base: root).select do |path|
+      Dir.glob("#{GOLDENS}/**/*", File::FNM_DOTMATCH, base: root).select do |path|
         File.file?(File.join(root, path))
       end.sort_by(&:b)
     end
@@ -101,11 +102,7 @@ module PngConform
       end
 
       rendered = inputs.to_h { |input| [golden_path(input), render(input)] }
-      rendered.each do |path, text|
-        target = File.join(root, path)
-        FileUtils.mkdir_p(File.dirname(target))
-        File.binwrite(target, text)
-      end
+      install(rendered)
       rendered.keys
     end
 
@@ -146,6 +143,38 @@ module PngConform
     end
 
     private
+
+    # Stage on the same filesystem, preserving the old tree if installation fails.
+    def install(rendered)
+      parent = File.join(root, FIXTURES)
+      target = File.join(root, GOLDENS)
+      stage = Dir.mktmpdir("diagnostic-goldens-", parent)
+      installed = false
+      begin
+        replacement = File.join(stage, "replacement")
+        backup = File.join(stage, "backup")
+        FileUtils.mkdir_p(replacement)
+        rendered.each do |path, text|
+          staged = File.join(replacement, path.delete_prefix("#{GOLDENS}/"))
+          FileUtils.mkdir_p(File.dirname(staged))
+          File.binwrite(staged, text)
+        end
+        File.rename(target, backup) if File.exist?(target)
+        begin
+          File.rename(replacement, target)
+          installed = true
+        rescue SystemCallError
+          begin
+            File.rename(backup, target) if File.exist?(backup)
+          rescue SystemCallError => e
+            raise "cannot restore goldens; backup preserved at #{backup}: #{e.message}"
+          end
+          raise
+        end
+      ensure
+        FileUtils.remove_entry(stage) if installed || !File.exist?(backup)
+      end
+    end
 
     def missing_and_stale(expected)
       expected.flat_map do |path, input|

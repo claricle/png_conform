@@ -45,7 +45,7 @@ corpus = PngConform::DiagnosticCorpus.new(root)
 if modes.first == :write
   begin
     written = corpus.write
-  rescue RuntimeError, PngConform::DiagnosticCorpus::RenderError => e
+  rescue RuntimeError, SystemCallError, PngConform::DiagnosticCorpus::RenderError => e
     warn "refusing to write: #{e.message}"
     exit 1
   end

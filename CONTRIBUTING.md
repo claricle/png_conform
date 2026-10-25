@@ -178,7 +178,8 @@ script/regenerate_diagnostic_goldens --write
 
 `--write` is all-or-nothing. It processes inputs in bytewise sorted order, and
 it refuses to run if the golden tree holds files that match no fixture or if
-any input cannot be rendered. After a write, review the complete golden diff
+any input cannot be rendered. Output is staged before replacing the golden
+tree, so a failed write preserves the existing goldens. After a write, review the complete golden diff
 once as its own commit (do not mix it with code changes), then rely on
 `--check` in CI. Never regenerate to make a failing check pass without
 understanding each changed golden. Fixture counts are asserted by the corpus
