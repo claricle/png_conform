@@ -1,0 +1,118 @@
+---
+schema_version: 1
+filename: spec/fixtures/idot/white-10x10-noalpha.png
+file_type: PNG
+file_size: 1131
+compression_ratio: -97.0
+crc_errors_count: 0
+valid: true
+image:
+  width: 20
+  height: 20
+  bit_depth: 8
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 8
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - cHRM
+  - eXIf
+  - gAMA
+  - iTXt
+  - pHYs
+errors:
+- severity: info
+  message: 'gAMA: 2.2 (standard display gamma)'
+  chunk_type: gAMA
+- severity: info
+  message: 'cHRM: white=(0.3127, 0.3290)'
+  chunk_type: cHRM
+- severity: info
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  chunk_type: eXIf
+  actual: eXIf
+- severity: info
+  message: 'pHYs: 144 DPI'
+  chunk_type: pHYs
+- severity: info
+  message: 'iTXt: XML:com.adobe.xmp = "<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xm..."'
+  chunk_type: iTXt
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-standard
+  message: 'gAMA: 2.2 (standard display gamma)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.cHRM.white-point
+  message: 'cHRM: white=(0.3127, 0.3290)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: cHRM
+- severity: info
+  kind: information
+  requirement_id: info.png.chunk.unknown-ancillary
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  citations: []
+  context:
+    actual: eXIf
+  location:
+    type: binary
+    byte_offset: 93
+    record_type: eXIf
+    field: chunk type
+- severity: info
+  kind: information
+  requirement_id: info.png.pHYs.dpi
+  message: 'pHYs: 144 DPI'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 267
+    record_type: pHYs
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: XML:com.adobe.xmp = "<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xm..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 288
+    record_type: iTXt
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :remove_chunks
+    :priority: :medium
+    :savings_bytes: 21
+    :description: Remove 1 unnecessary chunks (pHYs)
+    :chunks:
+    - pHYs
+  - :type: :reduce_metadata
+    :priority: :low
+    :savings_bytes: 783
+    :description: 1 text chunks using 783 bytes (consider removing non-essential metadata)
+    :chunks:
+    - iTXt
+  - :type: :excessive_metadata
+    :priority: :medium
+    :savings_bytes: 804
+    :description: Metadata comprises 71.1% of file size (804 bytes)
+    :recommendation: Review if all metadata is necessary
+  total_savings_bytes: 1608
+  total_savings_percent: 142.2

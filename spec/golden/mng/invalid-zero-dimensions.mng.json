@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/mng/invalid-zero-dimensions.mng",
+  "file_type": "MNG",
+  "file_size": 60,
+  "compression_ratio": 0.0,
+  "crc_errors_count": 0,
+  "valid": false,
+  "chunks": {
+    "total": 2,
+    "types": [
+      "MEND",
+      "MHDR"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "MHDR frame dimensions must be > 0",
+      "chunk_type": "MHDR"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "value",
+      "requirement_id": "mng.MHDR.frame-dimensions-zero",
+      "message": "MHDR frame dimensions must be > 0",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/",
+          "label": "MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section 4.1.1: MHDR MNG datastream header"
+        }
+      ],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 8,
+        "record_type": "MHDR"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

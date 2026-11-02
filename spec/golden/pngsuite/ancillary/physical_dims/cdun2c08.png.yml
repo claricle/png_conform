@@ -1,0 +1,76 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/ancillary/physical_dims/cdun2c08.png
+file_type: PNG
+file_size: 724
+compression_ratio: -80.2
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 6
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+  - pHYs
+  - sBIT
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'sBIT: R=4, G=4, B=4'
+  chunk_type: sBIT
+- severity: info
+  message: 'pHYs: 25 DPI'
+  chunk_type: pHYs
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.sBIT.bits-rgb
+  message: 'sBIT: R=4, G=4, B=4'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: sBIT
+- severity: info
+  kind: information
+  requirement_id: info.png.pHYs.dpi
+  message: 'pHYs: 25 DPI'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 64
+    record_type: pHYs
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :remove_chunks
+    :priority: :medium
+    :savings_bytes: 21
+    :description: Remove 1 unnecessary chunks (pHYs)
+    :chunks:
+    - pHYs
+  total_savings_bytes: 21
+  total_savings_percent: 2.9

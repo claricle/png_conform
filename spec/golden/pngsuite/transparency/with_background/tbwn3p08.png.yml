@@ -1,0 +1,54 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/transparency/with_background/tbwn3p08.png
+file_type: PNG
+file_size: 1496
+compression_ratio: -38.4
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: palette
+  interlaced: false
+chunks:
+  total: 7
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - PLTE
+  - bKGD
+  - gAMA
+  - tRNS
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'bKGD: palette index = 0'
+  chunk_type: bKGD
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.bKGD.palette-index
+  message: 'bKGD: palette index = 0'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 809
+    record_type: bKGD
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

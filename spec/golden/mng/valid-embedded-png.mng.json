@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/mng/valid-embedded-png.mng",
+  "file_type": "MNG",
+  "file_size": 123,
+  "compression_ratio": 0.0,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 8,
+    "height": 8,
+    "bit_depth": 8,
+    "color_type": "grayscale",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 5,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "MEND",
+      "MHDR"
+    ]
+  },
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

@@ -1,0 +1,48 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/basic/non_interlaced/basn2c16.png
+file_type: PNG
+file_size: 302
+compression_ratio: -96.3
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 16
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 4
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :reduce_bit_depth
+    :priority: :high
+    :savings_bytes: 135
+    :description: Convert from 16-bit to 8-bit depth (estimated ~45% file size reduction)
+    :current: 16-bit
+    :recommended: 8-bit
+  total_savings_bytes: 135
+  total_savings_percent: 44.7

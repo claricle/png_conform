@@ -1,0 +1,144 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/ancillary/text/ctgn0g04.png
+file_type: PNG
+file_size: 1182
+compression_ratio: -82.9
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 4
+  color_type: grayscale
+  interlaced: false
+chunks:
+  total: 10
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+  - iTXt
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'iTXt: Title [el] (Τίτλος) = "PngSuite"'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Author [el] (Συγγραφέας) = "Willem van Schaik (willem@schaik.com)"'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά δικαιώματα
+    Schaik van Willem,..."'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από ένα σύνολο εικόνων
+    που δ..."'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε σε ένα χρώμα NeXTstation
+    χ..."'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Disclaimer [el] (Αποποίηση) = "Δωρεάν λογισμικό."'
+  chunk_type: iTXt
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Title [el] (Τίτλος) = "PngSuite"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Author [el] (Συγγραφέας) = "Willem van Schaik (willem@schaik.com)"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 93
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά δικαιώματα
+    Schaik van Willem,..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 175
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από ένα σύνολο εικόνων
+    που δ..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 324
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε σε ένα χρώμα NeXTstation
+    χ..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 837
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Disclaimer [el] (Αποποίηση) = "Δωρεάν λογισμικό."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 986
+    record_type: iTXt
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :reduce_metadata
+    :priority: :low
+    :savings_bytes: 1016
+    :description: 6 text chunks using 1016 bytes (consider removing non-essential
+      metadata)
+    :chunks:
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+  - :type: :excessive_metadata
+    :priority: :medium
+    :savings_bytes: 1016
+    :description: Metadata comprises 86.0% of file size (1016 bytes)
+    :recommendation: Review if all metadata is necessary
+  total_savings_bytes: 2032
+  total_savings_percent: 171.9

@@ -1,0 +1,58 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/corrupted/xs1n0g01.png
+file_type: UNKNOWN
+file_size: 164
+compression_ratio: 0.0
+crc_errors_count: 0
+valid: false
+image:
+  width: 32
+  height: 32
+  bit_depth: 1
+  color_type: grayscale
+  interlaced: false
+chunks:
+  total: 4
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+errors:
+- severity: error
+  message: Unrecognized file signature (not PNG, MNG or JNG)
+  chunk_type: SIGNATURE
+  actual: '09 50 4e 47 0d 0a 1a 0a'
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+diagnostics:
+- severity: error
+  kind: presence
+  requirement_id: all.signature.unknown
+  message: Unrecognized file signature (not PNG, MNG or JNG)
+  citations:
+  - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      5.2: PNG signature'
+  context:
+    actual: '09 50 4e 47 0d 0a 1a 0a'
+  location:
+    type: binary
+    byte_offset: 0
+    record_type: SIGNATURE
+    field: signature
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

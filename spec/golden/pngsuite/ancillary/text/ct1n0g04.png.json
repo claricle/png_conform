@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/ancillary/text/ct1n0g04.png",
+  "file_type": "PNG",
+  "file_size": 792,
+  "compression_ratio": -63.2,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 32,
+    "height": 32,
+    "bit_depth": 4,
+    "color_type": "grayscale",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 10,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "gAMA",
+      "tEXt"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "info",
+      "message": "gAMA: 1.0 (linear)",
+      "chunk_type": "gAMA"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Title = \"PngSuite\"",
+      "chunk_type": "tEXt"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Author = \"Willem A.J. van Schaik\n(willem@schaik.co...\"",
+      "chunk_type": "tEXt"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Copyright = \"Copyright Willem van Schaik, Singapore 1...\"",
+      "chunk_type": "tEXt"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Description = \"A compilation of a set of images created...\"",
+      "chunk_type": "tEXt"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Software = \"Created on a NeXTstation color using \"pn...\"",
+      "chunk_type": "tEXt"
+    },
+    {
+      "severity": "info",
+      "message": "tEXt: Disclaimer = \"Freeware.\"",
+      "chunk_type": "tEXt"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Title = \"PngSuite\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "tEXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Author = \"Willem A.J. van Schaik\n(willem@schaik.co...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 75,
+        "record_type": "tEXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Copyright = \"Copyright Willem van Schaik, Singapore 1...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 136,
+        "record_type": "tEXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Description = \"A compilation of a set of images created...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 204,
+        "record_type": "tEXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Software = \"Created on a NeXTstation color using \"pn...\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 467,
+        "record_type": "tEXt"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tEXt.text-content",
+      "message": "tEXt: Disclaimer = \"Freeware.\"",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 536,
+        "record_type": "tEXt"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  },
+  "optimization": {
+    "suggestions": [
+      {
+        "type": "reduce_metadata",
+        "priority": "low",
+        "savings_bytes": 519,
+        "description": "6 text chunks using 519 bytes (consider removing non-essential metadata)",
+        "chunks": [
+          "tEXt",
+          "tEXt",
+          "tEXt",
+          "tEXt",
+          "tEXt",
+          "tEXt"
+        ]
+      },
+      {
+        "type": "excessive_metadata",
+        "priority": "medium",
+        "savings_bytes": 519,
+        "description": "Metadata comprises 65.5% of file size (519 bytes)",
+        "recommendation": "Review if all metadata is necessary"
+      }
+    ],
+    "total_savings_bytes": 1038,
+    "total_savings_percent": 131.1
+  }
+}

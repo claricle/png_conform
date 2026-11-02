@@ -1,0 +1,3 @@
+# Preserve reporter bytes even when core.autocrlf is enabled on Windows.
+*.json text eol=lf
+*.yml text eol=lf

@@ -1,0 +1,15 @@
+---
+schema_version: 1
+filename: spec/fixtures/mng/valid-minimal.mng
+file_type: MNG
+file_size: 60
+compression_ratio: 0.0
+crc_errors_count: 0
+valid: true
+chunks:
+  total: 2
+  types:
+  - MEND
+  - MHDR
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

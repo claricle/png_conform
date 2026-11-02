@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/ancillary/significant_bits/cs5n2c08.png",
+  "file_type": "PNG",
+  "file_size": 186,
+  "compression_ratio": -96.8,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 32,
+    "height": 32,
+    "bit_depth": 8,
+    "color_type": "truecolor",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 5,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "gAMA",
+      "sBIT"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "info",
+      "message": "gAMA: 1.0 (linear)",
+      "chunk_type": "gAMA"
+    },
+    {
+      "severity": "info",
+      "message": "sBIT: R=5, G=5, B=5",
+      "chunk_type": "sBIT"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.sBIT.bits-rgb",
+      "message": "sBIT: R=5, G=5, B=5",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "sBIT"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

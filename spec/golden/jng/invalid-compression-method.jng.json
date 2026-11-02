@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/jng/invalid-compression-method.jng",
+  "file_type": "JNG",
+  "file_size": 391,
+  "compression_ratio": 0.0,
+  "crc_errors_count": 0,
+  "valid": false,
+  "chunks": {
+    "total": 3,
+    "types": [
+      "IEND",
+      "JDAT",
+      "JHDR"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "invalid image compression method (1, must be 8)",
+      "chunk_type": "JHDR",
+      "expected": "8",
+      "actual": "1"
+    },
+    {
+      "severity": "error",
+      "message": "JDAT must appear after JHDR",
+      "chunk_type": "JDAT"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "value",
+      "requirement_id": "jng.JHDR.image-compression-method",
+      "message": "invalid image compression method (1, must be 8)",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/jng.html",
+          "label": "JNG (JPEG Network Graphics) Format 1.0, section 1.1.1: JHDR JNG header"
+        }
+      ],
+      "context": {
+        "actual": "1",
+        "expected": "8"
+      },
+      "location": {
+        "type": "binary",
+        "byte_offset": 8,
+        "record_type": "JHDR",
+        "field": "image_compression_method"
+      }
+    },
+    {
+      "severity": "error",
+      "kind": "ordering",
+      "requirement_id": "jng.JDAT.after-jhdr",
+      "message": "JDAT must appear after JHDR",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/jng.html",
+          "label": "JNG (JPEG Network Graphics) Format 1.0, section 1.1.1: JHDR JNG header"
+        }
+      ],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 36,
+        "record_type": "JDAT"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

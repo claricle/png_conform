@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/misc/time/tm3n3p02.png",
+  "file_type": "PNG",
+  "file_size": 116,
+  "compression_ratio": -93.1,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 32,
+    "height": 32,
+    "bit_depth": 2,
+    "color_type": "palette",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 5,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "PLTE",
+      "tRNS"
+    ]
+  },
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}
