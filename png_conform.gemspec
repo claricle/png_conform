@@ -43,4 +43,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "lutaml-model", "~> 0.8.155"
   spec.add_dependency "paint", "~> 2.3"
   spec.add_dependency "thor", "~> 1.4"
+  spec.add_dependency "yeptris"
 end
