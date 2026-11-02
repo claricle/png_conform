@@ -5,17 +5,41 @@ require "tempfile"
 require "stringio"
 
 RSpec.describe PngConform::YamlIO do
-  let(:yaml) { "name: PNG\nversions: [1, 2]\n" }
-  let(:data) { { "name" => "PNG", "versions" => [1, 2] } }
-  let(:path) { file.path }
   let(:file) do
     Tempfile.new(["yaml_io", ".yml"]).tap do |f|
       f.write(yaml)
       f.flush
     end
   end
+  let(:path) { file.path }
+  let(:data) { { "name" => "PNG", "versions" => [1, 2] } }
+  let(:yaml) { "name: PNG\nversions: [1, 2]\n" }
 
   after { file.close! }
+
+  describe "Yeptris runtime dependency" do
+    subject(:requirement) do
+      gemspec = Gem::Specification.load(
+        File.expand_path("../../png_conform.gemspec", __dir__),
+      )
+      gemspec.runtime_dependencies.find { |dependency| dependency.name == "yeptris" }
+        .requirement
+    end
+
+    it "accepts the verified namespace implementation and compatible patches" do
+      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.56.1"))
+      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.56.2"))
+    end
+
+    it "rejects releases older than the verified namespace implementation" do
+      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.6.56"))
+    end
+
+    it "rejects releases outside the compatible patch series" do
+      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.6.57"))
+      expect(requirement).not_to be_satisfied_by(Gem::Version.new("1.0.0"))
+    end
+  end
 
   describe ".load_file" do
     it "loads a YAML file" do
