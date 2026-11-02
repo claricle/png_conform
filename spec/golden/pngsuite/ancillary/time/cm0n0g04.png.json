@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/ancillary/time/cm0n0g04.png",
+  "file_type": "PNG",
+  "file_size": 292,
+  "compression_ratio": -63.2,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 32,
+    "height": 32,
+    "bit_depth": 4,
+    "color_type": "grayscale",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 5,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "gAMA",
+      "tIME"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "info",
+      "message": "gAMA: 1.0 (linear)",
+      "chunk_type": "gAMA"
+    },
+    {
+      "severity": "info",
+      "message": "tIME: 2000-01-01 12:34:56 UTC",
+      "chunk_type": "tIME"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-linear",
+      "message": "gAMA: 1.0 (linear)",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    },
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.tIME.timestamp",
+      "message": "tIME: 2000-01-01 12:34:56 UTC",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 49,
+        "record_type": "tIME"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  },
+  "optimization": {
+    "suggestions": [
+      {
+        "type": "remove_chunks",
+        "priority": "medium",
+        "savings_bytes": 19,
+        "description": "Remove 1 unnecessary chunks (tIME)",
+        "chunks": [
+          "tIME"
+        ]
+      }
+    ],
+    "total_savings_bytes": 19,
+    "total_savings_percent": 6.5
+  }
+}

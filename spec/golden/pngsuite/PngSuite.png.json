@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/PngSuite.png",
+  "file_type": "PNG",
+  "file_size": 2262,
+  "compression_ratio": -98.9,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 256,
+    "height": 256,
+    "bit_depth": 8,
+    "color_type": "truecolor",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 3,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR"
+    ]
+  },
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

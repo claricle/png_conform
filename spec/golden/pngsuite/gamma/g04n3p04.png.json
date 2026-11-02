@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/pngsuite/gamma/g04n3p04.png",
+  "file_type": "PNG",
+  "file_size": 219,
+  "compression_ratio": -80.9,
+  "crc_errors_count": 0,
+  "valid": true,
+  "image": {
+    "width": 32,
+    "height": 32,
+    "bit_depth": 4,
+    "color_type": "palette",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 5,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "PLTE",
+      "gAMA"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "info",
+      "message": "gAMA: 0.45000",
+      "chunk_type": "gAMA"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "info",
+      "kind": "information",
+      "requirement_id": "info.png.gAMA.gamma-value",
+      "message": "gAMA: 0.45000",
+      "citations": [],
+      "context": {},
+      "location": {
+        "type": "binary",
+        "byte_offset": 33,
+        "record_type": "gAMA"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

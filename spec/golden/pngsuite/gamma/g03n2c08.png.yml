@@ -1,0 +1,38 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/gamma/g03n2c08.png
+file_type: PNG
+file_size: 370
+compression_ratio: -90.4
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 4
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+errors:
+- severity: info
+  message: 'gAMA: 0.35000'
+  chunk_type: gAMA
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-value
+  message: 'gAMA: 0.35000'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

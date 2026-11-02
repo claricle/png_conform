@@ -1,0 +1,41 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/misc/exif/exif2c08.png
+file_type: PNG
+file_size: 1788
+compression_ratio: -76.1
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 4
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - eXIf
+errors:
+- severity: info
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  chunk_type: eXIf
+  actual: eXIf
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.chunk.unknown-ancillary
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  citations: []
+  context:
+    actual: eXIf
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: eXIf
+    field: chunk type
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

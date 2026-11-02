@@ -1,0 +1,142 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/ancillary/text/cthn0g04.png
+file_type: PNG
+file_size: 1269
+compression_ratio: -82.4
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 4
+  color_type: grayscale
+  interlaced: false
+chunks:
+  total: 10
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+  - iTXt
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'iTXt: Title [hi] (शीर्षक) = "PngSuite"'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Author [hi] (लेखक) = "Willem van Schaik (willem@schaik.com)"'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Copyright [hi] (कॉपीराइट) = "कॉपीराइट Willem van Schaik, 2011 कनाडा"'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Description [hi] (विवरण) = "करने के लिए PNG प्रारूप के विभिन्न रंग
+    प..."'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Software [hi] (सॉफ्टवेयर) = "एक NeXTstation "pnmtopng ''का उपयोग
+    कर रं..."'
+  chunk_type: iTXt
+- severity: info
+  message: 'iTXt: Disclaimer [hi] (अस्वीकरण) = "फ्रीवेयर."'
+  chunk_type: iTXt
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Title [hi] (शीर्षक) = "PngSuite"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Author [hi] (लेखक) = "Willem van Schaik (willem@schaik.com)"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 99
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Copyright [hi] (कॉपीराइट) = "कॉपीराइट Willem van Schaik, 2011 कनाडा"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 173
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Description [hi] (विवरण) = "करने के लिए PNG प्रारूप के विभिन्न रंग
+    प..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 289
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Software [hi] (सॉफ्टवेयर) = "एक NeXTstation "pnmtopng ''का उपयोग
+    कर रं..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 914
+    record_type: iTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: Disclaimer [hi] (अस्वीकरण) = "फ्रीवेयर."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 1071
+    record_type: iTXt
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :reduce_metadata
+    :priority: :low
+    :savings_bytes: 1100
+    :description: 6 text chunks using 1100 bytes (consider removing non-essential
+      metadata)
+    :chunks:
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+    - iTXt
+  - :type: :excessive_metadata
+    :priority: :medium
+    :savings_bytes: 1100
+    :description: Metadata comprises 86.7% of file size (1100 bytes)
+    :recommendation: Review if all metadata is necessary
+  total_savings_bytes: 2200
+  total_savings_percent: 173.4

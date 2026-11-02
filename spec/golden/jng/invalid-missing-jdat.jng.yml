@@ -1,0 +1,30 @@
+---
+schema_version: 1
+filename: spec/fixtures/jng/invalid-missing-jdat.jng
+file_type: JNG
+file_size: 48
+compression_ratio: 0.0
+crc_errors_count: 0
+valid: false
+chunks:
+  total: 2
+  types:
+  - IEND
+  - JHDR
+errors:
+- severity: error
+  message: Missing JDAT chunk (at least one required)
+  chunk_type: JDAT
+diagnostics:
+- severity: error
+  kind: presence
+  requirement_id: jng.JDAT.missing
+  message: Missing JDAT chunk (at least one required)
+  citations:
+  - uri: http://www.libpng.org/pub/mng/spec/jng.html
+    label: 'JNG (JPEG Network Graphics) Format 1.0, section 1.1.2: JDAT JNG image
+      data'
+  context:
+    chunk_type: JDAT
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'

@@ -1,0 +1,137 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/ancillary/text/ctzn0g04.png
+file_type: PNG
+file_size: 753
+compression_ratio: -63.2
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 4
+  color_type: grayscale
+  interlaced: false
+chunks:
+  total: 10
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - gAMA
+  - tEXt
+  - zTXt
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'tEXt: Title = "PngSuite"'
+  chunk_type: tEXt
+- severity: info
+  message: |-
+    tEXt: Author = "Willem A.J. van Schaik
+    (willem@schaik.co..."
+  chunk_type: tEXt
+- severity: info
+  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed
+    from 54 bytes)'
+  chunk_type: zTXt
+- severity: info
+  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed
+    from 174 bytes)'
+  chunk_type: zTXt
+- severity: info
+  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed
+    from 54 bytes)'
+  chunk_type: zTXt
+- severity: info
+  message: 'zTXt: Disclaimer = "Freeware." (compressed from 17 bytes)'
+  chunk_type: zTXt
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.tEXt.text-content
+  message: 'tEXt: Title = "PngSuite"'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: tEXt
+- severity: info
+  kind: information
+  requirement_id: info.png.tEXt.text-content
+  message: |-
+    tEXt: Author = "Willem A.J. van Schaik
+    (willem@schaik.co..."
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 75
+    record_type: tEXt
+- severity: info
+  kind: information
+  requirement_id: info.png.zTXt.text-content
+  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed
+    from 54 bytes)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 136
+    record_type: zTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.zTXt.text-content
+  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed
+    from 174 bytes)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 213
+    record_type: zTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.zTXt.text-content
+  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed
+    from 54 bytes)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 412
+    record_type: zTXt
+- severity: info
+  kind: information
+  requirement_id: info.png.zTXt.text-content
+  message: 'zTXt: Disclaimer = "Freeware." (compressed from 17 bytes)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 488
+    record_type: zTXt
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :excessive_metadata
+    :priority: :medium
+    :savings_bytes: 480
+    :description: Metadata comprises 63.7% of file size (480 bytes)
+    :recommendation: Review if all metadata is necessary
+  total_savings_bytes: 480
+  total_savings_percent: 63.7

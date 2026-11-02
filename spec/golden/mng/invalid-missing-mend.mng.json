@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "filename": "spec/fixtures/mng/invalid-missing-mend.mng",
+  "file_type": "MNG",
+  "file_size": 111,
+  "compression_ratio": 0.0,
+  "crc_errors_count": 0,
+  "valid": false,
+  "image": {
+    "width": 8,
+    "height": 8,
+    "bit_depth": 8,
+    "color_type": "grayscale",
+    "interlaced": false
+  },
+  "chunks": {
+    "total": 4,
+    "types": [
+      "IDAT",
+      "IEND",
+      "IHDR",
+      "MHDR"
+    ]
+  },
+  "errors": [
+    {
+      "severity": "error",
+      "message": "Missing MEND chunk (must be last)",
+      "chunk_type": "MEND"
+    }
+  ],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "kind": "presence",
+      "requirement_id": "mng.MEND.missing",
+      "message": "Missing MEND chunk (must be last)",
+      "citations": [
+        {
+          "uri": "http://www.libpng.org/pub/mng/spec/",
+          "label": "MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section 4.1.2: MEND End of MNG datastream"
+        }
+      ],
+      "context": {
+        "chunk_type": "MEND"
+      }
+    }
+  ],
+  "resolution": {
+    "error": "Resolution analysis failed: nil can't be coerced into Integer"
+  }
+}

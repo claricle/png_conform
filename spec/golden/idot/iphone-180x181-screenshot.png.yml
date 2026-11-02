@@ -1,0 +1,126 @@
+---
+schema_version: 1
+filename: spec/fixtures/idot/iphone-180x181-screenshot.png
+file_type: PNG
+file_size: 31921
+compression_ratio: -76.8
+crc_errors_count: 0
+valid: true
+chunks:
+  total: 9
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - cICP
+  - eXIf
+  - iCCP
+  - iTXt
+  - pHYs
+errors:
+- severity: warning
+  message: cICP should not coexist with iCCP (both specify color space information)
+  chunk_type: cICP
+- severity: info
+  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes,
+    ratio 1.62:1)'
+  chunk_type: iCCP
+- severity: info
+  message: matrix coefficients = 0 (identity) is recommended for RGB
+  chunk_type: cICP
+- severity: info
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  chunk_type: eXIf
+  actual: eXIf
+- severity: info
+  message: 'pHYs: 144 DPI'
+  chunk_type: pHYs
+- severity: info
+  message: 'iTXt: XML:com.adobe.xmp = "<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xm..."'
+  chunk_type: iTXt
+diagnostics:
+- severity: warning
+  kind: consistency
+  requirement_id: png.cICP.coexist-iccp
+  message: cICP should not coexist with iCCP (both specify color space information)
+  citations:
+  - uri: https://www.w3.org/TR/png-3/
+    label: 'Portable Network Graphics (PNG) Specification (Third Edition) W3C Recommendation
+      2025-06-24, section 11.3.2.6: cICP Coding-independent code points for video
+      signal type identification'
+  context: {}
+  location:
+    type: binary
+    byte_offset: 400
+    record_type: cICP
+- severity: info
+  kind: information
+  requirement_id: info.png.iCCP.profile-summary
+  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes,
+    ratio 1.62:1)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: iCCP
+- severity: info
+  kind: information
+  requirement_id: info.png.cICP.matrix-coefficients-rgb-recommendation
+  message: matrix coefficients = 0 (identity) is recommended for RGB
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 400
+    record_type: cICP
+- severity: info
+  kind: information
+  requirement_id: info.png.chunk.unknown-ancillary
+  message: 'Unknown ancillary chunk type: eXIf (ignored)'
+  citations: []
+  context:
+    actual: eXIf
+  location:
+    type: binary
+    byte_offset: 416
+    record_type: eXIf
+    field: chunk type
+- severity: info
+  kind: information
+  requirement_id: info.png.pHYs.dpi
+  message: 'pHYs: 144 DPI'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 666
+    record_type: pHYs
+- severity: info
+  kind: information
+  requirement_id: info.png.iTXt.text-content
+  message: 'iTXt: XML:com.adobe.xmp = "<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xm..."'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 687
+    record_type: iTXt
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :remove_chunks
+    :priority: :medium
+    :savings_bytes: 21
+    :description: Remove 1 unnecessary chunks (pHYs)
+    :chunks:
+    - pHYs
+  - :type: :reduce_metadata
+    :priority: :low
+    :savings_bytes: 943
+    :description: 1 text chunks using 943 bytes (consider removing non-essential metadata)
+    :chunks:
+    - iTXt
+  total_savings_bytes: 964
+  total_savings_percent: 3.0

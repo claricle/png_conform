@@ -1,0 +1,64 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/sizes/s01i3p01.png
+file_type: PNG
+file_size: 113
+compression_ratio: 400.0
+crc_errors_count: 0
+valid: true
+image:
+  width: 1
+  height: 1
+  bit_depth: 1
+  color_type: palette
+  interlaced: true
+chunks:
+  total: 6
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - PLTE
+  - gAMA
+  - sBIT
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'sBIT: R=4, G=4, B=4'
+  chunk_type: sBIT
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.sBIT.bits-rgb
+  message: 'sBIT: R=4, G=4, B=4'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: sBIT
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
+optimization:
+  suggestions:
+  - :type: :remove_interlacing
+    :priority: :low
+    :savings_bytes: 16
+    :description: Remove interlacing for smaller file size (~15% reduction, but slower
+      initial display)
+    :current: Adam7 interlaced
+    :recommended: Non-interlaced
+  total_savings_bytes: 16
+  total_savings_percent: 14.2

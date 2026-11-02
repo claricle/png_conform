@@ -1,0 +1,52 @@
+---
+schema_version: 1
+filename: spec/fixtures/pngsuite/ancillary/chromaticity/ccwn2c08.png
+file_type: PNG
+file_size: 1514
+compression_ratio: -55.0
+crc_errors_count: 0
+valid: true
+image:
+  width: 32
+  height: 32
+  bit_depth: 8
+  color_type: truecolor
+  interlaced: false
+chunks:
+  total: 5
+  types:
+  - IDAT
+  - IEND
+  - IHDR
+  - cHRM
+  - gAMA
+errors:
+- severity: info
+  message: 'gAMA: 1.0 (linear)'
+  chunk_type: gAMA
+- severity: info
+  message: 'cHRM: white=(0.3127, 0.3290)'
+  chunk_type: cHRM
+diagnostics:
+- severity: info
+  kind: information
+  requirement_id: info.png.gAMA.gamma-linear
+  message: 'gAMA: 1.0 (linear)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 33
+    record_type: gAMA
+- severity: info
+  kind: information
+  requirement_id: info.png.cHRM.white-point
+  message: 'cHRM: white=(0.3127, 0.3290)'
+  citations: []
+  context: {}
+  location:
+    type: binary
+    byte_offset: 49
+    record_type: cHRM
+resolution:
+  :error: 'Resolution analysis failed: nil can''t be coerced into Integer'
