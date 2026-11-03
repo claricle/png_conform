@@ -46,6 +46,14 @@ RSpec.describe PngConform::Reporters::YamlReporter do
       expect(yaml_output).to include("crc_errors_count: 2")
     end
 
+    it "keeps long scalars on one line" do
+      file_analysis.file_path = "#{'long ' * 40}test.png"
+      reporter.report(file_analysis)
+      output.rewind
+
+      expect(output.read).to include("filename: #{'long ' * 40}test.png")
+    end
+
     it "produces valid YAML" do
       reporter.report(file_analysis)
       output.rewind

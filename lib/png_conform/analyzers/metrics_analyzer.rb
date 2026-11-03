@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "../configuration"
+require_relative "../yaml_io"
 
 module PngConform
   module Analyzers
@@ -33,8 +34,7 @@ module PngConform
       end
 
       def to_yaml
-        require "yaml"
-        analyze.to_yaml
+        YamlIO.dump(analyze)
       end
 
       private
