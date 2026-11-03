@@ -10,8 +10,9 @@ module PngConform
     # Receives FileAnalysis model and formats it (no analysis done here)
     class YamlReporter < BaseReporter
       def report(file_analysis)
-        # Simple formatting - model knows how to serialize itself
-        write_line(file_analysis.to_h.to_yaml)
+        # Psych.dump, not to_yaml: yeptris replaces Object#to_yaml process-wide
+        # and does not fold long lines, which would change report bytes.
+        write_line(Psych.dump(file_analysis.to_h))
       end
     end
   end
