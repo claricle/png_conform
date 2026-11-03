@@ -30,8 +30,7 @@ errors:
   message: 'sBIT: R=4, G=4, B=4'
   chunk_type: sBIT
 - severity: info
-  message: 'hIST: 15 palette entries, most used: index 9 (128), least used: index
-    8 (16)'
+  message: 'hIST: 15 palette entries, most used: index 9 (128), least used: index 8 (16)'
   chunk_type: hIST
 diagnostics:
 - severity: info
@@ -57,8 +56,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.hIST.usage-summary
-  message: 'hIST: 15 palette entries, most used: index 9 (128), least used: index
-    8 (16)'
+  message: 'hIST: 15 palette entries, most used: index 9 (128), least used: index 8 (16)'
   citations: []
   context: {}
   location:

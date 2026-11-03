@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "yaml"
+require_relative "../yaml_io"
 
 module PngConform
   module Diagnostics
@@ -78,8 +78,8 @@ module PngConform
         private
 
         def parse(path)
-          ensure_unique_keys!(Psych.parse_file(path))
-          YAML.safe_load_file(path)
+          ensure_unique_keys!(YamlIO.parse_file(path))
+          YamlIO.safe_load_file(path)
         end
 
         # Psych keeps the last of two equal keys; walk the AST so a
@@ -87,7 +87,7 @@ module PngConform
         def ensure_unique_keys!(node)
           return unless node.respond_to?(:children) && node.children
 
-          if node.is_a?(Psych::Nodes::Mapping)
+          if node.is_a?(Yeptris::Psych::Nodes::Mapping)
             keys = node.children.each_slice(2).map { |k, _| k.value }
             dup = keys.group_by(&:itself).find { |_, v| v.size > 1 }&.first
             raise DuplicateIdError, "duplicate key #{dup.inspect}" if dup

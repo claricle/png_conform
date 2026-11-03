@@ -34,16 +34,13 @@ errors:
     (willem@schaik.co..."
   chunk_type: tEXt
 - severity: info
-  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed
-    from 54 bytes)'
+  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed from 54 bytes)'
   chunk_type: zTXt
 - severity: info
-  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed
-    from 174 bytes)'
+  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed from 174 bytes)'
   chunk_type: zTXt
 - severity: info
-  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed
-    from 54 bytes)'
+  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed from 54 bytes)'
   chunk_type: zTXt
 - severity: info
   message: 'zTXt: Disclaimer = "Freeware." (compressed from 17 bytes)'
@@ -84,8 +81,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.zTXt.text-content
-  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed
-    from 54 bytes)'
+  message: 'zTXt: Copyright = "Copyright Willem van Schaik, Singapore 1..." (compressed from 54 bytes)'
   citations: []
   context: {}
   location:
@@ -95,8 +91,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.zTXt.text-content
-  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed
-    from 174 bytes)'
+  message: 'zTXt: Description = "A compilation of a set of images created..." (compressed from 174 bytes)'
   citations: []
   context: {}
   location:
@@ -106,8 +101,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.zTXt.text-content
-  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed
-    from 54 bytes)'
+  message: 'zTXt: Software = "Created on a NeXTstation color using "pn..." (compressed from 54 bytes)'
   citations: []
   context: {}
   location:

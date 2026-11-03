@@ -2,6 +2,7 @@
 
 require_relative "../container"
 require_relative "../utils/colorizer"
+require_relative "../yaml_io"
 require_relative "../services/profile_manager"
 require_relative "../reporters/reporter_factory"
 
@@ -248,8 +249,7 @@ module PngConform
           require "json"
           puts JSON.pretty_generate(metrics)
         when "yaml"
-          require "yaml"
-          puts metrics.to_yaml
+          puts YamlIO.dump(metrics)
         else
           # Text format with colored output
           puts "\n#{Utils::Colorizer.bold('METRICS:')}"

@@ -38,8 +38,7 @@ errors:
   message: 'iTXt: XML:com.adobe.xmp = "<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xm..."'
   chunk_type: iTXt
 - severity: info
-  message: 'iDOT: Apple display optimization (33554432, 0, 167772160, 671088640, 167772160,
-    167772160, 1375731712)'
+  message: 'iDOT: Apple display optimization (33554432, 0, 167772160, 671088640, 167772160, 167772160, 1375731712)'
   chunk_type: iDOT
 diagnostics:
 - severity: info
@@ -87,8 +86,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iDOT.apple-display-optimization
-  message: 'iDOT: Apple display optimization (33554432, 0, 167772160, 671088640, 167772160,
-    167772160, 1375731712)'
+  message: 'iDOT: Apple display optimization (33554432, 0, 167772160, 671088640, 167772160, 167772160, 1375731712)'
   citations: []
   context: {}
   location:

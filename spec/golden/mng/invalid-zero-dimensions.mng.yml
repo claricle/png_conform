@@ -22,8 +22,7 @@ diagnostics:
   message: MHDR frame dimensions must be > 0
   citations:
   - uri: http://www.libpng.org/pub/mng/spec/
-    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section
-      4.1.1: MHDR MNG datastream header'
+    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section 4.1.1: MHDR MNG datastream header'
   context: {}
   location:
     type: binary
