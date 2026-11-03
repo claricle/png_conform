@@ -41,8 +41,7 @@ optimization:
   - :type: :remove_interlacing
     :priority: :low
     :savings_bytes: 47
-    :description: Remove interlacing for smaller file size (~15% reduction, but slower
-      initial display)
+    :description: Remove interlacing for smaller file size (~15% reduction, but slower initial display)
     :current: Adam7 interlaced
     :recommended: Non-interlaced
   total_savings_bytes: 47

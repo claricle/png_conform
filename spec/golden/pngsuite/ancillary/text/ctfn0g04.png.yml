@@ -31,12 +31,10 @@ errors:
   message: 'iTXt: Author [fi] (Tekijä) = "Willem van Schaik (willem@schaik.com)"'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Copyright [fi] (Tekijänoikeudet) = "Copyright Willem van Schaik,
-    Kanada 2011"'
+  message: 'iTXt: Copyright [fi] (Tekijänoikeudet) = "Copyright Willem van Schaik, Kanada 2011"'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Description [fi] (Kuvaus) = "kokoelma joukon kuvia luotu testata
-    eri ..."'
+  message: 'iTXt: Description [fi] (Kuvaus) = "kokoelma joukon kuvia luotu testata eri ..."'
   chunk_type: iTXt
 - severity: info
   message: 'iTXt: Software [fi] (Ohjelmistot) = "Luotu NeXTstation väriä "pnmtopng"."'
@@ -78,8 +76,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Copyright [fi] (Tekijänoikeudet) = "Copyright Willem van Schaik,
-    Kanada 2011"'
+  message: 'iTXt: Copyright [fi] (Tekijänoikeudet) = "Copyright Willem van Schaik, Kanada 2011"'
   citations: []
   context: {}
   location:
@@ -89,8 +86,7 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Description [fi] (Kuvaus) = "kokoelma joukon kuvia luotu testata
-    eri ..."'
+  message: 'iTXt: Description [fi] (Kuvaus) = "kokoelma joukon kuvia luotu testata eri ..."'
   citations: []
   context: {}
   location:

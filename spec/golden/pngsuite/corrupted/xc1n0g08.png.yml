@@ -35,9 +35,7 @@ diagnostics:
   message: invalid color type (1, must be one of 0, 2, 3, 4, 6)
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
-      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
-      11.2.2: IHDR Image header'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 11.2.2: IHDR Image header'
   context:
     actual: '1'
     expected: 0, 2, 3, 4, 6
