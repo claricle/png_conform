@@ -1,9 +1,20 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "yaml"
 require "png_conform/services/profile_manager"
 
 RSpec.describe PngConform::Services::ProfileManager do
+  describe "validation_profiles.yml loaded through yeptris" do
+    let(:path) do
+      File.expand_path("../../../config/validation_profiles.yml", __dir__)
+    end
+
+    it "equals the Psych result" do
+      expect(PngConform::YamlIO.load_file(path)).to eq(YAML.load_file(path))
+    end
+  end
+
   describe ".available_profiles" do
     it "returns all profile names" do
       profiles = described_class.available_profiles
