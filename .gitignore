@@ -76,5 +76,3 @@ Thumbs.db
 
 # Benchmark results
 /benchmark/results/
-
-Gemfile.lock
