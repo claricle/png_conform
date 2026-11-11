@@ -33,7 +33,9 @@ diagnostics:
   message: CRC error in IHDR chunk
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 5.5: Cyclic Redundancy Code algorithm'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      5.5: Cyclic Redundancy Code algorithm'
   context: {}
   location:
     type: binary

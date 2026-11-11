@@ -35,7 +35,9 @@ diagnostics:
   message: IEND chunk before IDAT
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 5.6: Chunk ordering'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      5.6: Chunk ordering'
   context: {}
   location:
     type: binary
@@ -47,7 +49,9 @@ diagnostics:
   message: Missing IDAT chunk (at least one required)
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 11.2.1: General'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      11.2.1: General'
   context:
     chunk_type: IDAT
 - severity: info

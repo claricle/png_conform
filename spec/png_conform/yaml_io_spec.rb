@@ -26,17 +26,17 @@ RSpec.describe PngConform::YamlIO do
         .requirement
     end
 
-    it "accepts the verified namespace implementation and compatible patches" do
-      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.56.1"))
-      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.56.2"))
+    it "accepts the glossarist-compatible window and later builds" do
+      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.59"))
+      expect(requirement).to be_satisfied_by(Gem::Version.new("0.6.62.1"))
     end
 
-    it "rejects releases older than the verified namespace implementation" do
-      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.6.56"))
+    it "rejects releases older than the glossarist-compatible floor" do
+      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.6.58"))
     end
 
-    it "rejects releases outside the compatible patch series" do
-      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.6.57"))
+    it "rejects releases outside the 0.6 series" do
+      expect(requirement).not_to be_satisfied_by(Gem::Version.new("0.7.0"))
       expect(requirement).not_to be_satisfied_by(Gem::Version.new("1.0.0"))
     end
   end

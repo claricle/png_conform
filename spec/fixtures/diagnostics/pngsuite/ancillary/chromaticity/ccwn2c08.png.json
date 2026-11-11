@@ -2,7 +2,7 @@
   "schema_version": 1,
   "producer": {
     "name": "png_conform",
-    "version": "0.1.5"
+    "version": "0.1.6"
   },
   "profile": {
     "id": "png",

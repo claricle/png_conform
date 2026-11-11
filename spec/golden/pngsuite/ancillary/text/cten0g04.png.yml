@@ -31,13 +31,16 @@ errors:
   message: 'iTXt: Author [en] (Author) = "Willem van Schaik (willem@schaik.com)"'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Copyright [en] (Copyright) = "Copyright Willem van Schaik, Canada 2011"'
+  message: 'iTXt: Copyright [en] (Copyright) = "Copyright Willem van Schaik, Canada
+    2011"'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Description [en] (Description) = "A compilation of a set of images created..."'
+  message: 'iTXt: Description [en] (Description) = "A compilation of a set of images
+    created..."'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Software [en] (Software) = "Created on a NeXTstation color using "pn..."'
+  message: 'iTXt: Software [en] (Software) = "Created on a NeXTstation color using
+    "pn..."'
   chunk_type: iTXt
 - severity: info
   message: 'iTXt: Disclaimer [en] (Disclaimer) = "Freeware."'
@@ -76,7 +79,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Copyright [en] (Copyright) = "Copyright Willem van Schaik, Canada 2011"'
+  message: 'iTXt: Copyright [en] (Copyright) = "Copyright Willem van Schaik, Canada
+    2011"'
   citations: []
   context: {}
   location:
@@ -86,7 +90,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Description [en] (Description) = "A compilation of a set of images created..."'
+  message: 'iTXt: Description [en] (Description) = "A compilation of a set of images
+    created..."'
   citations: []
   context: {}
   location:
@@ -96,7 +101,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Software [en] (Software) = "Created on a NeXTstation color using "pn..."'
+  message: 'iTXt: Software [en] (Software) = "Created on a NeXTstation color using
+    "pn..."'
   citations: []
   context: {}
   location:
