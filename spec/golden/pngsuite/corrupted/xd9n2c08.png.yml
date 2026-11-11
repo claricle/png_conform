@@ -33,7 +33,9 @@ diagnostics:
   message: invalid bit depth (99) for truecolor (must be one of 8, 16)
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 11.2.2: IHDR Image header'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      11.2.2: IHDR Image header'
   context: {}
   location:
     type: binary

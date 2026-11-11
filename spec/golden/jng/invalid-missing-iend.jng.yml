@@ -22,7 +22,8 @@ diagnostics:
   message: Missing IEND chunk (must be last)
   citations:
   - uri: http://www.libpng.org/pub/mng/spec/jng.html
-    label: 'JNG (JPEG Network Graphics) Format 1.0, section 1.1.6: IEND End of JNG datastream'
+    label: 'JNG (JPEG Network Graphics) Format 1.0, section 1.1.6: IEND End of JNG
+      datastream'
   context:
     chunk_type: IEND
 resolution:

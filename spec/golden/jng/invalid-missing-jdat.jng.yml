@@ -22,7 +22,8 @@ diagnostics:
   message: Missing JDAT chunk (at least one required)
   citations:
   - uri: http://www.libpng.org/pub/mng/spec/jng.html
-    label: 'JNG (JPEG Network Graphics) Format 1.0, section 1.1.2: JDAT JNG image data'
+    label: 'JNG (JPEG Network Graphics) Format 1.0, section 1.1.2: JDAT JNG image
+      data'
   context:
     chunk_type: JDAT
 resolution:
