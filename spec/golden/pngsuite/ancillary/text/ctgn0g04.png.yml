@@ -31,13 +31,16 @@ errors:
   message: 'iTXt: Author [el] (Συγγραφέας) = "Willem van Schaik (willem@schaik.com)"'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά δικαιώματα Schaik van Willem,..."'
+  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά
+    δικαιώματα Schaik van Willem,..."'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από ένα σύνολο εικόνων που δ..."'
+  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από
+    ένα σύνολο εικόνων που δ..."'
   chunk_type: iTXt
 - severity: info
-  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε σε ένα χρώμα NeXTstation χ..."'
+  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε
+    σε ένα χρώμα NeXTstation χ..."'
   chunk_type: iTXt
 - severity: info
   message: 'iTXt: Disclaimer [el] (Αποποίηση) = "Δωρεάν λογισμικό."'
@@ -76,7 +79,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά δικαιώματα Schaik van Willem,..."'
+  message: 'iTXt: Copyright [el] (Πνευματικά δικαιώματα) = "Πνευματικά
+    δικαιώματα Schaik van Willem,..."'
   citations: []
   context: {}
   location:
@@ -86,7 +90,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από ένα σύνολο εικόνων που δ..."'
+  message: 'iTXt: Description [el] (Περιγραφή) = "Μια συλλογή από
+    ένα σύνολο εικόνων που δ..."'
   citations: []
   context: {}
   location:
@@ -96,7 +101,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iTXt.text-content
-  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε σε ένα χρώμα NeXTstation χ..."'
+  message: 'iTXt: Software [el] (Λογισμικό) = "Δημιουργήθηκε
+    σε ένα χρώμα NeXTstation χ..."'
   citations: []
   context: {}
   location:
@@ -120,7 +126,8 @@ optimization:
   - :type: :reduce_metadata
     :priority: :low
     :savings_bytes: 1016
-    :description: 6 text chunks using 1016 bytes (consider removing non-essential metadata)
+    :description: 6 text chunks using 1016 bytes (consider removing non-essential
+      metadata)
     :chunks:
     - iTXt
     - iTXt

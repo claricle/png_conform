@@ -26,7 +26,8 @@ diagnostics:
   message: TERM must appear after MHDR
   citations:
   - uri: http://www.libpng.org/pub/mng/spec/
-    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section 4.1.1: MHDR MNG datastream header'
+    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section
+      4.1.1: MHDR MNG datastream header'
   context: {}
   location:
     type: binary
@@ -38,7 +39,8 @@ diagnostics:
   message: MHDR must be the first chunk in MNG file
   citations:
   - uri: http://www.libpng.org/pub/mng/spec/
-    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section 4.1.1: MHDR MNG datastream header'
+    label: 'MNG (Multiple-image Network Graphics) Format 1.0 (2001-01-31), section
+      4.1.1: MHDR MNG datastream header'
   context: {}
   location:
     type: binary

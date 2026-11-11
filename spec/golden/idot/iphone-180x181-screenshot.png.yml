@@ -22,7 +22,8 @@ errors:
   message: cICP should not coexist with iCCP (both specify color space information)
   chunk_type: cICP
 - severity: info
-  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes, ratio 1.62:1)'
+  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes,
+    ratio 1.62:1)'
   chunk_type: iCCP
 - severity: info
   message: matrix coefficients = 0 (identity) is recommended for RGB
@@ -44,7 +45,9 @@ diagnostics:
   message: cICP should not coexist with iCCP (both specify color space information)
   citations:
   - uri: https://www.w3.org/TR/png-3/
-    label: 'Portable Network Graphics (PNG) Specification (Third Edition) W3C Recommendation 2025-06-24, section 11.3.2.6: cICP Coding-independent code points for video signal type identification'
+    label: 'Portable Network Graphics (PNG) Specification (Third Edition) W3C Recommendation
+      2025-06-24, section 11.3.2.6: cICP Coding-independent code points for video
+      signal type identification'
   context: {}
   location:
     type: binary
@@ -53,7 +56,8 @@ diagnostics:
 - severity: info
   kind: information
   requirement_id: info.png.iCCP.profile-summary
-  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes, ratio 1.62:1)'
+  message: 'iCCP: "kCGColorSpaceDisplayP3" (536 bytes, compressed from 331 bytes,
+    ratio 1.62:1)'
   citations: []
   context: {}
   location:

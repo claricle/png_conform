@@ -34,7 +34,9 @@ diagnostics:
   message: Unrecognized file signature (not PNG, MNG or JNG)
   citations:
   - uri: https://www.w3.org/TR/2003/REC-PNG-20031110/
-    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification 2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section 5.2: PNG signature'
+    label: 'ISO/IEC 15948 Portable Network Graphics (PNG): Functional specification
+      2004 (Second Edition; technically identical to W3C REC-PNG-20031110), section
+      5.2: PNG signature'
   context:
     actual: 89 50 4e 47 0d 0d 1a 0d
   location:
