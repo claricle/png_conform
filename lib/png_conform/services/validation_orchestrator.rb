@@ -3,6 +3,7 @@
 require_relative "../readers/chunk_framing"
 require_relative "../readers/format_dispatch"
 require_relative "chunk_processor"
+require_relative "profile_manager"
 require_relative "result_builder"
 require_relative "analysis_manager"
 
@@ -61,6 +62,7 @@ module PngConform
         validate_signature
         process_chunks
         validate_sequence
+        validate_profile
         build_result
       end
 
@@ -277,6 +279,58 @@ module PngConform
       # Position of the first (or last) chunk of a type in file order
       #
       # @return [Integer, nil]
+      # Validate the selected profile's chunk policy
+      #
+      # The profile is consumer policy (claricle/png_conform#34): metanorma
+      # flavors declare their own PNG requirements, and the gem's built-in
+      # and YAML profiles remain selectable by name. With no profile
+      # selected there is no enforcement.
+      #
+      # @return [void]
+      def validate_profile
+        definition = resolve_profile
+        return unless definition
+
+        label = definition[:name] || definition["name"] ||
+          @options[:profile].to_s
+
+        policy(definition, :required_chunks).each do |type|
+          next unless chunk_index(type).nil?
+
+          @context.add_diagnostic("profile.file.required-missing", "Missing required chunk: #{type}", chunk_type: type, profile: label)
+        end
+
+        policy(definition, :prohibited_chunks).each do |type|
+          index = chunk_index(type)
+          next if index.nil?
+
+          @context.add_diagnostic("profile.file.prohibited-present", "Prohibited chunk present: #{type}", chunk_type: type, profile: label)
+        end
+      end
+
+      # Resolve the profile selection to its definition
+      #
+      # Accepts nil (no enforcement), :none/"none", an inline definition
+      # Hash, or the name of a built-in/YAML profile.
+      #
+      # @return [Hash, nil]
+      # @raise [PngConform::UnknownProfileError] when a named profile
+      #   does not exist
+      def resolve_profile
+        selected = @options[:profile]
+        return nil if selected.nil? || selected.to_s == "none"
+        return selected if selected.is_a?(Hash)
+
+        ProfileManager.get_profile(selected.to_s) ||
+          raise(PngConform::UnknownProfileError.new(
+                  selected, ProfileManager.available_profiles
+                ))
+      end
+
+      def policy(definition, key)
+        Array(definition[key.to_s] || definition[key])
+      end
+
       def chunk_index(type, last: false)
         finder = last ? :rindex : :index
         @chunks.public_send(finder) { |c| c.chunk_type.to_s == type }

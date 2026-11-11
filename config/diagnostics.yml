@@ -2612,6 +2612,7 @@ requirements:
     citation: {specification: profile, section: "prohibited_chunks", title: "Prohibited chunks"}
     emitters:
       - {file: "services/profile_manager.rb", call: "profile_diagnostic(\"profile.file.prohibited-present\", \"Prohibited chunk present: #{chunk_type}\", chunk_type: chunk_type, profile: profile_name, label: profile[:name] )"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"profile.file.prohibited-present\", \"Prohibited chunk present: #{type}\", chunk_type: type, profile: label)"}
   profile.file.required-missing:
     format: png
     kind: policy
@@ -2619,6 +2620,7 @@ requirements:
     citation: {specification: profile, section: "required_chunks", title: "Required chunks"}
     emitters:
       - {file: "services/profile_manager.rb", call: "profile_diagnostic(\"profile.file.required-missing\", \"Missing required chunk: #{chunk_type}\", chunk_type: chunk_type, profile: profile_name, label: profile[:name] )"}
+      - {file: "services/validation_orchestrator.rb", call: "add_diagnostic(\"profile.file.required-missing\", \"Missing required chunk: #{type}\", chunk_type: type, profile: label)"}
 informational:
   info.png.PLTE.palette-present:
     format: png
