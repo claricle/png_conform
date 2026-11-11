@@ -609,29 +609,38 @@ end
 
 === Using profiles
 
+Profiles are consumer policy: the gem ships built-in and YAML profiles
+(minimal, web, print, archive, strict, default), and consumers bring their
+own definitions for their own requirements. Profile selection rides the
+`ValidationService` options — named profile, inline definition, `"none"`,
+or absent (no enforcement):
+
 [source,ruby]
 ----
-# Load a specific profile
-profile_mgr = PngConform::Services::ProfileManager.new
-profile = profile_mgr.load_profile("web")
+require "png_conform"
 
-# Validate with profile
-service = PngConform::Services::ValidationService.new
-result = service.validate_file("image.png", profile: profile)
+path = "image.png"
+reader = PngConform::Readers::FullLoadReader.new(path)
 
-# Check profile conformance
-profile_result = profile_mgr.validate_file_against_profile(
-  "image.png",
-  "web"
+# A named built-in/YAML profile
+service = PngConform::Services::ValidationService.new(reader, path, profile: "web")
+analysis = service.validate
+
+# An inline definition (string or symbol keys) — consumer-owned policy
+service = PngConform::Services::ValidationService.new(
+  reader, path,
+  profile: { name: "metanorma", required_chunks: %w[IHDR IDAT IEND tIME],
+             prohibited_chunks: %w[iCCP] },
 )
+analysis = service.validate
 
-if profile_result.profile_errors.any?
-  puts "Profile violations:"
-  profile_result.profile_errors.each do |error|
-    puts "  #{error.message}"
-  end
-end
+# Unknown named profiles raise PngConform::UnknownProfileError
 ----
+
+Missing required chunks and present prohibited chunks surface as
+`profile.file.required-missing` and `profile.file.prohibited-present`
+validation errors on the result. The CLI's `--profile` flag resolves the
+same named profiles.
 
 === Custom reporters
 
