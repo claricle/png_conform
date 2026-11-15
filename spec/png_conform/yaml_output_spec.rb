@@ -12,10 +12,11 @@ RSpec.describe "YAML output through YamlIO" do
     )
   end
   let(:analyzer) { PngConform::Analyzers::MetricsAnalyzer.new(result) }
-  let(:metrics) { analyzer.analyze }
+  let(:long_value) { "#{'long value ' * 30}test.png" }
+  let(:metrics) { analyzer.analyze.merge("description" => long_value) }
   let(:analysis) do
     PngConform::Models::FileAnalysis.new(
-      file_path: "test.png", file_type: "PNG", file_size: 0,
+      file_path: long_value, file_type: "PNG", file_size: 0,
       validation_result: result, metrics: metrics
     )
   end
@@ -28,8 +29,7 @@ RSpec.describe "YAML output through YamlIO" do
     allow(analyzer).to receive(:analyze).and_return(metrics)
     allow(metrics).to receive(:to_yaml).and_raise("must use YamlIO.dump")
 
-    expect(YAML.safe_load(analyzer.to_yaml, permitted_classes: [Symbol]))
-      .to eq(metrics)
+    expect(analyzer.to_yaml.b).to eq(Yeptris::Psych.dump(metrics).b)
     expect(PngConform::YamlIO).to have_received(:dump).with(metrics)
   end
 
@@ -38,8 +38,7 @@ RSpec.describe "YAML output through YamlIO" do
 
     PngConform::Reporters::YamlReporter.new(output).report(analysis)
 
-    expect(YAML.safe_load(output.string, permitted_classes: [Symbol]))
-      .to eq(analysis.to_h)
+    expect(output.string.b).to eq(Yeptris::Psych.dump(analysis.to_h).b)
     expect(PngConform::YamlIO).to have_received(:dump).with(analysis.to_h)
   end
 
@@ -47,7 +46,7 @@ RSpec.describe "YAML output through YamlIO" do
     command = PngConform::Commands::CheckCommand.new([], format: "yaml")
     allow(analysis).to receive(:metrics).and_return(metrics)
     allow(metrics).to receive(:to_yaml).and_raise("must use YamlIO.dump")
-    expected = Psych.dump(metrics)
+    expected = Yeptris::Psych.dump(metrics)
 
     expect { command.send(:show_metrics, analysis) }.to output(expected).to_stdout
     expect(PngConform::YamlIO).to have_received(:dump).with(metrics).once
