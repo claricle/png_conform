@@ -10,7 +10,7 @@ module PngConform
     # Receives FileAnalysis model and formats it (no analysis done here)
     class YamlReporter < BaseReporter
       def report(file_analysis)
-        write_line(YamlIO.dump(file_analysis.to_h))
+        write_line(PngConform::YamlIO.dump(file_analysis.to_h))
       end
     end
   end

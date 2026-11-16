@@ -2,9 +2,9 @@
 
 require_relative "../container"
 require_relative "../utils/colorizer"
+require_relative "../yaml_io"
 require_relative "../services/profile_manager"
 require_relative "../reporters/reporter_factory"
-require_relative "../yaml_io"
 
 module PngConform
   module Commands

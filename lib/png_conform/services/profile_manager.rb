@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require "yaml"
+require_relative "../yaml_io"
 require_relative "../configuration"
 
 module PngConform
@@ -260,7 +260,7 @@ module PngConform
                                   "../../config/validation_profiles.yml")
           return {} unless File.exist?(config_path)
 
-          YAML.load_file(config_path).transform_keys(&:to_sym)
+          YamlIO.load_file(config_path).transform_keys(&:to_sym)
         rescue StandardError => e
           warn "Failed to load profiles from YAML: #{e.message}"
           {}

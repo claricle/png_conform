@@ -39,6 +39,18 @@ RSpec.describe PngConform::Diagnostics::Catalog do
     end.keys
   end
 
+  # file-level policy findings emit from the ProfileManager facade and from
+  # the service path the orchestrator wires it into (#34)
+  def expect_profile_emitters(req)
+    files = req.emitters.map(&:file)
+    if req.id.start_with?("profile.file.")
+      expect(files).to eq(["services/profile_manager.rb",
+                           "services/validation_orchestrator.rb"])
+    else
+      expect(files).to eq(["services/profile_manager.rb"])
+    end
+  end
+
   describe "schema" do
     it "loads the shipped catalog with specifications and entries" do
       expect(catalog.specifications.keys).to include("iso15948", "apng", "mng", "jng", "profile")
@@ -231,7 +243,7 @@ RSpec.describe PngConform::Diagnostics::Catalog do
         expect(req).to have_attributes(kind: "policy", severity: severity)
         expect(req.citation.specification.key).to eq("profile")
         expect(req.citation.specification.version).not_to be_empty
-        expect(req.emitters.map(&:file)).to eq(["services/profile_manager.rb"])
+        expect_profile_emitters(req)
       end
       expect(catalog.fetch("profile.chunk.prohibited").emitters.first.call)
         .to include("prohibited in")
@@ -350,7 +362,9 @@ RSpec.describe PngConform::Diagnostics::Catalog do
         "all.signature.unknown", "all.chunk.length-exceeds-limit", "all.chunk.length-exceeds-data",
         "png.IHDR.missing", "png.IHDR.first-chunk", "png.IEND.missing", "png.IEND.last-chunk", "png.IDAT.missing",
         "mng.MHDR.missing", "mng.MHDR.first-chunk", "mng.MEND.missing", "mng.MEND.last-chunk",
-        "jng.JHDR.missing", "jng.JHDR.first-chunk", "jng.IEND.missing", "jng.IEND.last-chunk", "jng.JDAT.missing"
+        "jng.JHDR.missing", "jng.JHDR.first-chunk", "jng.IEND.missing", "jng.IEND.last-chunk", "jng.JDAT.missing",
+        # the service path enforces consumer-selected chunk profiles (#34)
+        "profile.file.required-missing", "profile.file.prohibited-present"
       )
       processor = catalog.select { |r| r.emitters.any? { |e| e.file == "services/chunk_processor.rb" } }.map(&:id)
       expect(processor).to contain_exactly("png.chunk.unknown-critical", "info.png.chunk.unknown-ancillary")
