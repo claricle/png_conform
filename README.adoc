@@ -592,8 +592,7 @@ PngConform provides a comprehensive Ruby API for programmatic validation.
 require "png_conform"
 
 # Validate a file
-service = PngConform::Services::ValidationService.new
-result = service.validate_file("image.png")
+result = PngConform::Services::ValidationService.validate_file("image.png")
 
 if result.valid?
   puts "File is valid"
@@ -646,30 +645,30 @@ same named profiles.
 
 [source,ruby]
 ----
-# Use specific reporter
-reporter = PngConform::Reporters::VerboseReporter.new
-service = PngConform::Services::ValidationService.new
-result = service.validate_file("image.png")
+require "png_conform"
 
-reporter.report(result)
+result = PngConform::Services::ValidationService.validate_file("image.png")
 
-# Create custom reporter combinations
-factory = PngConform::Reporters::ReporterFactory.new
-reporter = factory.create_reporter(
+# Create a verbose, colorized text reporter from the factory
+reporter = PngConform::Reporters::ReporterFactory.create(
   verbose: true,
-  show_palette: true,
-  show_text: true,
   colorize: true
 )
 
 reporter.report(result)
+
+# Machine-readable formats are also available
+json_reporter = PngConform::Reporters::ReporterFactory.create(format: "json")
+json_reporter.report(result)
 ----
 
 === Accessing chunk data
 
 [source,ruby]
 ----
-result = service.validate_file("image.png")
+require "png_conform"
+
+result = PngConform::Services::ValidationService.validate_file("image.png")
 
 # Iterate through chunks
 result.chunks.each do |chunk|
@@ -677,22 +676,13 @@ result.chunks.each do |chunk|
   puts "  Offset: #{chunk.offset}"
   puts "  Length: #{chunk.length}"
   puts "  CRC: 0x#{chunk.crc.to_s(16).upcase}"
-
-  # Access decoded data
-  if chunk.decoded_data
-    case chunk.type
-    when "IHDR"
-      puts "  Dimensions: #{chunk.decoded_data.width}x#{chunk.decoded_data.height}"
-      puts "  Bit depth: #{chunk.decoded_data.bit_depth}"
-      puts "  Color type: #{chunk.decoded_data.color_type}"
-    when "gAMA"
-      puts "  Gamma: #{chunk.decoded_data.gamma}"
-    when "tEXt"
-      puts "  Keyword: #{chunk.decoded_data.keyword}"
-      puts "  Text: #{chunk.decoded_data.text}"
-    end
-  end
+  puts "  CRC valid: #{chunk.crc_valid?}"
 end
+
+# Decoded image information is available on the analysis
+puts "Dimensions: #{result.image_info.width}x#{result.image_info.height}"
+puts "Bit depth: #{result.image_info.bit_depth}"
+puts "Color type: #{result.image_info.color_type}"
 ----
 
 [[chunk-validation]]
